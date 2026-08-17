@@ -575,7 +575,7 @@
                 <i x-show="mobileMenuOpen" data-lucide="x" class="h-6 w-6" aria-hidden="true"></i>
             </button>
 
-            <a href="#book" class="hidden md:inline-flex group relative h-10 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-white px-6 font-medium text-slate-900 transition-all hover:bg-slate-50 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2" aria-label="Book a discussion about the Dimaag aur Machine program">
+            <a href="#book" data-ring-hover class="hidden md:inline-flex group relative h-10 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-white px-6 font-medium text-slate-900 transition-all hover:bg-slate-50 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2" aria-label="Book a discussion about the Dimaag aur Machine program">
                 <span class="relative flex items-center gap-2">
                     Book Discussion
                     <i data-lucide="arrow-right" class="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true"></i>
@@ -686,7 +686,7 @@
             </div>
 
             <div class="reveal delay-300 flex flex-col items-center justify-center gap-4" :class="show ? 'active' : ''">
-                <a href="#book" class="h-14 px-8 rounded-full bg-slate-900 text-white font-semibold text-lg hover:bg-slate-800 hover:scale-105 transition-all shadow-xl shadow-slate-200/50 flex items-center gap-2 group" aria-label="Book a 30-minute school discussion about the Dimaag aur Machine program">
+                <a href="#book" data-ring-hover class="h-14 px-8 rounded-full bg-slate-900 text-white font-semibold text-lg hover:bg-slate-800 hover:scale-105 transition-all shadow-xl shadow-slate-200/50 flex items-center gap-2 group" aria-label="Book a 30-minute school discussion about the Dimaag aur Machine program">
                     Book a 30-min School Discussion
                     <i data-lucide="arrow-right" class="h-5 w-5 group-hover:translate-x-1 transition-transform" aria-hidden="true"></i>
                 </a>
@@ -725,7 +725,7 @@
             <div class="reveal delay-500 mt-10 pt-6 border-t border-slate-100 max-w-md mx-auto" :class="show ? 'active' : ''">
                 <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-4">Program Authority</p>
                 <a href="#about" class="flex items-center justify-center gap-4 group hover:opacity-80 transition-opacity">
-                    <img src="amaan-shaikh.jpg" alt="Amaan Shaikh" class="w-20 h-20 rounded-full object-cover object-[center_25%] border-2 border-white shadow-lg">
+                    <img src="amaan_shaikh_bw.jpg" alt="Amaan Shaikh" class="w-20 h-20 rounded-full object-cover object-[center_25%] ring-1 ring-slate-200 shadow-lg">
                     <div class="text-left">
                         <p class="text-lg font-bold text-slate-900 group-hover:underline">Amaan Shaikh</p>
                         <p class="text-sm text-slate-500">SDE & AI Specialist (Germany)</p>
@@ -1567,7 +1567,7 @@
                 <!-- Image Column -->
                 <div class="md:col-span-2 transition-all duration-700 transform translate-y-8 opacity-0" :class="shown ? 'translate-y-0 opacity-100' : ''">
                     <div class="sticky top-28">
-                        <img src="amaan-shaikh.jpg" alt="Amaan Shaikh" class="w-full max-w-xs mx-auto md:max-w-none rounded-2xl object-cover object-top shadow-2xl border-4 border-white">
+                        <img src="amaan_shaikh_bw.jpg" alt="Amaan Shaikh" class="w-full max-w-xs mx-auto md:max-w-none rounded-2xl object-cover object-top shadow-2xl ring-1 ring-slate-200">
                         <div class="mt-6 text-center md:text-left">
                             <p class="text-sm text-slate-500 mb-1">Program Lead</p>
                             <h2 class="text-2xl font-bold text-slate-900">Amaan Shaikh</h2>
@@ -2440,9 +2440,20 @@
             new THREE.Color(0x1f2937), // gray-800
         ];
 
+        // Blue-indigo hover palette
+        const hoverColors = [
+            new THREE.Color(0x6366f1), // indigo-500
+            new THREE.Color(0x818cf8), // indigo-400
+            new THREE.Color(0x4f46e5), // indigo-600
+            new THREE.Color(0x3b82f6), // blue-500
+            new THREE.Color(0x60a5fa), // blue-400
+            new THREE.Color(0x4338ca), // indigo-700
+        ];
+
         // --- Create particles with per-particle orbit data ---
         const positions = new Float32Array(PARTICLE_COUNT * 3);
         const colorsArr = new Float32Array(PARTICLE_COUNT * 3);
+        const hoverColorsArr = new Float32Array(PARTICLE_COUNT * 3);
         const sizes = new Float32Array(PARTICLE_COUNT);
         const basePositions = new Float32Array(PARTICLE_COUNT * 3);
 
@@ -2481,26 +2492,35 @@
             colorsArr[i * 3 + 1] = color.g;
             colorsArr[i * 3 + 2] = color.b;
 
+            const hColor = hoverColors[Math.floor(Math.random() * hoverColors.length)];
+            hoverColorsArr[i * 3] = hColor.r;
+            hoverColorsArr[i * 3 + 1] = hColor.g;
+            hoverColorsArr[i * 3 + 2] = hColor.b;
+
             sizes[i] = 1.5 + Math.random() * 5;
         }
 
         const geometry = new THREE.BufferGeometry();
         geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
         geometry.setAttribute('color', new THREE.BufferAttribute(colorsArr, 3));
+        geometry.setAttribute('hoverColor', new THREE.BufferAttribute(hoverColorsArr, 3));
         geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
 
         // Custom shader for variable-size round particles
         const material = new THREE.ShaderMaterial({
             uniforms: {
                 uPixelRatio: { value: renderer.getPixelRatio() },
-                uOpacity: { value: 1.0 }
+                uOpacity: { value: 1.0 },
+                uColorMix: { value: 0.0 }
             },
             vertexShader: `
                 attribute float size;
+                attribute vec3 hoverColor;
                 varying vec3 vColor;
                 uniform float uPixelRatio;
+                uniform float uColorMix;
                 void main() {
-                    vColor = color;
+                    vColor = mix(color, hoverColor, uColorMix);
                     vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
                     gl_PointSize = size * uPixelRatio * (300.0 / -mvPosition.z);
                     gl_Position = projectionMatrix * mvPosition;
@@ -2558,6 +2578,37 @@
             mouse.y = 99999;
         });
 
+        // --- Hover expand + speed + color: Book Discussion buttons ---
+        let hoverRadiusTarget = 0;
+        let hoverRadiusCurrent = 0;
+        let hoverSpeedTarget = 0;
+        let hoverSpeedCurrent = 0;
+        let hoverColorTarget = 0;
+        let hoverColorCurrent = 0;
+        let hoverOpacityTarget = 1.0;
+        let hoverOpacityCurrent = 1.0;
+        let hoverAngleAccum = 0;
+        let prevElapsed = 0;
+        const HOVER_EXPAND = 40;
+        const HOVER_SPEED_BOOST = 3;
+        const HOVER_OPACITY = 2.0;
+        const HOVER_LERP = 0.04;
+
+        document.querySelectorAll('[data-ring-hover]').forEach(function(btn) {
+            btn.addEventListener('mouseenter', function() {
+                hoverRadiusTarget = HOVER_EXPAND;
+                hoverSpeedTarget = HOVER_SPEED_BOOST;
+                hoverColorTarget = 1.0;
+                hoverOpacityTarget = HOVER_OPACITY;
+            });
+            btn.addEventListener('mouseleave', function() {
+                hoverRadiusTarget = 0;
+                hoverSpeedTarget = 0;
+                hoverColorTarget = 0;
+                hoverOpacityTarget = 1.0;
+            });
+        });
+
         // --- Resize ---
         function resize() {
             const w = heroSection.offsetWidth;
@@ -2589,11 +2640,54 @@
         const clock = new THREE.Clock();
         const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+        // --- Burst spin: 0-2s fast, 2-5s ease to normal, 5s+ normal ---
+        const BURST_END = 2.0;
+        const EASE_END = 5.0;
+        const EASE_DUR = EASE_END - BURST_END;
+        const BURST_SPEED = 8.0;
+        const warpedAtBurst = BURST_END * BURST_SPEED;
+        const warpedAtEase = warpedAtBurst + EASE_DUR + EASE_DUR * (BURST_SPEED - 1) / 4;
+
+        function getWarpedTime(t) {
+            if (t <= BURST_END) {
+                // Phase 1: constant 8x speed
+                return t * BURST_SPEED;
+            }
+            if (t <= EASE_END) {
+                // Phase 2: cubic ease-out from 8x to 1x
+                const tau = t - BURST_END;
+                const p = tau / EASE_DUR;
+                return warpedAtBurst + tau + EASE_DUR * (BURST_SPEED - 1) / 4 * (1 - Math.pow(1 - p, 4));
+            }
+            // Phase 3: normal 1x speed
+            return warpedAtEase + (t - EASE_END);
+        }
+
         function animate() {
             requestAnimationFrame(animate);
 
             const elapsed = clock.getElapsedTime();
+            const dt = elapsed - prevElapsed;
+            prevElapsed = elapsed;
+            const warpedElapsed = getWarpedTime(elapsed);
             const posAttr = geometry.attributes.position;
+
+            // Radius collapse: start at +100, ease to 0 over first 2s
+            let radiusOffset = 0;
+            if (elapsed < BURST_END) {
+                const p = elapsed / BURST_END;
+                radiusOffset = 100 * Math.pow(1 - p, 3);
+            }
+
+            // Hover expand + speed + color: lerp toward targets
+            hoverRadiusCurrent += (hoverRadiusTarget - hoverRadiusCurrent) * HOVER_LERP;
+            hoverSpeedCurrent += (hoverSpeedTarget - hoverSpeedCurrent) * HOVER_LERP;
+            hoverColorCurrent += (hoverColorTarget - hoverColorCurrent) * HOVER_LERP;
+            hoverOpacityCurrent += (hoverOpacityTarget - hoverOpacityCurrent) * HOVER_LERP;
+            hoverAngleAccum += dt * hoverSpeedCurrent;
+            radiusOffset += hoverRadiusCurrent;
+
+            material.uniforms.uColorMix.value = hoverColorCurrent;
 
             // Convert mouse to world coordinates (no ring rotation, direct mapping)
             const mouseWorld = new THREE.Vector3(
@@ -2606,8 +2700,8 @@
                 // Per-particle revolution around center
                 const currentAngle = reducedMotion
                     ? orbitAngles[i]
-                    : orbitAngles[i] + elapsed * orbitSpeeds[i];
-                const r = orbitRadii[i];
+                    : orbitAngles[i] + (warpedElapsed + hoverAngleAccum) * orbitSpeeds[i];
+                const r = orbitRadii[i] + radiusOffset;
 
                 const bx = Math.cos(currentAngle) * r;
                 const by = Math.sin(currentAngle) * r;
@@ -2634,7 +2728,7 @@
             posAttr.needsUpdate = true;
 
             // Apply scroll fade
-            material.uniforms.uOpacity.value = scrollOpacity;
+            material.uniforms.uOpacity.value = scrollOpacity * hoverOpacityCurrent;
 
             renderer.render(scene, camera);
         }
@@ -2863,5 +2957,128 @@
     })();
     </script>
     <!-- === AI NEURAL NETWORK BACKGROUND — END === -->
+
+    <!-- Ambient hover pad on Book CTA -->
+    <script>
+    (function() {
+        var audioCtx, masterGain, voices = [], started = false;
+        var chordTimer = null, chordIndex = 0, hovering = false;
+        var FADE_IN = 1.0, FADE_OUT = 1.4, MAX_VOL = 0.13;
+        var CHORD_DUR = 5.0;
+        var GLIDE = 3.0;
+
+        // Warm, bright, major-only progression — high register, spa-like
+        // Cmaj7 → Fmaj7 → Gmaj7 → Amaj7
+        var chords = [
+            [329.63, 392.00, 493.88, 587.33],  // Cmaj7:  E4  G4  B4  D5
+            [349.23, 440.00, 523.25, 659.25],  // Fmaj7:  F4  A4  C5  E5
+            [392.00, 493.88, 587.33, 739.99],  // Gmaj7:  G4  B4  D5  F#5
+            [440.00, 554.37, 659.25, 830.61],  // Amaj7:  A4  C#5 E5  G#5
+        ];
+
+        // All sine waves — pure and gentle
+        var voiceVols = [0.30, 0.25, 0.20, 0.15];
+
+        function initAmbient() {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+            masterGain = audioCtx.createGain();
+            masterGain.gain.value = 0;
+
+            // Soft reverb — single short delay, gentle feedback
+            var dryGain = audioCtx.createGain();
+            dryGain.gain.value = 0.75;
+            var wetGain = audioCtx.createGain();
+            wetGain.gain.value = 0.3;
+            var delay = audioCtx.createDelay(1);
+            delay.delayTime.value = 0.25;
+            var fb = audioCtx.createGain();
+            fb.gain.value = 0.2;
+            var lpf = audioCtx.createBiquadFilter();
+            lpf.type = 'lowpass';
+            lpf.frequency.value = 3000;
+
+            masterGain.connect(dryGain);
+            dryGain.connect(audioCtx.destination);
+            masterGain.connect(delay);
+            delay.connect(fb);
+            fb.connect(delay);
+            delay.connect(lpf);
+            lpf.connect(wetGain);
+            wetGain.connect(audioCtx.destination);
+
+            // Create 4 sine voices
+            var initial = chords[0];
+            for (var i = 0; i < 4; i++) {
+                var osc = audioCtx.createOscillator();
+                var g = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.value = initial[i];
+                g.gain.value = voiceVols[i];
+                osc.connect(g);
+                g.connect(masterGain);
+                osc.start();
+                voices.push(osc);
+
+                // Very gentle shimmer
+                var lfo = audioCtx.createOscillator();
+                var lfoG = audioCtx.createGain();
+                lfo.type = 'sine';
+                lfo.frequency.value = 0.1 + Math.random() * 0.1;
+                lfoG.gain.value = 2;
+                lfo.connect(lfoG);
+                lfoG.connect(osc.detune);
+                lfo.start();
+            }
+            started = true;
+        }
+
+        function transitionToChord(idx) {
+            var chord = chords[idx];
+            var t = audioCtx.currentTime;
+            for (var i = 0; i < voices.length; i++) {
+                voices[i].frequency.cancelScheduledValues(t);
+                voices[i].frequency.setValueAtTime(voices[i].frequency.value, t);
+                voices[i].frequency.exponentialRampToValueAtTime(chord[i], t + GLIDE);
+            }
+        }
+
+        function advanceChord() {
+            chordIndex = (chordIndex + 1) % chords.length;
+            transitionToChord(chordIndex);
+        }
+
+        function fadeIn() {
+            if (!started) initAmbient();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            hovering = true;
+            var t = audioCtx.currentTime;
+            masterGain.gain.cancelScheduledValues(t);
+            masterGain.gain.setValueAtTime(masterGain.gain.value, t);
+            masterGain.gain.linearRampToValueAtTime(MAX_VOL, t + FADE_IN);
+            transitionToChord(chordIndex);
+            if (chordTimer) clearInterval(chordTimer);
+            chordTimer = setInterval(function() {
+                if (hovering) advanceChord();
+            }, CHORD_DUR * 1000);
+        }
+
+        function fadeOut() {
+            if (!started) return;
+            hovering = false;
+            var t = audioCtx.currentTime;
+            masterGain.gain.cancelScheduledValues(t);
+            masterGain.gain.setValueAtTime(masterGain.gain.value, t);
+            masterGain.gain.linearRampToValueAtTime(0, t + FADE_OUT);
+            if (chordTimer) { clearInterval(chordTimer); chordTimer = null; }
+        }
+
+        document.querySelectorAll('a[aria-label*="30-minute"]').forEach(function(btn) {
+            btn.addEventListener('mouseenter', fadeIn);
+            btn.addEventListener('mouseleave', fadeOut);
+        });
+    })();
+    </script>
+
 </body>
 </html>
