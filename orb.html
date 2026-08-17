@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Dimaag aur Machine — Particle Ring</title>
+<!-- Standalone full-screen version of the site's hero particle ring,
+     for recording the logo video. Not linked from the site.
+     Keys:  T — toggle light/dark theme   F — fullscreen
+            C — hide/show cursor          hold click — excite the ring -->
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+    html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }
+    body { background: #ffffff; transition: background-color .6s ease; }
+    body.no-trans { transition: none; }
+    body.dark { background: #000000; }
+    body.hide-cursor { cursor: none; }
+    #ring-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
+    #hint {
+        position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%);
+        font: 12px/1.5 system-ui, -apple-system, sans-serif; letter-spacing: .06em;
+        color: #94a3b8; background: rgba(127,127,127,.08);
+        border: 1px solid rgba(127,127,127,.22); border-radius: 999px; padding: 7px 16px;
+        transition: opacity 1s ease; user-select: none; pointer-events: none; white-space: nowrap;
+    }
+    #hint.gone { opacity: 0; }
+</style>
+</head>
+<body>
+<canvas id="ring-canvas"></canvas>
+<div id="hint">T theme &middot; F fullscreen &middot; C cursor &middot; hold click to excite &middot; move to repel</div>
+
+<script>
+window.addEventListener('DOMContentLoaded', function () {
+    const canvas = document.getElementById('ring-canvas');
+    if (!canvas || typeof THREE === 'undefined') return;
+
+    let renderer;
+    try {
+        renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    } catch (e) {
+        document.getElementById('hint').textContent = 'WebGL is not available in this browser.';
+        return;
+    }
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setClearColor(0x000000, 0);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 2000);
+    // Pulled back and centred (unlike the hero) so the FULL ring is always
+    // in frame for the recording; dot sizing below is scaled to match.
+    camera.position.z = 500;
+    camera.position.y = 0;
+
+    const PARTICLE_COUNT = 2500;
+    const RING_INNER = 112.5;
+    const RING_OUTER = 262.5;
+    const DEPTH_RANGE = 60;
+    const MOUSE_RADIUS = 45;
+    const MOUSE_STRENGTH = 30;
+
+    // Same greys, two exposures: dark dots for the white take,
+    // light dots for the black take.
+    const PALETTES = {
+        light: [0x4b5563, 0x6b7280, 0x9ca3af, 0x374151, 0xd1d5db, 0x1f2937],
+        dark:  [0xd1d5db, 0x9ca3af, 0x6b7280, 0xe5e7eb, 0x4b5563, 0xf9fafb]
+    };
+    const hoverColors = [
+        new THREE.Color(0x6366f1), new THREE.Color(0x818cf8), new THREE.Color(0x4f46e5),
+        new THREE.Color(0x3b82f6), new THREE.Color(0x60a5fa), new THREE.Color(0x4338ca),
+    ];
+
+    let theme = new URLSearchParams(location.search).get('theme') === 'dark' ? 'dark' : 'light';
+
+    const positions      = new Float32Array(PARTICLE_COUNT * 3);
+    const colorsArr      = new Float32Array(PARTICLE_COUNT * 3);
+    const hoverColorsArr = new Float32Array(PARTICLE_COUNT * 3);
+    const sizes          = new Float32Array(PARTICLE_COUNT);
+    const orbitAngles    = new Float32Array(PARTICLE_COUNT);
+    const orbitRadii     = new Float32Array(PARTICLE_COUNT);
+    const orbitZ         = new Float32Array(PARTICLE_COUNT);
+    const orbitSpeeds    = new Float32Array(PARTICLE_COUNT);
+    const paletteIdx     = new Uint8Array(PARTICLE_COUNT);
+
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const t = Math.pow(Math.random(), 2.5);
+        const r = RING_INNER + t * (RING_OUTER - RING_INNER);
+        const z = (Math.random() - 0.5) * DEPTH_RANGE;
+
+        orbitAngles[i] = angle;
+        orbitRadii[i]  = r;
+        orbitZ[i]      = z;
+        orbitSpeeds[i] = -(0.04 + Math.random() * 0.075);
+
+        positions[i * 3]     = Math.cos(angle) * r;
+        positions[i * 3 + 1] = Math.sin(angle) * r;
+        positions[i * 3 + 2] = z;
+
+        paletteIdx[i] = Math.floor(Math.random() * PALETTES.light.length);
+
+        const h = hoverColors[Math.floor(Math.random() * hoverColors.length)];
+        hoverColorsArr[i * 3] = h.r; hoverColorsArr[i * 3 + 1] = h.g; hoverColorsArr[i * 3 + 2] = h.b;
+
+        sizes[i] = 1.5 + Math.random() * 5;
+    }
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position',   new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('color',      new THREE.BufferAttribute(colorsArr, 3));
+    geometry.setAttribute('hoverColor', new THREE.BufferAttribute(hoverColorsArr, 3));
+    geometry.setAttribute('size',       new THREE.BufferAttribute(sizes, 1));
+
+    function applyTheme() {
+        document.body.classList.toggle('dark', theme === 'dark');
+        const palette = PALETTES[theme];
+        const attr = geometry.attributes.color;
+        for (let i = 0; i < PARTICLE_COUNT; i++) {
+            const c = new THREE.Color(palette[paletteIdx[i]]);
+            attr.array[i * 3] = c.r; attr.array[i * 3 + 1] = c.g; attr.array[i * 3 + 2] = c.b;
+        }
+        attr.needsUpdate = true;
+    }
+    // The initial theme (e.g. ?theme=dark) applies instantly — the smooth
+    // background cross-fade is only for live T-key switches.
+    document.body.classList.add('no-trans');
+    applyTheme();
+    requestAnimationFrame(function () { document.body.classList.remove('no-trans'); });
+
+    const material = new THREE.ShaderMaterial({
+        uniforms: {
+            uPixelRatio: { value: renderer.getPixelRatio() },
+            uOpacity:    { value: 1.0 },
+            uColorMix:   { value: 0.0 }
+        },
+        vertexShader: `
+            attribute float size;
+            attribute vec3 hoverColor;
+            varying vec3 vColor;
+            uniform float uPixelRatio;
+            uniform float uColorMix;
+            void main() {
+                vColor = mix(color, hoverColor, uColorMix);
+                vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+                gl_PointSize = size * uPixelRatio * (600.0 / -mvPosition.z);
+                gl_Position = projectionMatrix * mvPosition;
+            }
+        `,
+        fragmentShader: `
+            varying vec3 vColor;
+            uniform float uOpacity;
+            void main() {
+                float dist = length(gl_PointCoord - vec2(0.5));
+                if (dist > 0.5) discard;
+                float alpha = (1.0 - smoothstep(0.2, 0.5, dist)) * 0.3;
+                gl_FragColor = vec4(vColor, alpha * uOpacity);
+            }
+        `,
+        vertexColors: true,
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.NormalBlending
+    });
+
+    scene.add(new THREE.Points(geometry, material));
+
+    // Pointer repulsion, same as the site.
+    const mouse = { x: 99999, y: 99999 };
+    window.addEventListener('mousemove', function (e) {
+        mouse.x =  (e.clientX / window.innerWidth)  * 2 - 1;
+        mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    });
+    window.addEventListener('mouseout', function () { mouse.x = 99999; mouse.y = 99999; });
+    window.addEventListener('touchmove', function (e) {
+        const touch = e.touches[0];
+        mouse.x =  (touch.clientX / window.innerWidth)  * 2 - 1;
+        mouse.y = -(touch.clientY / window.innerHeight) * 2 + 1;
+    }, { passive: true });
+    window.addEventListener('touchend', function () { mouse.x = 99999; mouse.y = 99999; });
+
+    // "Excite" state (the hero's CTA-hover reaction): hold the pointer down.
+    let hoverRadiusTarget = 0,  hoverRadiusCurrent = 0;
+    let hoverSpeedTarget = 0,   hoverSpeedCurrent = 0;
+    let hoverColorTarget = 0,   hoverColorCurrent = 0;
+    let hoverOpacityTarget = 1, hoverOpacityCurrent = 1;
+    let hoverAngleAccum = 0, prevElapsed = 0;
+    const HOVER_EXPAND = 40, HOVER_SPEED_BOOST = 3, HOVER_OPACITY = 2.0, HOVER_LERP = 0.04;
+
+    function excite(on) {
+        hoverRadiusTarget  = on ? HOVER_EXPAND : 0;
+        hoverSpeedTarget   = on ? HOVER_SPEED_BOOST : 0;
+        hoverColorTarget   = on ? 1.0 : 0;
+        hoverOpacityTarget = on ? HOVER_OPACITY : 1.0;
+    }
+    window.addEventListener('pointerdown', function () { excite(true); });
+    window.addEventListener('pointerup',   function () { excite(false); });
+
+    // Recording controls.
+    window.addEventListener('keydown', function (e) {
+        const k = e.key.toLowerCase();
+        if (k === 't') { theme = theme === 'light' ? 'dark' : 'light'; applyTheme(); }
+        else if (k === 'f') {
+            if (document.fullscreenElement) document.exitFullscreen();
+            else document.documentElement.requestFullscreen().catch(function () {});
+        }
+        else if (k === 'c') { document.body.classList.toggle('hide-cursor'); }
+    });
+
+    const hint = document.getElementById('hint');
+    setTimeout(function () { hint.classList.add('gone'); }, 5000);
+
+    function resize() {
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    const clock = new THREE.Clock();
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Opening burst: fast for 2s, easing back to normal by 5s.
+    const BURST_END = 2.0, EASE_END = 5.0, BURST_SPEED = 8.0;
+    const EASE_DUR = EASE_END - BURST_END;
+    const warpedAtBurst = BURST_END * BURST_SPEED;
+    const warpedAtEase = warpedAtBurst + EASE_DUR + EASE_DUR * (BURST_SPEED - 1) / 4;
+
+    function getWarpedTime(t) {
+        if (t <= BURST_END) return t * BURST_SPEED;
+        if (t <= EASE_END) {
+            const tau = t - BURST_END, p = tau / EASE_DUR;
+            return warpedAtBurst + tau + EASE_DUR * (BURST_SPEED - 1) / 4 * (1 - Math.pow(1 - p, 4));
+        }
+        return warpedAtEase + (t - EASE_END);
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+
+        const elapsed = clock.getElapsedTime();
+        const dt = elapsed - prevElapsed;
+        prevElapsed = elapsed;
+        const warpedElapsed = getWarpedTime(elapsed);
+        const posAttr = geometry.attributes.position;
+
+        let radiusOffset = 0;
+        if (elapsed < BURST_END) radiusOffset = 100 * Math.pow(1 - elapsed / BURST_END, 3);
+
+        hoverRadiusCurrent  += (hoverRadiusTarget  - hoverRadiusCurrent)  * HOVER_LERP;
+        hoverSpeedCurrent   += (hoverSpeedTarget   - hoverSpeedCurrent)   * HOVER_LERP;
+        hoverColorCurrent   += (hoverColorTarget   - hoverColorCurrent)   * HOVER_LERP;
+        hoverOpacityCurrent += (hoverOpacityTarget - hoverOpacityCurrent) * HOVER_LERP;
+        hoverAngleAccum += dt * hoverSpeedCurrent;
+        radiusOffset += hoverRadiusCurrent;
+
+        material.uniforms.uColorMix.value = hoverColorCurrent;
+
+        const halfFov = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+        const mouseWorldX = mouse.x * camera.aspect * camera.position.z * halfFov;
+        const mouseWorldY = mouse.y * camera.position.z * halfFov;
+
+        for (let i = 0; i < PARTICLE_COUNT; i++) {
+            const currentAngle = reducedMotion
+            ? orbitAngles[i]
+            : orbitAngles[i] + (warpedElapsed + hoverAngleAccum) * orbitSpeeds[i];
+            const r = orbitRadii[i] + radiusOffset;
+
+            const bx = Math.cos(currentAngle) * r;
+            const by = Math.sin(currentAngle) * r;
+            let tx = bx, ty = by;
+
+            const dx = bx - mouseWorldX, dy = by - mouseWorldY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < MOUSE_RADIUS && dist > 0) {
+                const force = (1 - dist / MOUSE_RADIUS) * MOUSE_STRENGTH;
+                tx += (dx / dist) * force;
+                ty += (dy / dist) * force;
+            }
+
+            posAttr.array[i * 3]     += (tx - posAttr.array[i * 3])     * 0.08;
+            posAttr.array[i * 3 + 1] += (ty - posAttr.array[i * 3 + 1]) * 0.08;
+            posAttr.array[i * 3 + 2] += (orbitZ[i] - posAttr.array[i * 3 + 2]) * 0.08;
+        }
+        posAttr.needsUpdate = true;
+
+        material.uniforms.uOpacity.value = hoverOpacityCurrent;
+        renderer.render(scene, camera);
+    }
+    animate();
+});
+</script>
+</body>
+</html>

@@ -81,7 +81,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
-    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
     <link rel="dns-prefetch" href="https://api.elevenlabs.io">
     <link rel="preconnect" href="https://api.elevenlabs.io" crossorigin>
 
@@ -93,16 +93,15 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Alpine.js -->
-    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/intersect@3.x.x/dist/cdn.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
-    <!-- Lucide Icons -->
-    <script defer src="https://unpkg.com/lucide@latest"></script>
+    <!-- GSAP + ScrollTrigger: section reveals, hero choreography, horizontal gallery -->
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 
     <!-- Three.js for the hero particle ring -->
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <!-- vanilla-tilt (~4KB): hover tilt + glare on the hero card -->
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
 
     <script>
         tailwind.config = {
@@ -115,23 +114,18 @@
     </script>
 
     <style>
+        ::selection { background: #e2e8f0; }
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #fff; }
         ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
 
-        /* Scroll-reveal utility, driven by Alpine x-intersect */
-        .reveal {
-            opacity: 0;
-            transform: translateY(24px);
-            transition: opacity .7s cubic-bezier(.16,1,.3,1), transform .7s cubic-bezier(.16,1,.3,1);
-        }
-        .reveal.active { opacity: 1; transform: none; }
-        .d1 { transition-delay: 80ms; }
-        .d2 { transition-delay: 160ms; }
-        .d3 { transition-delay: 240ms; }
+        summary { list-style: none; cursor: pointer; }
+        summary::-webkit-details-marker { display: none; }
+        details[open] .faq-icon { transform: rotate(45deg); }
+        .faq-icon { transition: transform .25s ease; display: inline-block; }
 
-        /* Shimmer on the headline and product names */
+        /* Shimmer on the headline and program names */
         .shimmer-text {
             background: linear-gradient(90deg,#1e293b 0%,#1e293b 40%,#64748b 50%,#1e293b 60%,#1e293b 100%);
             background-size: 200% 100%;
@@ -145,6 +139,12 @@
             100% { background-position: -100% 0; }
         }
 
+        /* Headline word-mask reveal (spans injected by JS when GSAP is available).
+           The clip needs generous padding (offset by negative margins) or the
+           descenders of g/y get chopped by overflow:hidden at this line-height. */
+        .h1-clip { display: inline-block; overflow: hidden; vertical-align: bottom; padding: 0.06em 0.03em 0.24em; margin: -0.06em -0.03em -0.24em; }
+        .h1-word { display: inline-block; will-change: transform; }
+
         /* Hero particle canvas sits behind the content */
         #particle-canvas {
             position: absolute;
@@ -155,63 +155,335 @@
             pointer-events: none;
         }
 
-        /* Session gallery: native scroll-snap, no JS carousel needed */
-        .snap-row {
-            display: flex;
-            gap: 1rem;
-            overflow-x: auto;
-            scroll-snap-type: x mandatory;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-            padding-bottom: .25rem;
-        }
-        .snap-row::-webkit-scrollbar { display: none; }
-        .snap-row > * { scroll-snap-align: start; flex: 0 0 auto; }
+        /* vanilla-tilt glare (hero card): clip to the rounded corners */
+        .js-tilt-glare { border-radius: inherit; }
 
-        /* ElevenLabs assistant glow */
-        .elevenlabs-glow-wrapper {
-            position: fixed;
-            bottom: 60px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 999;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity .5s ease;
+        /* BorderGlow (ported from React Bits, JS-CSS variant) on the workshop
+           cards: a cone of colored border, a soft mesh wash and an outer halo
+           that track the cursor near the card edges. All layers stay invisible
+           until JS feeds --edge-proximity / --cursor-angle on pointer move.
+           Retuned for white cards on a light section (the original assumes a
+           dark card): halo blends normally instead of plus-lighter. */
+        .border-glow-card {
+            --edge-proximity: 0;
+            --cursor-angle: 45deg;
+            --edge-sensitivity: 30;
+            --color-sensitivity: calc(var(--edge-sensitivity) + 20);
+            --glow-padding: 32px;
+            --cone-spread: 25;
+            --fill-opacity: 0.14;
+            --card-bg: #ffffff;
+            position: relative;
+            isolation: isolate;
+            transform: translate3d(0, 0, 0.01px);
         }
-        .elevenlabs-glow-wrapper.glow-active { opacity: 1; }
-        .glow-ring, .glow-ring-outer {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%,-50%);
-            background-size: 200% 100%;
-            animation: glow-flow 3s ease-in-out infinite;
+        .border-glow-card::before,
+        .border-glow-card::after,
+        .border-glow-card > .edge-light {
+            content: ""; position: absolute; inset: 0; border-radius: inherit;
+            transition: opacity .25s ease-out; z-index: -1; pointer-events: none;
         }
-        .glow-ring {
-            width: 300px; height: 60px; border-radius: 30px;
-            background: linear-gradient(90deg, rgba(251,146,60,.6), rgba(249,115,22,.7), rgba(234,88,12,.6), rgba(249,115,22,.7), rgba(251,146,60,.6));
-            filter: blur(12px);
+        .border-glow-card:not(:hover)::before,
+        .border-glow-card:not(:hover)::after,
+        .border-glow-card:not(:hover) > .edge-light {
+            opacity: 0; transition: opacity .75s ease-in-out;
         }
-        .glow-ring-outer {
-            width: 350px; height: 80px; border-radius: 40px;
-            background: linear-gradient(90deg, rgba(251,146,60,.3), rgba(249,115,22,.4), rgba(234,88,12,.3), rgba(249,115,22,.4), rgba(251,146,60,.3));
-            filter: blur(25px);
-            animation-direction: reverse;
+        /* colored mesh-gradient border, cone-masked toward the cursor */
+        .border-glow-card::before {
+            border: 1px solid transparent;
+            background:
+                linear-gradient(var(--card-bg) 0 100%) padding-box,
+                linear-gradient(rgb(255 255 255 / 0%) 0% 100%) border-box,
+                var(--bg-g1) border-box,
+                var(--bg-g2) border-box,
+                var(--bg-g3) border-box,
+                var(--bg-g4) border-box,
+                var(--bg-g5) border-box,
+                var(--bg-g6) border-box,
+                var(--bg-g7) border-box,
+                var(--bg-base) border-box;
+            opacity: calc((var(--edge-proximity) - var(--color-sensitivity)) / (100 - var(--color-sensitivity)));
+            -webkit-mask-image: conic-gradient(
+                from var(--cursor-angle) at center,
+                black calc(var(--cone-spread) * 1%),
+                transparent calc((var(--cone-spread) + 15) * 1%),
+                transparent calc((100 - var(--cone-spread) - 15) * 1%),
+                black calc((100 - var(--cone-spread)) * 1%));
+            mask-image: conic-gradient(
+                from var(--cursor-angle) at center,
+                black calc(var(--cone-spread) * 1%),
+                transparent calc((var(--cone-spread) + 15) * 1%),
+                transparent calc((100 - var(--cone-spread) - 15) * 1%),
+                black calc((100 - var(--cone-spread)) * 1%));
         }
-        @keyframes glow-flow {
-            0%   { background-position: 0% 50%; }
-            50%  { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        /* faint colored wash inside the card near the cursor's edge */
+        .border-glow-card::after {
+            border: 1px solid transparent;
+            background:
+                var(--bg-g1) padding-box,
+                var(--bg-g2) padding-box,
+                var(--bg-g3) padding-box,
+                var(--bg-g4) padding-box,
+                var(--bg-g5) padding-box,
+                var(--bg-g6) padding-box,
+                var(--bg-g7) padding-box,
+                var(--bg-base) padding-box;
+            -webkit-mask-image:
+                linear-gradient(to bottom, black, black),
+                radial-gradient(ellipse at 50% 50%, black 40%, transparent 65%),
+                conic-gradient(from var(--cursor-angle) at center, transparent 5%, black 15%, black 85%, transparent 95%);
+            mask-image:
+                linear-gradient(to bottom, black, black),
+                radial-gradient(ellipse at 50% 50%, black 40%, transparent 65%),
+                conic-gradient(from var(--cursor-angle) at center, transparent 5%, black 15%, black 85%, transparent 95%);
+            mask-composite: subtract, add;
+            opacity: calc(var(--fill-opacity) * (var(--edge-proximity) - var(--color-sensitivity)) / (100 - var(--color-sensitivity)));
         }
+        /* outer halo, cone-masked toward the cursor */
+        .border-glow-card > .edge-light {
+            inset: calc(var(--glow-padding) * -1);
+            z-index: 1;
+            -webkit-mask-image: conic-gradient(from var(--cursor-angle) at center, black 2.5%, transparent 10%, transparent 90%, black 97.5%);
+            mask-image: conic-gradient(from var(--cursor-angle) at center, black 2.5%, transparent 10%, transparent 90%, black 97.5%);
+            opacity: calc((var(--edge-proximity) - var(--edge-sensitivity)) / (100 - var(--edge-sensitivity)));
+        }
+        .border-glow-card > .edge-light::before {
+            content: ""; position: absolute; inset: var(--glow-padding); border-radius: inherit;
+            box-shadow:
+                inset 0 0 0 1px hsl(var(--glow-hsl) / 100%),
+                inset 0 0 3px 0 hsl(var(--glow-hsl) / 50%),
+                inset 0 0 6px 0 hsl(var(--glow-hsl) / 40%),
+                inset 0 0 15px 0 hsl(var(--glow-hsl) / 30%),
+                0 0 3px 0 hsl(var(--glow-hsl) / 50%),
+                0 0 6px 0 hsl(var(--glow-hsl) / 40%),
+                0 0 15px 0 hsl(var(--glow-hsl) / 30%),
+                0 0 25px 2px hsl(var(--glow-hsl) / 20%),
+                0 0 50px 2px hsl(var(--glow-hsl) / 10%);
+        }
+        /* Both cards: on hover the fill and border shift into the card's own
+           color family, in step with the glow. */
+        #card-sense, #card-practical {
+            transition: background-color .5s ease, border-color .5s ease;
+        }
+        /* AI Sense: indigo mesh, indigo-tinted hover fill */
+        #card-sense.border-glow-card { --card-bg: #eef2ff; }
+        #card-sense:hover { background-color: #eef2ff; border-color: #a5b4fc; }
+        #card-sense.border-glow-card {
+            --glow-hsl: 234deg 89% 60%;
+            --bg-g1: radial-gradient(at 80% 55%, #818cf8 0px, transparent 50%);
+            --bg-g2: radial-gradient(at 69% 34%, #a5b4fc 0px, transparent 50%);
+            --bg-g3: radial-gradient(at 8% 6%,   #6366f1 0px, transparent 50%);
+            --bg-g4: radial-gradient(at 41% 38%, #818cf8 0px, transparent 50%);
+            --bg-g5: radial-gradient(at 86% 85%, #a5b4fc 0px, transparent 50%);
+            --bg-g6: radial-gradient(at 82% 18%, #6366f1 0px, transparent 50%);
+            --bg-g7: radial-gradient(at 51% 4%,  #a5b4fc 0px, transparent 50%);
+            --bg-base: linear-gradient(#818cf8 0 100%);
+        }
+        /* AI Made Practical: emerald mesh, emerald-tinted hover fill */
+        #card-practical.border-glow-card { --card-bg: #ecfdf5; }
+        #card-practical:hover { background-color: #ecfdf5; border-color: #6ee7b7; }
+        #card-practical.border-glow-card {
+            --glow-hsl: 158deg 74% 40%;
+            --bg-g1: radial-gradient(at 80% 55%, #34d399 0px, transparent 50%);
+            --bg-g2: radial-gradient(at 69% 34%, #6ee7b7 0px, transparent 50%);
+            --bg-g3: radial-gradient(at 8% 6%,   #10b981 0px, transparent 50%);
+            --bg-g4: radial-gradient(at 41% 38%, #34d399 0px, transparent 50%);
+            --bg-g5: radial-gradient(at 86% 85%, #6ee7b7 0px, transparent 50%);
+            --bg-g6: radial-gradient(at 82% 18%, #10b981 0px, transparent 50%);
+            --bg-g7: radial-gradient(at 51% 4%,  #6ee7b7 0px, transparent 50%);
+            --bg-base: linear-gradient(#34d399 0 100%);
+        }
+
+        /* RotatingText (ported from React Bits) in the workshops heading:
+           static "students & teachers" until JS upgrades it to a rotating
+           badge whose colors track the two workshop cards. */
+        .rot-badge.rot-on {
+            display: inline-flex; overflow: hidden; vertical-align: bottom;
+            padding: 0.02em 0.24em 0.1em; border-radius: 0.3em;
+            transition: background-color .5s ease, color .5s ease;
+        }
+        .rot-stage { display: inline-flex; white-space: pre; }
+        .rot-char { display: inline-block; white-space: pre; will-change: transform; }
+        .rot-badge.rot-students { background: #eef2ff; color: #4f46e5; }
+        .rot-badge.rot-teachers { background: #ecfdf5; color: #059669; }
+        .rot-badge.rot-alt { background: #f1f5f9; color: #475569; }
+        .rot-badge.rot-dam { background: #0f172a; color: #ffffff; }
+        .rot-sr {
+            position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+            overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+        }
+
+        /* Parents question chips: wraps statically, becomes a marquee when GSAP runs */
+        .chip {
+            display: inline-flex; flex: none; white-space: nowrap;
+        }
+        .chip-track { display: flex; flex-wrap: wrap; gap: 10px; }
+        .chip-dup { display: none; }
+        .chip-marquee.marquee-on { overflow: hidden;
+            -webkit-mask-image: linear-gradient(90deg, transparent, black 7%, black 93%, transparent);
+            mask-image: linear-gradient(90deg, transparent, black 7%, black 93%, transparent);
+        }
+        .marquee-on .chip-track { flex-wrap: nowrap; width: max-content; will-change: transform; }
+        .marquee-on .chip-dup { display: inline-flex; }
+
+        /* Horizontal session gallery: swipeable row by default, pinned scrub when GSAP runs */
+        .hscroll-viewport { overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -ms-overflow-style: none; }
+        .hscroll-viewport::-webkit-scrollbar { display: none; }
+        .hscroll-track { display: flex; gap: 16px; width: max-content; will-change: transform; }
+        .hscroll-card { scroll-snap-align: start; flex: 0 0 auto; }
+        .hscroll-on .hscroll-viewport { overflow: visible; scroll-snap-type: none; }
 
         .sr-only {
             position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
             overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border-width: 0;
         }
 
-        /* Alpine loads deferred; keep x-show elements hidden until it initialises */
-        [x-cloak] { display: none !important; }
+        /* ======================= Embedded AI assistant (pulsing circle) ======================= */
+        .agent-stage { display: flex; flex-direction: column; align-items: center; gap: 10px; min-width: 0; }
+
+        .pulse-wrap { position: relative; width: 176px; height: 176px; margin: 8px auto; }
+        .pulse-circle {
+            position: absolute; inset: 0; border-radius: 50%; cursor: pointer; padding: 0;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+            font-family: inherit; color: #e2e8f0;
+            /* Top layer: a white disc that grows from the centre. --fill (0..1) is
+               driven every animation frame by JS, so the filled/unfilled change is
+               one continuous morph — no fade, no slide. */
+            background:
+                radial-gradient(circle closest-side,
+                    rgba(255,255,255,.97) calc(var(--fill, 0) * 100%),
+                    rgba(255,255,255,0) calc(var(--fill, 0) * 100% + 2%)),
+                radial-gradient(circle closest-side, rgba(255,255,255,.06), rgba(255,255,255,.02));
+            border: 1px solid rgba(255,255,255,.45);
+            box-shadow:
+                0 0 calc(20px + var(--glow, 0px)) rgba(255,255,255, calc(0.16 + var(--amp, 0) * 0.9)),
+                0 0 70px rgba(129,140,248, calc(0.12 + var(--amp, 0) * 0.8));
+            transform: scale(calc(1 + var(--amp, 0)));
+            transition: border-color .4s ease;
+            will-change: transform;
+        }
+        .pulse-circle:hover { border-color: rgba(255,255,255,.9); }
+        .pulse-circle:focus-visible { outline: 2px solid #ffffff; outline-offset: 6px; }
+        .pc-label { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; }
+        .pc-sub { font-size: 11px; font-weight: 600; color: #94a3b8; letter-spacing: .02em; }
+        .pulse-ring {
+            position: absolute; inset: 0; border-radius: 50%;
+            border: 1px solid rgba(255,255,255,.38); opacity: 0; pointer-events: none;
+        }
+        .agent-timer {
+            position: absolute; top: 0; right: 0; z-index: 2;
+            font-size: 12px; font-weight: 600; color: #e2e8f0; font-variant-numeric: tabular-nums;
+            background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.22);
+            border-radius: 10px; padding: 4px 11px;
+        }
+        .pulse-wrap .pulse-ring.r1 { animation: pulse-ring 3.4s ease-out infinite; }
+        .pulse-wrap .pulse-ring.r2 { animation: pulse-ring 3.4s ease-out 1.7s infinite; }
+        .pulse-wrap.connecting .pulse-ring.r1 { animation-duration: 1.2s; }
+        .pulse-wrap.connecting .pulse-ring.r2 { animation-duration: 1.2s; animation-delay: .6s; }
+        .pulse-wrap.speaking .pulse-ring.r1,
+        .pulse-wrap.speaking .pulse-ring.r2 { animation: none; }
+        @keyframes pulse-ring {
+            0%   { transform: scale(1); opacity: .55; }
+            100% { transform: scale(1.42); opacity: 0; }
+        }
+
+        .agent-mode {
+            text-align: center; font-size: 12.5px; font-weight: 600; color: #64748b;
+            min-height: 20px; transition: color .4s ease;
+        }
+        .agent-mode.listening { color: #818cf8; }
+        .agent-mode.speaking  { color: #34d399; }
+
+        .agent-transcript {
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+            gap: 6px; width: 100%; min-height: 84px; max-height: 148px; overflow: hidden;
+            padding: 0 8px;
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0, black 36%);
+            mask-image: linear-gradient(to bottom, transparent 0, black 36%);
+        }
+        .at-msg { text-align: center; max-width: 44em; font-size: 13.5px; line-height: 1.5; user-select: text; word-break: break-word; animation: at-in .25s ease; transition: opacity .5s ease; }
+        .at-msg .who { display: block; font-size: 9px; letter-spacing: .12em; text-transform: uppercase; font-weight: 700; margin-bottom: 1px; }
+        .at-msg.agent { color: rgba(255,255,255,.82); }
+        .at-msg.agent .who { color: rgba(255,255,255,.28); }
+        .at-msg.user { color: #a5b4fc; font-weight: 500; }
+        .at-msg.user .who { color: rgba(165,180,252,.45); }
+        .at-msg.system { color: #64748b; font-size: 12px; }
+        .at-msg.old { opacity: .22; }
+        @keyframes at-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+        .agent-controls { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; max-width: 460px; }
+        .agent-round {
+            width: 42px; height: 42px; border-radius: 50%;
+            border: 1px solid #253248; background: #16233a; color: #94a3b8; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all .25s cubic-bezier(.22,1,.36,1);
+        }
+        .agent-round:hover:not(:disabled) { background: #1e3050; color: #fff; border-color: #3a5578; transform: scale(1.07); }
+        .agent-round:disabled { opacity: .3; cursor: default; }
+        .agent-round.danger { color: #f87171; border-color: rgba(248,113,113,.3); background: rgba(248,113,113,.08); }
+        .agent-round svg { width: 17px; height: 17px; stroke-width: 2; }
+
+        .agent-textbar {
+            display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0;
+            padding: 5px 5px 5px 14px;
+            background: rgba(2,6,23,.55); border: 1px solid #1e293b; border-radius: 13px;
+        }
+        .agent-textbar input {
+            flex: 1; background: none; border: none; outline: none;
+            color: #f1f5f9; font-size: 13.5px; font-family: inherit; padding: 7px 0; min-width: 0;
+        }
+        .agent-textbar input::placeholder { color: #475569; }
+        .agent-textbar input:disabled { opacity: .5; }
+        .agent-send {
+            width: 34px; height: 34px; border-radius: 9px; border: none;
+            background: #6366f1; color: #fff; cursor: pointer; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            transition: all .2s cubic-bezier(.22,1,.36,1);
+        }
+        .agent-send:hover:not(:disabled) { background: #818cf8; transform: scale(1.07); }
+        .agent-send:disabled { opacity: .35; cursor: default; }
+        .agent-send svg { width: 15px; height: 15px; stroke-width: 2; }
+
+        /* Full transcript dialog */
+        .agent-dialog-overlay {
+            position: fixed; inset: 0; z-index: 100;
+            background: rgba(15,23,42,.45); backdrop-filter: blur(6px);
+            display: none; align-items: center; justify-content: center; padding: 24px;
+        }
+        .agent-dialog-overlay.open { display: flex; }
+        .agent-dialog {
+            background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px;
+            width: min(560px, 100%); max-height: 80vh; display: flex; flex-direction: column;
+            box-shadow: 0 24px 80px rgba(15,23,42,.35);
+            animation: dialog-in .2s ease;
+        }
+        @keyframes dialog-in { from { opacity: 0; transform: scale(.96) translateY(8px); } to { opacity: 1; transform: none; } }
+        .agent-dialog-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid #eef1f5; }
+        .agent-dialog-head h3 { font-size: 14px; font-weight: 700; color: #0f172a; margin: 0; }
+        .agent-dialog-head button {
+            width: 32px; height: 32px; border-radius: 8px; border: none; background: transparent;
+            color: #94a3b8; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: all .2s ease;
+        }
+        .agent-dialog-head button:hover { background: #f1f5f9; color: #0f172a; }
+        .agent-dialog-head svg { width: 17px; height: 17px; stroke-width: 2; }
+        .agent-dialog-body { flex: 1; overflow-y: auto; padding: 16px 20px; font-size: 13px; line-height: 1.7; user-select: text; }
+        .agent-dialog-body .d-line { padding: 7px 0; border-bottom: 1px solid #f4f6f9; }
+        .agent-dialog-body .d-line:last-child { border-bottom: none; }
+        .agent-dialog-body .d-who { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 2px; color: #94a3b8; }
+        .agent-dialog-body .d-line.user .d-who { color: #6366f1; }
+        .agent-dialog-body .d-text { color: #334155; white-space: pre-wrap; word-break: break-word; }
+        .agent-dialog-body .d-line.user .d-text { color: #4338ca; }
+        .agent-dialog-foot { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 12px 20px; border-top: 1px solid #eef1f5; }
+        .agent-dialog-foot button {
+            padding: 8px 16px; border-radius: 9px; font-size: 12.5px; font-weight: 600; font-family: inherit;
+            cursor: pointer; transition: all .15s ease; display: flex; align-items: center; gap: 6px;
+        }
+        .agent-dialog-foot .btn-secondary { background: transparent; border: 1px solid #e2e8f0; color: #64748b; }
+        .agent-dialog-foot .btn-secondary:hover { background: #f8fafc; color: #0f172a; }
+        .agent-dialog-foot .btn-primary { background: #0f172a; border: 1px solid transparent; color: #fff; }
+        .agent-dialog-foot .btn-primary:hover { background: #334155; }
+        .agent-dialog-foot svg { width: 14px; height: 14px; stroke-width: 2; }
 
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after {
@@ -220,657 +492,1014 @@
                 transition-duration: .01ms !important;
                 scroll-behavior: auto !important;
             }
-            .reveal { opacity: 1 !important; transform: none !important; }
         }
 
         @media print {
-            nav, #particle-canvas, .elevenlabs-glow-wrapper, elevenlabs-convai { display: none !important; }
+            header, #particle-canvas, .agent-stage, .agent-dialog-overlay { display: none !important; }
             body { background: #fff !important; }
             section { page-break-inside: avoid; }
         }
     </style>
 </head>
-<body class="bg-white font-sans text-slate-900 antialiased selection:bg-slate-900 selection:text-white overflow-x-hidden">
+<body class="bg-white font-sans text-slate-900 antialiased overflow-x-hidden">
 
 <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-slate-900 focus:text-white focus:rounded-lg">Skip to main content</a>
 
-<!-- ============================= NAV ============================= -->
-<nav class="fixed top-0 z-50 w-full border-b border-slate-100 bg-white/80 backdrop-blur-xl"
-     x-data="{ mobileMenuOpen: false }" role="navigation" aria-label="Main navigation">
-    <div class="container mx-auto flex h-[68px] items-center justify-between px-6">
-        <a href="#" class="flex items-center gap-2.5 font-bold tracking-tight hover:opacity-80 transition-opacity" aria-label="Dimaag aur Machine — home">
-            <img src="workshoplogo.png" alt="" class="h-7 w-auto" style="mix-blend-mode: multiply;">
-            <span class="text-base">Dimaag aur Machine</span>
+<!-- ============================= HEADER ============================= -->
+<header class="sticky top-0 z-50 bg-white border-b border-slate-100" role="banner">
+    <div class="max-w-[1180px] mx-auto px-6 py-3.5 flex items-center gap-6">
+        <a href="#top" class="flex items-center gap-2.5 hover:opacity-80 transition-opacity" aria-label="Dimaag aur Machine — home">
+            <img src="workshoplogo.png" alt="" class="h-8 w-auto" style="mix-blend-mode: multiply;">
+            <span class="font-extrabold text-base tracking-tight">Dimaag aur Machine</span>
         </a>
+        <div class="flex-1"></div>
 
-        <div class="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-500">
-            <a href="#program" class="hover:text-slate-900 transition-colors">Program</a>
-            <a href="#how-it-runs" class="hover:text-slate-900 transition-colors">How it runs</a>
-            <a href="#instructor" class="hover:text-slate-900 transition-colors">Who runs it</a>
-            <a href="#parents" class="hover:text-slate-900 transition-colors">For parents</a>
-        </div>
+        <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600" aria-label="Main navigation">
+            <a href="#workshops"  class="hover:text-slate-900 transition-colors">Workshops</a>
+            <a href="#process"    class="hover:text-slate-900 transition-colors">How it runs</a>
+            <a href="#parents"    class="hover:text-slate-900 transition-colors">For parents</a>
+            <a href="#compare"    class="hover:text-slate-900 transition-colors">Compare</a>
+            <a href="#lead"       class="hover:text-slate-900 transition-colors">Instructor</a>
+            <a href="#book"       class="bg-slate-900 text-white px-4.5 py-2.5 rounded-[10px] text-sm font-semibold whitespace-nowrap hover:bg-slate-700 transition-colors" style="padding: 11px 18px;">Book a discussion</a>
+        </nav>
 
-        <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden p-2 -mr-2 rounded-lg hover:bg-slate-100 transition-colors" aria-label="Toggle menu" :aria-expanded="mobileMenuOpen">
-            <i x-show="!mobileMenuOpen" data-lucide="menu" class="h-6 w-6"></i>
-            <i x-show="mobileMenuOpen" data-lucide="x" class="h-6 w-6"></i>
-        </button>
-
-        <a href="#book" class="hidden md:inline-flex h-10 items-center gap-2 rounded-full bg-slate-900 px-5 text-sm font-semibold text-white transition-all hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2">
-            Book a 30-min call
-        </a>
+        <button id="menu-btn" class="md:hidden w-[46px] h-[46px] rounded-xl border border-slate-200 bg-white text-lg leading-none flex items-center justify-center hover:bg-slate-50 transition-colors" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">&#9776;</button>
     </div>
 
-    <div x-show="mobileMenuOpen" x-cloak
-         x-transition:enter="transition ease-out duration-200"
-         x-transition:enter-start="opacity-0 -translate-y-2"
-         x-transition:enter-end="opacity-100 translate-y-0"
-         class="md:hidden bg-white border-t border-slate-100 px-6 py-4">
-        <div class="flex flex-col gap-1">
-            <a href="#program"     @click="mobileMenuOpen=false" class="text-slate-600 hover:text-slate-900 font-semibold py-2.5">Program</a>
-            <a href="#how-it-runs" @click="mobileMenuOpen=false" class="text-slate-600 hover:text-slate-900 font-semibold py-2.5">How it runs</a>
-            <a href="#instructor"  @click="mobileMenuOpen=false" class="text-slate-600 hover:text-slate-900 font-semibold py-2.5">Who runs it</a>
-            <a href="#parents"     @click="mobileMenuOpen=false" class="text-slate-600 hover:text-slate-900 font-semibold py-2.5">For parents</a>
-            <a href="#book" @click="mobileMenuOpen=false" class="mt-3 inline-flex items-center justify-center gap-2 h-12 rounded-full bg-slate-900 text-white font-semibold">
-                Book a 30-min call
-            </a>
-        </div>
-    </div>
-</nav>
+    <nav id="mobile-menu" class="hidden md:!hidden border-t border-slate-100 px-6 pt-3 pb-5 flex-col gap-1 text-base font-medium" aria-label="Mobile navigation">
+        <a href="#workshops" class="menu-link block text-slate-700 py-3 border-b border-slate-50">Workshops</a>
+        <a href="#process"   class="menu-link block text-slate-700 py-3 border-b border-slate-50">How it runs</a>
+        <a href="#parents"   class="menu-link block text-slate-700 py-3 border-b border-slate-50">For parents</a>
+        <a href="#compare"   class="menu-link block text-slate-700 py-3 border-b border-slate-50">Compare</a>
+        <a href="#lead"      class="menu-link block text-slate-700 py-3 border-b border-slate-50">Instructor</a>
+        <a href="#book"      class="menu-link block bg-slate-900 text-white text-center py-3.5 rounded-xl font-semibold mt-3">Book a discussion</a>
+    </nav>
+</header>
 
 <main id="main-content" role="main">
 
 <!-- ============================= 1. HERO ============================= -->
-<section id="hero" class="relative overflow-hidden bg-white pt-28 pb-12 md:pt-36 md:pb-16">
+<section id="top" class="relative overflow-hidden bg-white">
     <canvas id="particle-canvas" aria-hidden="true"></canvas>
 
-    <div class="container mx-auto px-6 max-w-6xl relative z-10">
-        <div class="grid md:grid-cols-12 gap-10 md:gap-12 items-center" x-data="{ show:false }" x-init="setTimeout(()=>show=true,80)">
+    <div class="max-w-[1180px] mx-auto px-6 pt-20 pb-16 relative z-10">
+        <div class="grid md:grid-cols-2 gap-14 items-center">
 
             <!-- Left: the pitch -->
-            <div class="md:col-span-7">
-                <div class="reveal" :class="show && 'active'">
-                    <p class="text-xs font-semibold uppercase tracking-[0.15em] text-slate-400 mb-5">
-                        Nashik &middot; Classes 9–12 &middot; CBSE, ICSE, SSC, IB
-                    </p>
+            <div data-hero="1">
+                <div class="inline-flex items-center gap-2 border border-slate-200 bg-slate-50 text-slate-600 rounded-full px-3.5 py-1.5 text-[13px] font-semibold mb-6">
+                    <span class="w-1.5 h-1.5 rounded-full bg-green-600"></span>
+                    <span><span id="hero-count">500</span>+ students taught over the past 2 years</span>
                 </div>
 
-                <h1 class="reveal d1 text-4xl md:text-[3.25rem] font-extrabold tracking-tight leading-[1.08] mb-4" :class="show && 'active'">
-                    <span class="shimmer-text">AI literacy, taught inside your school.</span>
+                <h1 class="text-[clamp(38px,5vw,60px)] leading-[1.05] tracking-[-0.035em] font-extrabold mb-5" style="text-wrap: balance;">
+                    <span class="shimmer-text" id="hero-h1">Degree nahi.<br>Direction chahiye.</span>
                 </h1>
 
-                <p class="reveal d1 text-lg font-medium text-slate-500 mb-5" :class="show && 'active'">
-                    Degree nahi. Direction chahiye.
+                <p class="text-[19px] leading-[1.55] text-slate-600 mb-4 max-w-[32em]">
+                    A structured AI program for Class 9&ndash;12 students and their teachers &mdash; taught inside
+                    school hours, with a school teacher present in every session.
                 </p>
+                <p class="text-base text-slate-500 mb-8 max-w-[32em]">No syllabus disruption. No homework. No unsupervised AI.</p>
 
-                <p class="reveal d2 text-lg text-slate-600 leading-relaxed mb-7 max-w-xl" :class="show && 'active'">
-                    A <strong class="text-slate-900 font-semibold">2-day or 3-day workshop</strong> for Classes 9 to 12.
-                    It runs during school hours, with one of your teachers in the room — no syllabus disruption,
-                    no homework, and no cost to the school.
-                </p>
-
-                <!-- Primary + secondary action -->
-                <div class="reveal d2 flex flex-col sm:flex-row gap-3 mb-7" :class="show && 'active'">
+                <div class="flex flex-wrap gap-3 mb-5">
                     <a href="#book" data-ring-hover
                        aria-label="Book a 30-minute discussion about the Dimaag aur Machine program"
-                       class="group inline-flex items-center justify-center gap-2 rounded-full bg-slate-900 px-7 py-3.5 font-semibold text-white shadow-xl shadow-slate-200 transition-all hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2">
-                        Book a 30-min discussion
-                        <i data-lucide="arrow-right" class="h-4 w-4 transition-transform group-hover:translate-x-1"></i>
+                       class="bg-slate-900 text-white px-6 py-[15px] rounded-xl font-semibold text-[15px] hover:bg-slate-700 transition-colors shadow-xl shadow-slate-200">
+                        Book a 30-min school discussion
                     </a>
-                    <a href="program-brief.html"
-                       class="group inline-flex items-center justify-center gap-2 rounded-full border border-slate-300 bg-white px-7 py-3.5 font-semibold text-slate-700 transition-all hover:border-slate-900 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2">
-                        <i data-lucide="file-text" class="h-4 w-4"></i>
-                        Read the program brief
+                    <a href="#parents"
+                       class="border border-slate-200 bg-white text-slate-900 px-5 py-[14px] rounded-xl font-semibold text-[15px] hover:bg-slate-50 transition-colors">
+                        I'm a parent &mdash; safety &amp; outcomes
                     </a>
                 </div>
 
-                <!-- Three proof chips -->
-                <ul class="reveal d3 flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-600" :class="show && 'active'">
-                    <li class="flex items-center gap-2"><i data-lucide="clock" class="h-4 w-4 text-slate-400"></i> Inside school hours</li>
-                    <li class="flex items-center gap-2"><i data-lucide="user-check" class="h-4 w-4 text-slate-400"></i> Your teacher present throughout</li>
-                    <li class="flex items-center gap-2"><i data-lucide="indian-rupee" class="h-4 w-4 text-slate-400"></i> No cost to the school</li>
-                </ul>
+                <p class="text-[13px] text-slate-400">Most schools finalize their decision within the first discussion.</p>
             </div>
 
-            <!-- Right: the person behind it -->
-            <div class="md:col-span-5">
-                <figure class="reveal d2 relative mx-auto max-w-[300px] md:max-w-none" :class="show && 'active'">
-                    <img src="amaan_shaikh_bw.jpg" alt="Amaan Shaikh, who designs and delivers every session"
-                         width="816" height="1301"
-                         class="w-full rounded-2xl object-cover shadow-2xl shadow-slate-300/60 ring-1 ring-slate-900/5">
-                    <figcaption class="absolute -bottom-5 left-3 right-3 rounded-xl border border-slate-200 bg-white/95 backdrop-blur px-4 py-3 shadow-lg">
-                        <p class="font-bold text-slate-900 leading-tight">Amaan Shaikh</p>
-                        <p class="text-[13px] text-slate-500 leading-snug mt-0.5">
-                            Software Development Engineer, Germany<br>
-                            M.Sc. Computer Science, University of Konstanz
-                        </p>
-                    </figcaption>
-                </figure>
+            <!-- Right: the person behind it. Outer div takes the GSAP entrance/parallax
+                 (translate), inner card takes the vanilla-tilt hover (rotate) — two
+                 separate transforms so the libraries never fight over one element. -->
+            <div data-hero-parallax>
+            <div class="relative bg-[#0b1220] rounded-[26px] overflow-hidden min-h-[540px] flex items-end shadow-[0_30px_60px_-30px_rgba(15,23,42,0.45)]" id="hero-tilt">
+                <img src="amaan_shaikh_inst.jpg" alt="Amaan Shaikh, program lead"
+                     width="1224" height="1951"
+                     class="absolute inset-0 w-full h-full object-cover block"
+                     style="object-position: 50% 55%; filter: brightness(1.25) contrast(1.05);">
+                <div class="absolute inset-0 pointer-events-none" style="background: linear-gradient(to bottom, rgba(11,18,32,0) 40%, rgba(11,18,32,0.72) 72%, rgba(11,18,32,0.94) 100%);"></div>
+                <div class="relative p-8 w-full flex flex-col gap-[18px]">
+                    <div>
+                        <div class="text-[11px] font-bold tracking-[0.14em] uppercase text-slate-400 mb-2">Program lead</div>
+                        <div class="text-[26px] font-extrabold tracking-[-0.03em] text-white">Amaan Shaikh</div>
+                        <div class="text-sm text-slate-300 mt-2 max-w-[30em]">Builds AI systems for companies in Germany &mdash; and teaches the same craft inside Indian classrooms.</div>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="border border-slate-400/30 text-slate-200 rounded-full px-[13px] py-[7px] text-xs font-semibold bg-slate-900/40">SDE in Germany</span>
+                        <span class="border border-slate-400/30 text-slate-200 rounded-full px-[13px] py-[7px] text-xs font-semibold bg-slate-900/40">M.Sc. CS, Konstanz</span>
+                    </div>
+                </div>
+            </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Board strip -->
-<div class="border-y border-slate-100 bg-slate-50/60 py-6 mt-6">
-    <div class="container mx-auto px-6 max-w-6xl flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8">
-        <p class="text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-400">Designed for all major boards</p>
-        <div class="flex flex-wrap items-center justify-center gap-7">
-            <img src="Board Logos/CBSE_new_logo.svg" alt="CBSE"        class="h-8 w-auto object-contain grayscale opacity-55">
-            <img src="Board Logos/CISCE_logo.png"    alt="ICSE"        class="h-8 w-auto object-contain grayscale opacity-55">
-            <img src="Board Logos/IB.png"            alt="IB"          class="h-8 w-auto object-contain grayscale opacity-55">
-            <img src="Board Logos/SSC.webp"          alt="State Board" class="h-8 w-auto object-contain grayscale opacity-55">
-        </div>
-    </div>
-</div>
-
-<!-- ============================= 2. PROGRAM ============================= -->
-<section id="program" class="py-16 md:py-20 bg-white">
-    <div class="container mx-auto px-6 max-w-6xl">
-
-        <div class="max-w-2xl mb-10" x-data="{s:false}" x-intersect.once="s=true">
-            <h2 class="reveal text-3xl md:text-4xl font-semibold tracking-tight mb-3" :class="s && 'active'">Two modules. One visit.</h2>
-            <p class="reveal d1 text-slate-500 text-lg" :class="s && 'active'">
-                Students and teachers are trained separately, within the same block of days.
-            </p>
-        </div>
-
-        <div class="grid md:grid-cols-2 gap-6" x-data="{s:false}" x-intersect.once="s=true">
-
-            <!-- Students -->
-            <div class="reveal rounded-2xl border border-slate-200 bg-white p-7 md:p-8" :class="s && 'active'">
-                <div class="flex items-center gap-3 mb-5">
-                    <span class="inline-flex px-2.5 py-1 rounded-full bg-slate-900 text-white text-[11px] font-semibold tracking-wide">FOR STUDENTS</span>
-                    <span class="text-xs text-slate-400 font-medium">Classes 9–12 &middot; all streams</span>
-                </div>
-
-                <h3 class="text-xl font-bold mb-1.5"><span class="shimmer-text">AI Sense&trade;</span></h3>
-                <p class="text-slate-500 text-sm mb-6">Understanding AI. Using it right. Thinking beyond it.</p>
-
-                <div class="flex flex-wrap gap-2 mb-6">
-                    <span class="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 text-sm font-medium">Core — 2 days</span>
-                    <span class="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 text-sm font-medium">Applied — 3 days</span>
-                </div>
-
-                <ul class="space-y-2.5 text-sm text-slate-600 mb-6">
-                    <li class="flex gap-2.5"><i data-lucide="check" class="h-4 w-4 text-slate-400 mt-0.5 shrink-0"></i>How tools like ChatGPT, Claude and Gemini actually work</li>
-                    <li class="flex gap-2.5"><i data-lucide="check" class="h-4 w-4 text-slate-400 mt-0.5 shrink-0"></i>Prompt engineering — how to ask well, and how to judge the answer</li>
-                    <li class="flex gap-2.5"><i data-lucide="check" class="h-4 w-4 text-slate-400 mt-0.5 shrink-0"></i>Where AI fails and hallucinates, and when not to trust it</li>
-                    <li class="flex gap-2.5"><i data-lucide="check" class="h-4 w-4 text-slate-400 mt-0.5 shrink-0"></i>Using AI to study — not to shortcut thinking</li>
-                    <li class="flex gap-2.5"><i data-lucide="check" class="h-4 w-4 text-slate-400 mt-0.5 shrink-0"></i>Ethics, online safety, and the AI career landscape</li>
-                    <li class="flex gap-2.5"><i data-lucide="check" class="h-4 w-4 text-slate-400 mt-0.5 shrink-0"></i>The 3-day version adds a complete hands-on project</li>
-                </ul>
-
-                <p class="text-sm text-slate-700 pt-4 border-t border-slate-100">
-                    50–200 students per batch. Every student leaves with a school-endorsed participation certificate.
-                </p>
-            </div>
-
-            <!-- Teachers -->
-            <div class="reveal d1 rounded-2xl border border-slate-200 bg-white p-7 md:p-8" :class="s && 'active'">
-                <div class="flex items-center gap-3 mb-5">
-                    <span class="inline-flex px-2.5 py-1 rounded-full bg-slate-600 text-white text-[11px] font-semibold tracking-wide">FOR TEACHERS</span>
-                    <span class="text-xs text-slate-400 font-medium">Department-wise &middot; 2–6 hrs per subject</span>
-                </div>
-
-                <h3 class="text-xl font-bold mb-1.5"><span class="shimmer-text">AI Made Practical&trade;</span></h3>
-                <p class="text-slate-500 text-sm mb-6">Subject Edition. Less effort, same syllabus.</p>
-
-                <div class="flex flex-wrap gap-1.5 mb-6">
-                    <span class="px-2.5 py-1 rounded bg-slate-100 text-slate-600 text-xs">Mathematics</span>
-                    <span class="px-2.5 py-1 rounded bg-slate-100 text-slate-600 text-xs">Physics</span>
-                    <span class="px-2.5 py-1 rounded bg-slate-100 text-slate-600 text-xs">Chemistry</span>
-                    <span class="px-2.5 py-1 rounded bg-slate-100 text-slate-600 text-xs">Biology</span>
-                    <span class="px-2.5 py-1 rounded bg-slate-100 text-slate-600 text-xs">Languages &amp; Humanities</span>
-                </div>
-
-                <ul class="space-y-2.5 text-sm text-slate-600 mb-6">
-                    <li class="flex gap-2.5"><i data-lucide="check" class="h-4 w-4 text-slate-400 mt-0.5 shrink-0"></i>Turn an existing chapter into quizzes, flashcards, worksheets and revision material</li>
-                    <li class="flex gap-2.5"><i data-lucide="check" class="h-4 w-4 text-slate-400 mt-0.5 shrink-0"></i>Built around each teacher's own subject, not generic AI theory</li>
-                    <li class="flex gap-2.5"><i data-lucide="check" class="h-4 w-4 text-slate-400 mt-0.5 shrink-0"></i>What they produce is reusable year after year</li>
-                </ul>
-
-                <div class="rounded-xl bg-emerald-50 border border-emerald-100 p-4">
-                    <p class="text-[11px] font-semibold uppercase tracking-wider text-emerald-700 mb-2">What teachers are not asked to do</p>
-                    <ul class="space-y-1.5 text-sm text-emerald-900">
-                        <li class="flex gap-2"><i data-lucide="minus" class="h-4 w-4 text-emerald-600 mt-0.5 shrink-0"></i>No preparation before the sessions</li>
-                        <li class="flex gap-2"><i data-lucide="minus" class="h-4 w-4 text-emerald-600 mt-0.5 shrink-0"></i>No evaluation of teachers, no tech background needed</li>
-                        <li class="flex gap-2"><i data-lucide="minus" class="h-4 w-4 text-emerald-600 mt-0.5 shrink-0"></i>Parent queries come to us, never through school staff</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <!-- What this is not -->
-        <div class="mt-6 rounded-xl border border-slate-200 bg-slate-50 px-5 py-4" x-data="{s:false}" x-intersect.once="s=true">
-            <div class="reveal flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-slate-500" :class="s && 'active'">
-                <span class="font-semibold text-slate-700">To be clear, this is not:</span>
-                <span class="flex items-center gap-1.5"><i data-lucide="x" class="h-3.5 w-3.5 text-slate-400"></i>a coding class</span>
-                <span class="flex items-center gap-1.5"><i data-lucide="x" class="h-3.5 w-3.5 text-slate-400"></i>exam coaching</span>
-                <span class="flex items-center gap-1.5"><i data-lucide="x" class="h-3.5 w-3.5 text-slate-400"></i>an online course</span>
-                <span class="flex items-center gap-1.5"><i data-lucide="x" class="h-3.5 w-3.5 text-slate-400"></i>a subscription</span>
-            </div>
+<!-- ============================= 2. BOARD STRIP ============================= -->
+<section class="border-y border-slate-100 bg-slate-50" aria-label="Education boards">
+    <div class="max-w-[1180px] mx-auto px-6 py-[22px] flex items-center gap-8 flex-wrap">
+        <div class="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-400">Designed for all major boards</div>
+        <div class="flex items-center gap-[30px] flex-wrap opacity-70">
+            <img src="Board Logos/CBSE_new_logo.svg" alt="CBSE"                    class="h-9 w-auto block">
+            <img src="Board Logos/CISCE_logo.png"    alt="CISCE / ICSE"            class="h-[34px] w-auto block">
+            <img src="Board Logos/IB.png"            alt="IB"                      class="h-7 w-auto block">
+            <img src="Board Logos/SSC.webp"          alt="Maharashtra State Board" class="h-8 w-auto block">
         </div>
     </div>
 </section>
 
-<!-- ============================= 3. HOW IT RUNS ============================= -->
-<section id="how-it-runs" class="py-16 md:py-20 bg-slate-50 border-y border-slate-200">
-    <div class="container mx-auto px-6 max-w-5xl">
-
-        <div class="max-w-2xl mb-10" x-data="{s:false}" x-intersect.once="s=true">
-            <h2 class="reveal text-3xl md:text-4xl font-semibold tracking-tight mb-3" :class="s && 'active'">How it runs in your school</h2>
-            <p class="reveal d1 text-slate-500 text-lg" :class="s && 'active'">
-                This is the whole process. There are no variations.
-            </p>
+<!-- ============================= 3. TRUST BADGES ============================= -->
+<section class="max-w-[1180px] mx-auto px-6 pt-14 pb-2" aria-label="Program guarantees">
+    <div class="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3.5">
+        <div class="gs-item border border-slate-200 rounded-[14px] p-5">
+            <div class="text-[15px] font-bold mb-1">Runs inside school</div>
+            <div class="text-sm text-slate-500">Within the existing timetable.</div>
         </div>
+        <div class="gs-item border border-slate-200 rounded-[14px] p-5">
+            <div class="text-[15px] font-bold mb-1">Teacher always present</div>
+            <div class="text-sm text-slate-500">Full school oversight, every class.</div>
+        </div>
+        <div class="gs-item border border-slate-200 rounded-[14px] p-5">
+            <div class="text-[15px] font-bold mb-1">No syllabus disruption</div>
+            <div class="text-sm text-slate-500">Nothing replaced or postponed.</div>
+        </div>
+        <div class="gs-item border border-slate-200 rounded-[14px] p-5">
+            <div class="text-[15px] font-bold mb-1">No homework</div>
+            <div class="text-sm text-slate-500">Nothing added to the evening load.</div>
+        </div>
+        <div class="gs-item border border-slate-200 rounded-[14px] p-5">
+            <div class="text-[15px] font-bold mb-1">No unsupervised AI</div>
+            <div class="text-sm text-slate-500">All tool use happens in class.</div>
+        </div>
+    </div>
+</section>
 
-        <ol class="grid md:grid-cols-3 gap-5 mb-8" x-data="{s:false}" x-intersect.once="s=true">
-            <li class="reveal rounded-2xl bg-white border border-slate-200 p-6" :class="s && 'active'">
-                <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-white text-sm font-bold mb-4">1</span>
-                <p class="font-semibold text-slate-900 mb-2">You approve the batch</p>
-                <p class="text-sm text-slate-600 leading-relaxed">
-                    Management reviews and sanctions the program. The school provides a venue and a time slot,
-                    and informs parents. Enrolment is each family's choice.
-                </p>
+<!-- ============================= 4. PROCESS ============================= -->
+<section id="process" class="max-w-[1180px] mx-auto px-6 py-[76px]">
+    <div class="grid md:grid-cols-2 gap-14">
+        <div class="gs-item">
+            <div class="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-400 mb-3.5">How it works</div>
+            <h2 class="text-[clamp(28px,3.4vw,40px)] leading-[1.12] tracking-[-0.03em] font-extrabold mb-4">How this runs in your school</h2>
+            <p class="text-slate-500 mb-6 max-w-[26em]">A simple, predictable process. This is exactly how the program runs &mdash; there are no variations.</p>
+            <div class="border border-slate-200 bg-slate-50 rounded-[14px] px-5 py-[18px] text-[15px] text-slate-700 max-w-[26em]">
+                The entire process is managed by us. The school only provides a venue and a time slot &mdash; at zero cost.
+            </div>
+        </div>
+        <ol class="gs-item list-none m-0 p-0 flex flex-col">
+            <li class="grid grid-cols-[34px_1fr] gap-4 py-[18px] border-t border-slate-100">
+                <span class="text-[13px] font-bold text-slate-400 pt-[3px]">01</span>
+                <span class="text-[15px]"><b class="font-bold">School approves the batch.</b> <span class="text-slate-500">Management reviews the program. No cost to the school.</span></span>
             </li>
-            <li class="reveal d1 rounded-2xl bg-white border border-slate-200 p-6" :class="s && 'active'">
-                <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-white text-sm font-bold mb-4">2</span>
-                <p class="font-semibold text-slate-900 mb-2">We run it in school hours</p>
-                <p class="text-sm text-slate-600 leading-relaxed">
-                    Two or three days, a maximum of four hours a day. One of your teachers is present in every
-                    session, and students never use AI tools unsupervised. Taught in a mix of English and Hindi.
-                </p>
+            <li class="grid grid-cols-[34px_1fr] gap-4 py-[18px] border-t border-slate-100">
+                <span class="text-[13px] font-bold text-slate-400 pt-[3px]">02</span>
+                <span class="text-[15px]"><b class="font-bold">Parents are informed by the school.</b> <span class="text-slate-500">Enrolment stays optional and parent-funded.</span></span>
             </li>
-            <li class="reveal d2 rounded-2xl bg-white border border-slate-200 p-6" :class="s && 'active'">
-                <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-emerald-600 text-white text-sm font-bold mb-4">3</span>
-                <p class="font-semibold text-slate-900 mb-2">It ends</p>
-                <p class="text-sm text-slate-600 leading-relaxed">
-                    Every student receives a school-endorsed participation certificate. The program is one-time:
-                    no subscription, no upsell, and no follow-up program to decline later.
-                </p>
+            <li class="grid grid-cols-[34px_1fr] gap-4 py-[18px] border-t border-slate-100">
+                <span class="text-[13px] font-bold text-slate-400 pt-[3px]">03</span>
+                <span class="text-[15px]"><b class="font-bold">Sessions run during school hours.</b> <span class="text-slate-500">Fits the timetable without touching syllabus time.</span></span>
+            </li>
+            <li class="grid grid-cols-[34px_1fr] gap-4 py-[18px] border-t border-slate-100">
+                <span class="text-[13px] font-bold text-slate-400 pt-[3px]">04</span>
+                <span class="text-[15px]"><b class="font-bold">A school teacher is present in every class.</b> <span class="text-slate-500">Supervision is never handed over to us.</span></span>
+            </li>
+            <li class="grid grid-cols-[34px_1fr] gap-4 py-[18px] border-t border-slate-100">
+                <span class="text-[13px] font-bold text-slate-400 pt-[3px]">05</span>
+                <span class="text-[15px]"><b class="font-bold">Students practise under supervision.</b> <span class="text-slate-500">All AI use happens in class. No unsupervised internet access.</span></span>
+            </li>
+            <li class="grid grid-cols-[34px_1fr] gap-4 py-[18px] border-t border-slate-100">
+                <span class="text-[13px] font-bold text-slate-400 pt-[3px]">06</span>
+                <span class="text-[15px]"><b class="font-bold">Certificate issued.</b> <span class="text-slate-500">School-endorsed participation certificate for each student.</span></span>
+            </li>
+            <li class="grid grid-cols-[34px_1fr] gap-4 py-[18px] border-y border-slate-100">
+                <span class="text-[13px] font-bold text-slate-400 pt-[3px]">07</span>
+                <span class="text-[15px]"><b class="font-bold">Program ends.</b> <span class="text-slate-500">One-time program. No subscriptions, no follow-ups, no upsells.</span></span>
             </li>
         </ol>
-
-        <!-- The numbers, stated plainly (replaces the old scarcity box) -->
-        <div class="rounded-2xl border border-slate-200 bg-white p-6 md:p-8" x-data="{s:false}" x-intersect.once="s=true">
-            <div class="reveal" :class="s && 'active'">
-                <h3 class="font-semibold text-slate-900 mb-5 flex items-center gap-2">
-                    <i data-lucide="receipt" class="h-5 w-5 text-slate-400"></i>
-                    The numbers, plainly
-                </h3>
-                <dl class="grid sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-5 text-sm">
-                    <div>
-                        <dt class="text-slate-400 font-medium mb-1">Student program, 2 days</dt>
-                        <dd class="text-slate-900 font-semibold text-base">&#8377;1,200 – &#8377;1,500</dd>
-                        <dd class="text-slate-500 text-[13px] mt-0.5">per student</dd>
-                    </div>
-                    <div>
-                        <dt class="text-slate-400 font-medium mb-1">Student program, 3 days</dt>
-                        <dd class="text-slate-900 font-semibold text-base">up to &#8377;1,700</dd>
-                        <dd class="text-slate-500 text-[13px] mt-0.5">per student</dd>
-                    </div>
-                    <div>
-                        <dt class="text-slate-400 font-medium mb-1">Cost to the school</dt>
-                        <dd class="text-slate-900 font-semibold text-base">Nothing</dd>
-                        <dd class="text-slate-500 text-[13px] mt-0.5">student fees are paid by parents</dd>
-                    </div>
-                    <div>
-                        <dt class="text-slate-400 font-medium mb-1">Batch size</dt>
-                        <dd class="text-slate-900 font-semibold text-base">50 – 200</dd>
-                        <dd class="text-slate-500 text-[13px] mt-0.5">students per batch</dd>
-                    </div>
-                </dl>
-                <p class="mt-5 pt-4 border-t border-slate-100 text-sm text-slate-500">
-                    The teacher module is the one thing billed to the school, and it is quoted separately based on
-                    how many departments take part. Everything else — content, facilitation, materials and
-                    post-session parent queries — is handled by us.
-                </p>
-            </div>
-        </div>
     </div>
 </section>
 
-<!-- ============================= 4. COMPARISON ============================= -->
-<section id="compare" class="py-16 md:py-20 bg-white">
-    <div class="container mx-auto px-6 max-w-5xl">
-
-        <div class="max-w-2xl mb-10" x-data="{s:false}" x-intersect.once="s=true">
-            <h2 class="reveal text-3xl md:text-4xl font-semibold tracking-tight mb-3" :class="s && 'active'">Compare before you decide</h2>
-            <p class="reveal d1 text-slate-500 text-lg" :class="s && 'active'">
-                The alternatives parents in Nashik are already considering, and where this differs.
-            </p>
+<!-- ============================= 5. WORKSHOPS ============================= -->
+<section id="workshops" class="bg-slate-50 border-y border-slate-100">
+    <div class="max-w-[1180px] mx-auto px-6 py-[76px]">
+        <div class="gs-item">
+            <div class="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-400 mb-3.5">Our workshops</div>
+            <h2 class="text-[clamp(28px,3.4vw,40px)] leading-[1.12] tracking-[-0.03em] font-extrabold mb-3">One program for <span id="rot-host" class="rot-badge">students &amp; teachers</span>.</h2>
+            <p class="text-slate-500 mb-10 max-w-[36em]">Not generic AI courses. Structured, practical and supervised &mdash; both running under the same in-school safety standards.</p>
         </div>
 
-        <div class="rounded-2xl border border-slate-200 overflow-hidden" x-data="{s:false}" x-intersect.once="s=true">
-            <div class="reveal" :class="s && 'active'">
-
-                <!-- Column headers: desktop only -->
-                <div class="hidden md:grid md:grid-cols-[1.1fr_1fr_1fr_1.25fr] bg-slate-50 border-b border-slate-200 text-sm">
-                    <div class="px-5 py-3.5 font-semibold text-slate-700">&nbsp;</div>
-                    <div class="px-5 py-3.5 font-medium text-slate-400">Online videos</div>
-                    <div class="px-5 py-3.5 font-medium text-slate-400">Coding centres</div>
-                    <div class="px-5 py-3.5 font-semibold text-slate-900 bg-white">Dimaag aur Machine</div>
+        <div class="grid md:grid-cols-2 gap-5">
+            <!-- Students -->
+            <article id="card-sense" class="gs-item bg-white border border-slate-200 rounded-[20px] p-[30px] flex flex-col gap-[22px]">
+                <div>
+                    <div class="inline-block text-[11px] font-bold tracking-[0.1em] uppercase text-slate-600 bg-slate-100 rounded-full px-3 py-[5px] mb-4">For students &middot; Class 9&ndash;12</div>
+                    <h3 class="text-[26px] font-extrabold tracking-[-0.03em] mb-2"><span class="shimmer-text">AI Sense&trade;</span></h3>
+                    <p class="text-slate-600 m-0">Understanding AI. Using it right. Thinking beyond it.</p>
                 </div>
-
-                <!-- Row 1 -->
-                <div class="md:grid md:grid-cols-[1.1fr_1fr_1fr_1.25fr] border-b border-slate-200 text-sm">
-                    <div class="px-5 pt-5 pb-2 md:py-5 font-semibold text-slate-900">Who teaches it</div>
-                    <div class="px-5 py-2 md:py-5 text-slate-500"><span class="md:hidden text-slate-400 font-medium">Online videos — </span>Unknown creators, no accountability</div>
-                    <div class="px-5 py-2 md:py-5 text-slate-500"><span class="md:hidden text-slate-400 font-medium">Coding centres — </span>Recent graduates, trained in programming</div>
-                    <div class="px-5 py-2 pb-5 md:py-5 font-medium text-slate-900 md:bg-slate-50"><span class="md:hidden text-slate-400 font-medium">Dimaag aur Machine — </span>A working engineer who builds AI systems in Germany</div>
-                </div>
-
-                <!-- Row 2 -->
-                <div class="md:grid md:grid-cols-[1.1fr_1fr_1fr_1.25fr] border-b border-slate-200 text-sm">
-                    <div class="px-5 pt-5 pb-2 md:py-5 font-semibold text-slate-900">When it happens</div>
-                    <div class="px-5 py-2 md:py-5 text-slate-500"><span class="md:hidden text-slate-400 font-medium">Online videos — </span>Whenever the student remembers</div>
-                    <div class="px-5 py-2 md:py-5 text-slate-500"><span class="md:hidden text-slate-400 font-medium">Coding centres — </span>Evenings and weekends, on top of school</div>
-                    <div class="px-5 py-2 pb-5 md:py-5 font-medium text-slate-900 md:bg-slate-50"><span class="md:hidden text-slate-400 font-medium">Dimaag aur Machine — </span>Inside school hours. Nothing added to the day.</div>
-                </div>
-
-                <!-- Row 3 -->
-                <div class="md:grid md:grid-cols-[1.1fr_1fr_1fr_1.25fr] border-b border-slate-200 text-sm">
-                    <div class="px-5 pt-5 pb-2 md:py-5 font-semibold text-slate-900">Who is supervising</div>
-                    <div class="px-5 py-2 md:py-5 text-slate-500"><span class="md:hidden text-slate-400 font-medium">Online videos — </span>Nobody. Unsupervised internet access.</div>
-                    <div class="px-5 py-2 md:py-5 text-slate-500"><span class="md:hidden text-slate-400 font-medium">Coding centres — </span>Supervised, but not for AI safety</div>
-                    <div class="px-5 py-2 pb-5 md:py-5 font-medium text-slate-900 md:bg-slate-50"><span class="md:hidden text-slate-400 font-medium">Dimaag aur Machine — </span>Your teacher in the room. Ethics and misuse taught directly.</div>
-                </div>
-
-                <!-- Row 4 -->
-                <div class="md:grid md:grid-cols-[1.1fr_1fr_1fr_1.25fr] text-sm">
-                    <div class="px-5 pt-5 pb-2 md:py-5 font-semibold text-slate-900">What the student ends with</div>
-                    <div class="px-5 py-2 md:py-5 text-slate-500"><span class="md:hidden text-slate-400 font-medium">Online videos — </span>A generic certificate, if any</div>
-                    <div class="px-5 py-2 md:py-5 text-slate-500"><span class="md:hidden text-slate-400 font-medium">Coding centres — </span>A centre certificate</div>
-                    <div class="px-5 py-2 pb-5 md:py-5 font-medium text-slate-900 md:bg-slate-50"><span class="md:hidden text-slate-400 font-medium">Dimaag aur Machine — </span>A school-endorsed certificate and a working project</div>
-                </div>
-            </div>
-        </div>
-
-        <p class="mt-5 text-sm text-slate-500 max-w-2xl">
-            This does not replace tuition, coding classes or teachers. It covers something none of them
-            are designed to cover — and many families sensibly do both.
-        </p>
-    </div>
-</section>
-
-<!-- ============================= 5. WHO RUNS IT ============================= -->
-<section id="instructor" class="py-16 md:py-20 bg-slate-50 border-y border-slate-200">
-    <div class="container mx-auto px-6 max-w-5xl">
-
-        <div class="grid md:grid-cols-12 gap-10 items-start mb-12" x-data="{s:false}" x-intersect.once="s=true">
-            <div class="md:col-span-7">
-                <h2 class="reveal text-3xl md:text-4xl font-semibold tracking-tight mb-4" :class="s && 'active'">Who actually runs the sessions</h2>
-                <p class="reveal d1 text-lg text-slate-700 leading-relaxed mb-4" :class="s && 'active'">
-                    Every session is designed and delivered by me. There is no rotating pool of trainers, and
-                    no franchise.
-                </p>
-                <p class="reveal d1 text-slate-600 leading-relaxed mb-7" :class="s && 'active'">
-                    I work as a Software Development Engineer building AI systems for companies in Germany —
-                    large language models and production systems, as day-to-day work rather than as a topic
-                    I read up on. What students get is that experience, translated for a regular Indian classroom.
-                </p>
-
-                <div class="reveal d2 space-y-2.5 mb-7" :class="s && 'active'">
-                    <div class="flex items-start gap-3 rounded-xl bg-white border border-slate-200 p-3.5">
-                        <i data-lucide="briefcase" class="h-5 w-5 text-slate-400 mt-0.5 shrink-0"></i>
-                        <div>
-                            <p class="font-semibold text-slate-900 text-sm">Software Development Engineer</p>
-                            <p class="text-sm text-slate-500">Building AI systems for companies in Germany</p>
-                        </div>
+                <div class="grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-[18px] py-[18px] border-y border-slate-100">
+                    <div>
+                        <div class="text-[11px] font-bold tracking-[0.1em] uppercase text-slate-400 mb-1.5">Format</div>
+                        <div class="text-sm text-slate-700">In school, during school hours, teacher present throughout</div>
                     </div>
-                    <div class="flex items-start gap-3 rounded-xl bg-white border border-slate-200 p-3.5">
-                        <i data-lucide="graduation-cap" class="h-5 w-5 text-slate-400 mt-0.5 shrink-0"></i>
-                        <div>
-                            <p class="font-semibold text-slate-900 text-sm">M.Sc. Computer Science</p>
-                            <p class="text-sm text-slate-500">University of Konstanz, Germany</p>
-                        </div>
-                    </div>
-                    <div class="flex items-start gap-3 rounded-xl bg-white border border-slate-200 p-3.5">
-                        <i data-lucide="graduation-cap" class="h-5 w-5 text-slate-400 mt-0.5 shrink-0"></i>
-                        <div>
-                            <p class="font-semibold text-slate-900 text-sm">B.Tech Computer Science</p>
-                            <p class="text-sm text-slate-500">MIT ADT University, Pune</p>
-                        </div>
+                    <div>
+                        <div class="text-[11px] font-bold tracking-[0.1em] uppercase text-slate-400 mb-1.5">Duration</div>
+                        <div class="text-sm text-slate-700">Core &mdash; 2 days<br>Applied &mdash; 3 days, with a complete working project</div>
                     </div>
                 </div>
+                <div>
+                    <div class="text-[11px] font-bold tracking-[0.1em] uppercase text-slate-400 mb-3">What students learn</div>
+                    <ul class="list-none m-0 p-0 flex flex-col gap-2.5 text-[15px] text-slate-700">
+                        <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>How AI actually works &mdash; no myths, no shortcuts</span></li>
+                        <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>How to use AI tools for studying, not cheating</span></li>
+                        <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>How to judge an AI answer instead of trusting it blindly</span></li>
+                        <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>Responsible usage, ethics and the limits of AI</span></li>
+                        <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>One hands-on mini project</span></li>
+                    </ul>
+                </div>
+                <div class="bg-slate-50 border border-slate-100 rounded-xl px-[18px] py-4 text-sm text-slate-500">
+                    <b class="text-slate-700 font-bold">This is not:</b> coding coaching, exam preparation, or a hackathon.
+                </div>
+                <div class="flex-1"></div>
+                <a href="#book" class="bg-slate-900 text-white text-center px-5 py-3.5 rounded-xl font-semibold text-[15px] hover:bg-slate-700 transition-colors">See how AI Sense works in your school</a>
+            </article>
 
-                <blockquote class="reveal d3 border-l-2 border-slate-900 pl-5 text-slate-700 text-lg italic" :class="s && 'active'">
-                    "Students don't need motivation. They need clarity — at the right age."
-                </blockquote>
-            </div>
-
-            <div class="md:col-span-5">
-                <div class="reveal d1 rounded-2xl bg-white border border-slate-200 p-6" :class="s && 'active'">
-                    <p class="text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-400 mb-4">Everything is taught in plain language</p>
-                    <p class="text-slate-600 text-sm leading-relaxed mb-5">
-                        No specialised lab, no prerequisites, and no expectation that students already code.
-                        Sessions run on whatever devices are available — the school's, the students' own, or a
-                        projector-led setup.
-                    </p>
-                    <div class="pt-5 border-t border-slate-100">
-                        <p class="text-3xl font-extrabold text-slate-900 tracking-tight">500+</p>
-                        <p class="text-sm text-slate-500 mt-1">students taught across school and university sessions over the past two years</p>
+            <!-- Teachers -->
+            <article id="card-practical" class="gs-item bg-white border border-slate-200 rounded-[20px] p-[30px] flex flex-col gap-[22px]">
+                <div>
+                    <div class="inline-block text-[11px] font-bold tracking-[0.1em] uppercase text-slate-600 bg-slate-100 rounded-full px-3 py-[5px] mb-4">For teachers &middot; Subject edition</div>
+                    <h3 class="text-[26px] font-extrabold tracking-[-0.03em] mb-2"><span class="shimmer-text">AI Made Practical&trade;</span></h3>
+                    <p class="text-slate-600 m-0">Less effort. Better learning. Same syllabus.</p>
+                </div>
+                <div class="grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-[18px] py-[18px] border-y border-slate-100">
+                    <div>
+                        <div class="text-[11px] font-bold tracking-[0.1em] uppercase text-slate-400 mb-1.5">Format</div>
+                        <div class="text-sm text-slate-700">In-school training, department-wise, 2&ndash;6 hours per subject</div>
+                    </div>
+                    <div>
+                        <div class="text-[11px] font-bold tracking-[0.1em] uppercase text-slate-400 mb-1.5">Subjects</div>
+                        <div class="text-sm text-slate-700">Maths, Physics, Chemistry, Biology, Languages &amp; Humanities</div>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Session photos -->
-        <div x-data="{s:false}" x-intersect.once="s=true">
-            <div class="reveal" :class="s && 'active'">
-                <div class="snap-row" role="region" aria-label="Photos from past sessions">
-                    <img src="Testimonials/teaching-3.png" alt="A session in progress" loading="lazy" class="h-44 md:h-56 w-auto rounded-xl object-cover shadow-md">
-                    <img src="Testimonials/1.png"          alt="A session in progress" loading="lazy" class="h-44 md:h-56 w-auto rounded-xl object-cover shadow-md">
-                    <img src="Testimonials/teaching-6.png" alt="A session in progress" loading="lazy" class="h-44 md:h-56 w-auto rounded-xl object-cover shadow-md">
-                    <img src="Testimonials/teaching-1.png" alt="A session in progress" loading="lazy" class="h-44 md:h-56 w-auto rounded-xl object-cover shadow-md">
-                    <img src="Testimonials/2.png"          alt="A session in progress" loading="lazy" class="h-44 md:h-56 w-auto rounded-xl object-cover shadow-md">
-                    <img src="Testimonials/teaching-4.png" alt="A session in progress" loading="lazy" class="h-44 md:h-56 w-auto rounded-xl object-cover shadow-md">
-                    <img src="Testimonials/teaching-2.png" alt="A session in progress" loading="lazy" class="h-44 md:h-56 w-auto rounded-xl object-cover shadow-md">
-                    <img src="Testimonials/teaching-5.png" alt="A session in progress" loading="lazy" class="h-44 md:h-56 w-auto rounded-xl object-cover shadow-md">
+                <div>
+                    <div class="text-[11px] font-bold tracking-[0.1em] uppercase text-slate-400 mb-3">What teachers learn</div>
+                    <ul class="list-none m-0 p-0 flex flex-col gap-2.5 text-[15px] text-slate-700">
+                        <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>Turn existing chapters into quizzes, worksheets and revision material</span></li>
+                        <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>Design AI-assisted learning systems for students</span></li>
+                        <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>Cut preparation time without cutting quality</span></li>
+                        <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>Build material that is reusable year after year</span></li>
+                    </ul>
                 </div>
-                <p class="mt-4 text-sm text-slate-400 flex items-center gap-1.5">
-                    <i data-lucide="camera" class="h-4 w-4"></i>
-                    Sessions conducted in school and university environments. Scroll sideways for more.
-                </p>
-            </div>
+                <div class="bg-slate-50 border border-slate-100 rounded-xl px-[18px] py-4 text-sm text-slate-500">
+                    <b class="text-slate-700 font-bold">For teachers:</b> no extra responsibility, no evaluation, no tech background needed. All parent queries are handled by us.
+                </div>
+                <div class="flex-1"></div>
+                <a href="#book" class="border border-slate-300 text-slate-900 text-center px-5 py-[13px] rounded-xl font-semibold text-[15px] hover:bg-slate-50 transition-colors">Explore AI Made Practical for your subject</a>
+            </article>
         </div>
     </div>
 </section>
 
 <!-- ============================= 6. FOR PARENTS ============================= -->
-<section id="parents" class="py-16 md:py-20 bg-white">
-    <div class="container mx-auto px-6 max-w-3xl">
+<section id="parents" class="max-w-[1180px] mx-auto px-6 py-[76px]">
+    <div class="gs-item">
+        <div class="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-400 mb-3.5">For parents</div>
+        <h2 class="text-[clamp(28px,3.4vw,40px)] leading-[1.12] tracking-[-0.03em] font-extrabold mb-3">The questions no one talks about</h2>
+        <p class="text-slate-500 mb-9 max-w-[34em]">Your child studies hard and scores well. Still, the uncertainty remains. Here are the four answers most parents want first.</p>
+    </div>
 
-        <div class="mb-8" x-data="{s:false}" x-intersect.once="s=true">
-            <h2 class="reveal text-3xl md:text-4xl font-semibold tracking-tight mb-3" :class="s && 'active'">For parents</h2>
-            <p class="reveal d1 text-slate-500 text-lg" :class="s && 'active'">
-                Schools usually forward this part to families. These are the questions that actually come up —
-                including the ones nobody asks out loud.
-            </p>
+    <div class="gs-item chip-marquee mb-10" data-marquee>
+        <div class="chip-track">
+            <span class="chip border border-slate-200 bg-slate-50 text-slate-600 rounded-full px-4 py-[9px] text-sm">&ldquo;Mera bachcha tech duniya mein survive kar payega?&rdquo;</span>
+            <span class="chip border border-slate-200 bg-slate-50 text-slate-600 rounded-full px-4 py-[9px] text-sm">&ldquo;AI se cheating toh nahi seekhega?&rdquo;</span>
+            <span class="chip border border-slate-200 bg-slate-50 text-slate-600 rounded-full px-4 py-[9px] text-sm">&ldquo;Coding aati nahi, AI kaise seekhega?&rdquo;</span>
+            <span class="chip border border-slate-200 bg-slate-50 text-slate-600 rounded-full px-4 py-[9px] text-sm">&ldquo;Screen time aur badh jayega kya?&rdquo;</span>
+            <span class="chip border border-slate-200 bg-slate-50 text-slate-600 rounded-full px-4 py-[9px] text-sm">&ldquo;Board exams pe effect toh nahi padega?&rdquo;</span>
+            <span class="chip border border-slate-200 bg-slate-50 text-slate-600 rounded-full px-4 py-[9px] text-sm">&ldquo;Yeh sab sikhne ke baad karega kya?&rdquo;</span>
+            <span class="chip chip-dup border border-slate-200 bg-slate-50 text-slate-600 rounded-full px-4 py-[9px] text-sm" aria-hidden="true">&ldquo;Mera bachcha tech duniya mein survive kar payega?&rdquo;</span>
+            <span class="chip chip-dup border border-slate-200 bg-slate-50 text-slate-600 rounded-full px-4 py-[9px] text-sm" aria-hidden="true">&ldquo;AI se cheating toh nahi seekhega?&rdquo;</span>
+            <span class="chip chip-dup border border-slate-200 bg-slate-50 text-slate-600 rounded-full px-4 py-[9px] text-sm" aria-hidden="true">&ldquo;Coding aati nahi, AI kaise seekhega?&rdquo;</span>
+            <span class="chip chip-dup border border-slate-200 bg-slate-50 text-slate-600 rounded-full px-4 py-[9px] text-sm" aria-hidden="true">&ldquo;Screen time aur badh jayega kya?&rdquo;</span>
+            <span class="chip chip-dup border border-slate-200 bg-slate-50 text-slate-600 rounded-full px-4 py-[9px] text-sm" aria-hidden="true">&ldquo;Board exams pe effect toh nahi padega?&rdquo;</span>
+            <span class="chip chip-dup border border-slate-200 bg-slate-50 text-slate-600 rounded-full px-4 py-[9px] text-sm" aria-hidden="true">&ldquo;Yeh sab sikhne ke baad karega kya?&rdquo;</span>
         </div>
+    </div>
 
-        <div class="space-y-2.5" x-data="{ active: null, s: false }" x-intersect.once="s=true">
-
-            <div class="reveal border border-slate-200 rounded-xl overflow-hidden" :class="s && 'active'">
-                <button @click="active = active === 1 ? null : 1" class="w-full px-5 py-4 text-left flex items-center justify-between gap-4 hover:bg-slate-50 transition-colors">
-                    <span class="font-medium text-slate-900">Is my child safe? Who is watching?</span>
-                    <i data-lucide="chevron-down" class="h-4 w-4 text-slate-400 transition-transform shrink-0" :class="active === 1 && 'rotate-180'"></i>
-                </button>
-                <div x-show="active === 1" x-collapse class="px-5 pb-4">
-                    <p class="text-sm text-slate-600 leading-relaxed">
-                        Everything happens inside the school building, during school hours, with one of the school's
-                        own teachers present in every session. Students never use AI tools unsupervised, and there is
-                        no part of the program that happens at home or online after hours.
-                    </p>
-                </div>
-            </div>
-
-            <div class="reveal d1 border border-slate-200 rounded-xl overflow-hidden" :class="s && 'active'">
-                <button @click="active = active === 2 ? null : 2" class="w-full px-5 py-4 text-left flex items-center justify-between gap-4 hover:bg-slate-50 transition-colors">
-                    <span class="font-medium text-slate-900">Won't this just teach my child to cheat with AI?</span>
-                    <i data-lucide="chevron-down" class="h-4 w-4 text-slate-400 transition-transform shrink-0" :class="active === 2 && 'rotate-180'"></i>
-                </button>
-                <div x-show="active === 2" x-collapse class="px-5 pb-4">
-                    <p class="text-sm text-slate-600 leading-relaxed">
-                        This is the most common concern, and it is a fair one. Students today already use these tools —
-                        usually with nobody explaining the limits. The program treats AI as a thinking assistant, and a
-                        substantial part of it is about when <em>not</em> to use it: how to spot a wrong or invented answer,
-                        why copying output defeats the point, and what misuse actually costs them.
-                    </p>
-                </div>
-            </div>
-
-            <div class="reveal d1 border border-slate-200 rounded-xl overflow-hidden" :class="s && 'active'">
-                <button @click="active = active === 3 ? null : 3" class="w-full px-5 py-4 text-left flex items-center justify-between gap-4 hover:bg-slate-50 transition-colors">
-                    <span class="font-medium text-slate-900">Will this disturb board exam preparation?</span>
-                    <i data-lucide="chevron-down" class="h-4 w-4 text-slate-400 transition-transform shrink-0" :class="active === 3 && 'rotate-180'"></i>
-                </button>
-                <div x-show="active === 3" x-collapse class="px-5 pb-4">
-                    <p class="text-sm text-slate-600 leading-relaxed">
-                        No. It is two or three days in total, scheduled by the school inside its own timetable, with a
-                        maximum of four hours a day. There is no homework and no after-school commitment. The program is
-                        supplementary — it does not replace exams, marks or board preparation, and it does not claim to.
-                    </p>
-                </div>
-            </div>
-
-            <div class="reveal d2 border border-slate-200 rounded-xl overflow-hidden" :class="s && 'active'">
-                <button @click="active = active === 4 ? null : 4" class="w-full px-5 py-4 text-left flex items-center justify-between gap-4 hover:bg-slate-50 transition-colors">
-                    <span class="font-medium text-slate-900">What does it cost, and who pays?</span>
-                    <i data-lucide="chevron-down" class="h-4 w-4 text-slate-400 transition-transform shrink-0" :class="active === 4 && 'rotate-180'"></i>
-                </button>
-                <div x-show="active === 4" x-collapse class="px-5 pb-4">
-                    <p class="text-sm text-slate-600 leading-relaxed">
-                        The two-day program is &#8377;1,200–&#8377;1,500 per student and the three-day program is up to
-                        &#8377;1,700. Parents pay this directly, and enrolment is voluntary — the school informs families,
-                        but taking part is each family's choice. It is a one-time fee. There is no subscription, no
-                        material to buy later, and nothing that gets sold to you afterwards.
-                    </p>
-                </div>
-            </div>
-
-            <div class="reveal d2 border border-slate-200 rounded-xl overflow-hidden" :class="s && 'active'">
-                <button @click="active = active === 5 ? null : 5" class="w-full px-5 py-4 text-left flex items-center justify-between gap-4 hover:bg-slate-50 transition-colors">
-                    <span class="font-medium text-slate-900">Do we need to buy a laptop? Does my child need to code?</span>
-                    <i data-lucide="chevron-down" class="h-4 w-4 text-slate-400 transition-transform shrink-0" :class="active === 5 && 'rotate-180'"></i>
-                </button>
-                <div x-show="active === 5" x-collapse class="px-5 pb-4">
-                    <p class="text-sm text-slate-600 leading-relaxed">
-                        Neither. Sessions run on a mix of school-provided devices and whatever students already have,
-                        depending on availability. And this is not a coding class — it is open to Science, Commerce and
-                        Arts students equally, and no programming background is assumed at any point.
-                    </p>
-                </div>
-            </div>
-
-            <div class="reveal d3 border border-slate-200 rounded-xl overflow-hidden" :class="s && 'active'">
-                <button @click="active = active === 6 ? null : 6" class="w-full px-5 py-4 text-left flex items-center justify-between gap-4 hover:bg-slate-50 transition-colors">
-                    <span class="font-medium text-slate-900">What does my child actually walk away with?</span>
-                    <i data-lucide="chevron-down" class="h-4 w-4 text-slate-400 transition-transform shrink-0" :class="active === 6 && 'rotate-180'"></i>
-                </button>
-                <div x-show="active === 6" x-collapse class="px-5 pb-4">
-                    <p class="text-sm text-slate-600 leading-relaxed mb-3">
-                        Concretely: a school-endorsed participation certificate, and — on the three-day version — one
-                        complete working project they can demonstrate or reference later.
-                    </p>
-                    <p class="text-sm text-slate-600 leading-relaxed">
-                        Less visibly, but more usefully: the ability to turn a chapter into their own flashcards and
-                        practice questions, the judgement to tell a good AI answer from a confidently wrong one, and a
-                        realistic picture of which careers this field actually contains and which subjects lead there.
-                    </p>
-                </div>
-            </div>
+    <div class="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-5">
+        <div class="gs-item border border-slate-200 rounded-2xl p-6">
+            <div class="text-[17px] font-bold mb-2">AI is taught as a thinking assistant, not a cheating tool</div>
+            <p class="text-[15px] text-slate-500 m-0">Students learn when to use it and when not to. Ethics and misuse are addressed explicitly.</p>
         </div>
+        <div class="gs-item border border-slate-200 rounded-2xl p-6">
+            <div class="text-[17px] font-bold mb-2">Parents don't have to manage anything</div>
+            <p class="text-[15px] text-slate-500 m-0">No homework supervision, no tech setup, no follow-up. Everything happens inside school.</p>
+        </div>
+        <div class="gs-item border border-slate-200 rounded-2xl p-6">
+            <div class="text-[17px] font-bold mb-2">Your child is never alone with AI tools</div>
+            <p class="text-[15px] text-slate-500 m-0">Every session is supervised by a school teacher. No unsupervised internet access.</p>
+        </div>
+        <div class="gs-item border border-slate-200 rounded-2xl p-6">
+            <div class="text-[17px] font-bold mb-2">This does not replace exams or board prep</div>
+            <p class="text-[15px] text-slate-500 m-0">It is a supplementary skill &mdash; not a substitute for academics, tuition or teachers.</p>
+        </div>
+    </div>
 
-        <p class="mt-6 text-sm text-slate-500">
-            Any question a parent has is answered by us directly, not routed through school staff. There is also a
-            private AI assistant on this page — the chat bubble at the bottom — if you would rather ask something
-            without speaking to a person first.
-        </p>
+    <div class="gs-item mt-5 bg-slate-900 text-white rounded-[20px] px-8 py-[34px] grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-6 items-center">
+        <div class="text-[22px] font-bold tracking-[-0.02em] leading-[1.3]">Ignoring the gap doesn't remove it. It only widens.</div>
+        <p class="m-0 text-slate-300 text-[15px]">This program exists to close it inside the school itself &mdash; with full supervision and accountability. Safe hai. Control mein hai.</p>
     </div>
 </section>
 
-<!-- ============================= 7. BOOK ============================= -->
-<section id="book" class="py-16 md:py-20 bg-slate-50 border-t border-slate-200">
-    <div class="container mx-auto px-6 max-w-4xl" x-data="{s:false}" x-intersect.once="s=true">
+<!-- ============================= 7. OUTCOMES ============================= -->
+<section class="bg-slate-50 border-y border-slate-100" aria-label="Program outcomes">
+    <div class="max-w-[1180px] mx-auto px-6 py-[76px]">
+        <div class="gs-item">
+            <div class="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-400 mb-3.5">Program outcomes</div>
+            <h2 class="text-[clamp(28px,3.4vw,40px)] leading-[1.12] tracking-[-0.03em] font-extrabold mb-3">What students walk away with</h2>
+            <p class="text-slate-500 mb-10 max-w-[34em]">Not vague promises &mdash; concrete skills they can demonstrate the next day. Every outcome is practised in session, not just watched.</p>
+        </div>
+        <div class="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-5">
+            <div class="gs-item bg-white border border-slate-200 rounded-2xl p-[26px]">
+                <div class="text-[13px] font-bold text-slate-400 mb-3">01</div>
+                <div class="text-[17px] font-bold mb-2">Prompt engineering basics</div>
+                <p class="text-[15px] text-slate-500 m-0">Communicate clearly with ChatGPT, Claude and Gemini &mdash; and judge their answers critically.</p>
+            </div>
+            <div class="gs-item bg-white border border-slate-200 rounded-2xl p-[26px]">
+                <div class="text-[13px] font-bold text-slate-400 mb-3">02</div>
+                <div class="text-[17px] font-bold mb-2">AI-assisted study techniques</div>
+                <p class="text-[15px] text-slate-500 m-0">Turn any chapter into flashcards, quizzes and summaries, and get hard concepts explained simply.</p>
+            </div>
+            <div class="gs-item bg-white border border-slate-200 rounded-2xl p-[26px]">
+                <div class="text-[13px] font-bold text-slate-400 mb-3">03</div>
+                <div class="text-[17px] font-bold mb-2">One working AI project</div>
+                <p class="text-[15px] text-slate-500 m-0">A functional chatbot, image generator or automation they can show parents and talk about later.</p>
+            </div>
+            <div class="gs-item bg-white border border-slate-200 rounded-2xl p-[26px]">
+                <div class="text-[13px] font-bold text-slate-400 mb-3">04</div>
+                <div class="text-[17px] font-bold mb-2">AI career landscape map</div>
+                <p class="text-[15px] text-slate-500 m-0">10+ career paths &mdash; prompt engineering to AI ethics to robotics &mdash; mapped to the subjects that matter.</p>
+            </div>
+            <div class="gs-item bg-white border border-slate-200 rounded-2xl p-[26px]">
+                <div class="text-[13px] font-bold text-slate-400 mb-3">05</div>
+                <div class="text-[17px] font-bold mb-2">Critical thinking about AI</div>
+                <p class="text-[15px] text-slate-500 m-0">Spot AI-generated misinformation and understand limits, bias, and when not to trust output.</p>
+            </div>
+            <div class="gs-item bg-white border border-slate-200 rounded-2xl p-[26px]">
+                <div class="text-[13px] font-bold text-slate-400 mb-3">06</div>
+                <div class="text-[17px] font-bold mb-2">School-endorsed certificate</div>
+                <p class="text-[15px] text-slate-500 m-0">Participation certificate co-signed by the school &mdash; recognised proof of AI literacy.</p>
+            </div>
+        </div>
+    </div>
+</section>
 
-        <div class="text-center mb-9">
-            <h2 class="reveal text-3xl md:text-4xl font-extrabold tracking-tight mb-4" :class="s && 'active'">
-                Start a conversation.<br class="hidden sm:block">
-                <span class="text-slate-500">Decide if it fits your school.</span>
-            </h2>
-            <p class="reveal d1 text-lg text-slate-500 max-w-2xl mx-auto mb-6" :class="s && 'active'">
-                Thirty minutes, directly with me. I'll walk through how the days are structured, what the school
-                is committing to, and answer whatever management needs answered before it goes any further.
-            </p>
+<!-- ============================= 8. COMPARE ============================= -->
+<section id="compare" class="max-w-[1180px] mx-auto px-6 py-[76px]">
+    <div class="gs-item">
+        <div class="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-400 mb-3.5">Why this program</div>
+        <h2 class="text-[clamp(28px,3.4vw,40px)] leading-[1.12] tracking-[-0.03em] font-extrabold mb-3">Compare <span id="rot-compare" class="rot-badge">the alternatives</span> before you decide</h2>
+        <p class="text-slate-500 mb-8 max-w-[36em]">We're not criticising the alternatives &mdash; they serve different purposes. This shows what this program is designed to do differently.</p>
+    </div>
 
-            <div class="reveal d2 flex flex-wrap items-center justify-center gap-2.5 text-sm" :class="s && 'active'">
-                <span class="flex items-center gap-2 text-slate-600 bg-white px-4 py-2 rounded-full border border-slate-200">
-                    <i data-lucide="map-pin" class="h-4 w-4 text-slate-400"></i> Nashik schools first
-                </span>
-                <span class="flex items-center gap-2 text-slate-600 bg-white px-4 py-2 rounded-full border border-slate-200">
-                    <i data-lucide="clock" class="h-4 w-4 text-slate-400"></i> 30 minutes, no obligation
-                </span>
-                <span class="flex items-center gap-2 text-slate-600 bg-white px-4 py-2 rounded-full border border-slate-200">
-                    <i data-lucide="user" class="h-4 w-4 text-slate-400"></i> You speak to me, not a salesperson
-                </span>
+    <!-- Desktop table -->
+    <div class="gs-item hidden md:block border border-slate-200 rounded-[18px] overflow-hidden">
+        <div class="grid grid-cols-[1.3fr_1fr_1fr_1.15fr] bg-slate-50 border-b border-slate-200 text-[13px] font-bold">
+            <div class="px-[18px] py-4 text-slate-400 tracking-[0.06em] uppercase">What parents ask</div>
+            <div class="px-[18px] py-4 text-slate-500">YouTube / Udemy</div>
+            <div class="px-[18px] py-4 text-slate-500">Coding centres</div>
+            <div class="px-[18px] py-4 bg-slate-900 text-white">Dimaag aur Machine</div>
+        </div>
+        <div id="compare-desktop"></div>
+    </div>
+
+    <!-- Mobile cards -->
+    <div id="compare-mobile" class="gs-item md:hidden flex flex-col gap-3.5"></div>
+
+    <p class="text-sm text-slate-400 mt-4">Many parents combine this program with tuition or coding classes. This does not replace either.</p>
+</section>
+
+<!-- ============================= 9. PROGRAM LEAD ============================= -->
+<section id="lead" class="bg-slate-900 text-white">
+    <div class="max-w-[1180px] mx-auto px-6 py-20 grid md:grid-cols-2 gap-14 items-center">
+        <div class="gs-item">
+            <div class="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-500 mb-3.5">Program lead</div>
+            <h2 class="text-[clamp(28px,3.4vw,40px)] leading-[1.12] tracking-[-0.03em] font-extrabold mb-[18px]">I don't just teach AI &mdash; I build with it every day.</h2>
+            <p class="text-slate-300 mb-[26px] max-w-[32em]">As a Software Development Engineer developing AI systems for companies in Germany, I work with large language models professionally. This program brings that experience directly into Indian classrooms &mdash; in simple language, for regular classrooms, with no fancy labs required.</p>
+            <div class="grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-4 mb-[26px]">
+                <div class="border border-slate-800 rounded-[14px] px-[18px] py-4">
+                    <div class="text-[15px] font-bold">M.Sc. Computer Science</div>
+                    <div class="text-[13px] text-slate-400 mt-1">University of Konstanz, Germany</div>
+                </div>
+                <div class="border border-slate-800 rounded-[14px] px-[18px] py-4">
+                    <div class="text-[15px] font-bold">B.Tech Computer Science</div>
+                    <div class="text-[13px] text-slate-400 mt-1">MIT ADT University, Pune</div>
+                </div>
+                <div class="border border-slate-800 rounded-[14px] px-[18px] py-4">
+                    <div class="text-[15px] font-bold">5+ years experience</div>
+                    <div class="text-[13px] text-slate-400 mt-1">LLMs, RAG systems, agentic AI</div>
+                </div>
+            </div>
+            <blockquote class="m-0 pl-[18px] border-l-2 border-slate-700 text-slate-200 text-[17px] leading-[1.5]">&ldquo;Students don't need motivation. They need clarity &mdash; at the right age.&rdquo;</blockquote>
+        </div>
+        <div class="gs-item border border-slate-800 rounded-[20px] overflow-hidden bg-[#111c2f]">
+            <img src="amaan_shaikh_inst.jpg" alt="Amaan Shaikh" loading="lazy"
+                 class="w-full h-[380px] object-cover block" style="object-position: 50% 40%; filter: brightness(1.2);">
+            <div class="px-[22px] py-5 border-t border-slate-800">
+                <div class="text-lg font-bold">Amaan Shaikh</div>
+                <div class="text-sm text-slate-400 mt-1">SDE &amp; AI specialist &middot; Works with Python, LangChain, RAG systems and multi-agent AI daily.</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================= 10. AI ASSISTANT (embedded, below the instructor) ============================= -->
+<section id="ai-agent" class="max-w-[1180px] mx-auto px-6 py-[76px]">
+    <div class="gs-item bg-slate-900 text-white rounded-3xl px-8 md:px-10 py-11 grid md:grid-cols-2 gap-12 items-center overflow-hidden relative">
+        <div class="relative">
+            <div class="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-500 mb-3.5">Private support</div>
+            <h2 class="text-[clamp(26px,3vw,36px)] leading-[1.14] tracking-[-0.03em] font-extrabold mb-3.5">Hesitant to ask? Talk to our AI assistant privately.</h2>
+            <p class="text-slate-300 mb-6 max-w-[32em]">If you're not ready to book a call, ask anything about the program at your own pace &mdash; voice or text, no salesperson, no follow-up calls. It runs right here on this page.</p>
+            <div class="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-500 mb-2.5">Tap a question to ask it</div>
+            <div class="flex flex-col gap-2.5">
+                <button class="agent-chip text-left border border-slate-800 rounded-xl px-4 py-3.5 text-[15px] text-slate-200 hover:border-indigo-400/50 hover:bg-white/5 transition-colors cursor-pointer font-sans" data-q="What will my child actually learn?">&ldquo;What will my child actually learn?&rdquo;</button>
+                <button class="agent-chip text-left border border-slate-800 rounded-xl px-4 py-3.5 text-[15px] text-slate-200 hover:border-indigo-400/50 hover:bg-white/5 transition-colors cursor-pointer font-sans" data-q="Is this safe for my child?">&ldquo;Is this safe for my child?&rdquo;</button>
+                <button class="agent-chip text-left border border-slate-800 rounded-xl px-4 py-3.5 text-[15px] text-slate-200 hover:border-indigo-400/50 hover:bg-white/5 transition-colors cursor-pointer font-sans" data-q="How much does it cost?">&ldquo;How much does it cost?&rdquo;</button>
+                <button class="agent-chip text-left border border-slate-800 rounded-xl px-4 py-3.5 text-[15px] text-slate-200 hover:border-indigo-400/50 hover:bg-white/5 transition-colors cursor-pointer font-sans" data-q="Who is teaching this?">&ldquo;Who is teaching this?&rdquo;</button>
             </div>
         </div>
 
-        <div class="reveal d2 bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden" :class="s && 'active'">
-            <div id="cal-booking" style="width:100%; min-height:500px; overflow:hidden;"></div>
-        </div>
+        <div class="agent-stage relative" aria-label="Live AI assistant">
+            <span class="agent-timer" id="agentTimer" hidden>00:00</span>
+            <div class="pulse-wrap" id="pulseWrap">
+                <span class="pulse-ring r1" aria-hidden="true"></span>
+                <span class="pulse-ring r2" aria-hidden="true"></span>
+                <button class="pulse-circle" id="pulseBtn" aria-label="Start or end the voice conversation">
+                    <span class="pc-label" id="pcLabel">Tap to start</span>
+                    <span class="pc-sub" id="pcSub">voice chat</span>
+                </button>
+            </div>
 
-        <p class="reveal d3 mt-6 text-center text-sm text-slate-500" :class="s && 'active'">
-            Not ready to book?
-            <a href="program-brief.html" class="font-semibold text-slate-900 underline underline-offset-4 hover:text-slate-600">
-                Read the program brief
-            </a>
-            — it's a single page you can print or forward to your management committee.
-        </p>
+            <div class="agent-mode" id="agentMode"></div>
+
+            <div class="agent-transcript" id="agentTranscript" aria-live="polite"></div>
+
+            <div class="agent-controls">
+                <button id="agentMute" class="agent-round" disabled aria-label="Mute microphone" title="Mute">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+                </button>
+                <form class="agent-textbar" id="agentForm">
+                    <input id="agentInput" type="text" placeholder="Or type a message&hellip;" autocomplete="off" maxlength="500" aria-label="Type a message to the assistant">
+                    <button type="submit" class="agent-send" id="agentSend" aria-label="Send message" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>
+                    </button>
+                </form>
+                <button id="agentDialogBtn" class="agent-round" disabled aria-label="View full transcript" title="Transcript">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================= 11. IN ACTION (HORIZONTAL GALLERY) ============================= -->
+<section id="gallery" class="bg-white overflow-hidden" aria-label="Photos from real sessions">
+    <div class="max-w-[1180px] mx-auto px-6 py-[76px]">
+        <div class="gs-item flex items-end justify-between gap-6 flex-wrap mb-8">
+            <div>
+                <div class="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-400 mb-3.5">In action</div>
+                <h2 class="text-[clamp(28px,3.4vw,40px)] leading-[1.12] tracking-[-0.03em] font-extrabold m-0">Real sessions. Real classrooms.</h2>
+            </div>
+            <p class="text-sm text-slate-400 m-0">Keep scrolling &mdash; the wall moves sideways.</p>
+        </div>
+    </div>
+    <div class="max-w-[1180px] mx-auto px-6 pb-[76px]">
+        <div class="hscroll-viewport" id="hscroll-viewport">
+            <div class="hscroll-track" id="hscroll-track">
+                <figure class="hscroll-card m-0"><img src="Testimonials/teaching-3.png" alt="Workshop session" loading="lazy" class="w-[300px] md:w-[420px] h-[240px] md:h-[300px] object-cover rounded-2xl border border-slate-200 block"></figure>
+                <figure class="hscroll-card m-0"><img src="Testimonials/1.png"          alt="Workshop session" loading="lazy" class="w-[300px] md:w-[420px] h-[240px] md:h-[300px] object-cover rounded-2xl border border-slate-200 block"></figure>
+                <figure class="hscroll-card m-0"><img src="Testimonials/teaching-6.png" alt="Workshop session" loading="lazy" class="w-[300px] md:w-[420px] h-[240px] md:h-[300px] object-cover rounded-2xl border border-slate-200 block"></figure>
+                <figure class="hscroll-card m-0"><img src="Testimonials/teaching-1.png" alt="Workshop session" loading="lazy" class="w-[300px] md:w-[420px] h-[240px] md:h-[300px] object-cover rounded-2xl border border-slate-200 block"></figure>
+                <figure class="hscroll-card m-0"><img src="Testimonials/2.png"          alt="Workshop session" loading="lazy" class="w-[300px] md:w-[420px] h-[240px] md:h-[300px] object-cover rounded-2xl border border-slate-200 block"></figure>
+                <figure class="hscroll-card m-0"><img src="Testimonials/teaching-4.png" alt="Workshop session" loading="lazy" class="w-[300px] md:w-[420px] h-[240px] md:h-[300px] object-cover rounded-2xl border border-slate-200 block"></figure>
+                <figure class="hscroll-card m-0"><img src="Testimonials/teaching-2.png" alt="Workshop session" loading="lazy" class="w-[300px] md:w-[420px] h-[240px] md:h-[300px] object-cover rounded-2xl border border-slate-200 block"></figure>
+                <figure class="hscroll-card m-0"><img src="Testimonials/teaching-5.png" alt="Workshop session" loading="lazy" class="w-[300px] md:w-[420px] h-[240px] md:h-[300px] object-cover rounded-2xl border border-slate-200 block"></figure>
+                <figure class="hscroll-card m-0"><img src="Testimonials/teaching-7.png" alt="Workshop session" loading="lazy" class="w-[300px] md:w-[420px] h-[240px] md:h-[300px] object-cover rounded-2xl border border-slate-200 block"></figure>
+            </div>
+        </div>
+        <div class="hprogress mt-6 h-[3px] bg-slate-200 rounded-full overflow-hidden hidden md:block" aria-hidden="true">
+            <span class="block h-full w-full bg-slate-900 origin-left" style="transform: scaleX(0);"></span>
+        </div>
+        <p class="text-sm text-slate-400 mt-4">Workshops conducted in school and university environments across Nashik and Pune.</p>
+    </div>
+</section>
+
+<!-- ============================= 12. FEES / NOT ============================= -->
+<section class="bg-slate-50 border-y border-slate-100" aria-label="Fees and clarifications">
+    <div class="max-w-[1180px] mx-auto px-6 py-[76px] grid md:grid-cols-2 gap-10">
+        <div class="gs-item">
+            <h2 class="text-[clamp(24px,2.8vw,32px)] leading-[1.15] tracking-[-0.03em] font-extrabold mb-[18px]">About fees</h2>
+            <ul class="list-none m-0 p-0 flex flex-col gap-3 text-[15px] text-slate-700">
+                <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>Comparable to robotics or activity workshops &mdash; &#8377;1,200&ndash;&#8377;1,500 per student for 2 days, up to &#8377;1,700 for 3 days</span></li>
+                <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>One-time program &mdash; no subscriptions</span></li>
+                <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>No upselling, no future pressure</span></li>
+                <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>Zero cost to the school</span></li>
+            </ul>
+        </div>
+        <div class="gs-item">
+            <h2 class="text-[clamp(24px,2.8vw,32px)] leading-[1.15] tracking-[-0.03em] font-extrabold mb-[18px]">Let's be clear &mdash; this is not</h2>
+            <ul class="list-none m-0 p-0 flex flex-col gap-3 text-[15px] text-slate-700">
+                <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-red-600 font-bold">&#10005;</span><span>A free seminar</span></li>
+                <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-red-600 font-bold">&#10005;</span><span>An online video course</span></li>
+                <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-red-600 font-bold">&#10005;</span><span>Individual coaching</span></li>
+                <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-red-600 font-bold">&#10005;</span><span>A random AI seminar</span></li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<!-- ============================= 13. FAQ ============================= -->
+<section class="max-w-[860px] mx-auto px-6 py-[76px]" aria-label="Frequently asked questions">
+    <div class="gs-item">
+        <div class="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-400 mb-3.5">FAQ</div>
+        <h2 class="text-[clamp(28px,3.4vw,40px)] leading-[1.12] tracking-[-0.03em] font-extrabold mb-8">Common questions</h2>
+    </div>
+    <div class="gs-item">
+        <details class="border-b border-slate-100 py-5">
+            <summary class="flex items-center justify-between gap-5 text-[17px] font-semibold text-slate-900">
+                <span>What age group is this program for?</span>
+                <span class="faq-icon text-slate-400 text-xl font-normal">+</span>
+            </summary>
+            <p class="mt-3 mb-0 text-slate-500 text-[15px]">Students from Class 9 to Class 12, across all streams. The curriculum focuses on practical AI skills, project building, career exploration and critical thinking about AI usage.</p>
+        </details>
+        <details class="border-b border-slate-100 py-5">
+            <summary class="flex items-center justify-between gap-5 text-[17px] font-semibold text-slate-900">
+                <span>How long is the program?</span>
+                <span class="faq-icon text-slate-400 text-xl font-normal">+</span>
+            </summary>
+            <p class="mt-3 mb-0 text-slate-500 text-[15px]">AI Sense runs as a 2-day core or 3-day applied format during school hours. Longer school engagements run 8&ndash;10 sessions of 45&ndash;60 minutes, typically spread over 4&ndash;6 weeks.</p>
+        </details>
+        <details class="border-b border-slate-100 py-5">
+            <summary class="flex items-center justify-between gap-5 text-[17px] font-semibold text-slate-900">
+                <span>Do students need their own laptops?</span>
+                <span class="faq-icon text-slate-400 text-xl font-normal">+</span>
+            </summary>
+            <p class="mt-3 mb-0 text-slate-500 text-[15px]">No. We work with whatever the school has &mdash; a computer lab, tablets, or a projector-based demo setup. The program is designed to run with minimal infrastructure.</p>
+        </details>
+        <details class="border-b border-slate-100 py-5">
+            <summary class="flex items-center justify-between gap-5 text-[17px] font-semibold text-slate-900">
+                <span>Is this safe? Will students misuse AI?</span>
+                <span class="faq-icon text-slate-400 text-xl font-normal">+</span>
+            </summary>
+            <p class="mt-3 mb-0 text-slate-500 text-[15px]">Safety and ethics are core parts of the curriculum. Students learn responsible usage, how to identify misinformation, and the consequences of misuse. AI is taught as a learning tool, not a shortcut.</p>
+        </details>
+        <details class="border-b border-slate-100 py-5">
+            <summary class="flex items-center justify-between gap-5 text-[17px] font-semibold text-slate-900">
+                <span>What's the cost for parents?</span>
+                <span class="faq-icon text-slate-400 text-xl font-normal">+</span>
+            </summary>
+            <p class="mt-3 mb-0 text-slate-500 text-[15px]">Fees are comparable to other school activity programs such as robotics or spoken English workshops. Exact pricing depends on batch size and school arrangement. No hidden costs, subscriptions or upsells.</p>
+        </details>
+        <details class="border-b border-slate-100 py-5">
+            <summary class="flex items-center justify-between gap-5 text-[17px] font-semibold text-slate-900">
+                <span>Why should we trust this program?</span>
+                <span class="faq-icon text-slate-400 text-xl font-normal">+</span>
+            </summary>
+            <p class="mt-3 mb-0 text-slate-500 text-[15px]">It is led by Amaan Shaikh, a working Software Engineer in Germany with a Master's in Computer Science. It is taught by someone who builds AI systems professionally and knows which skills actually matter.</p>
+        </details>
+    </div>
+</section>
+
+<!-- ============================= 14. BOOK ============================= -->
+<section id="book" class="bg-slate-900 text-white">
+    <div class="max-w-[1180px] mx-auto px-6 py-20 grid md:grid-cols-[0.85fr_1.15fr] gap-12">
+        <div class="gs-item">
+            <h2 class="text-[clamp(28px,3.6vw,42px)] leading-[1.1] tracking-[-0.03em] font-extrabold mb-4">Start a conversation.<br>Decide if it fits your school.</h2>
+            <p class="text-slate-300 mb-7 max-w-[30em]">A 30-minute discussion to understand how the program works, ask your questions, and see whether it's right for your school. No obligation.</p>
+            <div class="flex flex-col gap-3 text-sm text-slate-400">
+                <div>Nashik schools get priority scheduling.</div>
+                <div>Academic year 2026&ndash;27 slots are open.</div>
+                <div>Only a limited number of schools are onboarded each term to maintain quality. If this term fills, the next window moves to the following academic cycle.</div>
+            </div>
+            <p class="mt-7 text-sm text-slate-400">
+                Prefer to ask privately first?
+                <button data-open-assistant class="underline underline-offset-4 font-semibold text-white hover:text-slate-300 bg-transparent border-none cursor-pointer p-0 font-sans text-sm">Talk to the AI assistant</button>
+                &mdash; no salesperson, just answers.
+            </p>
+        </div>
+        <div class="gs-item bg-white text-slate-900 rounded-[20px] p-[30px]">
+            <div class="text-[19px] font-bold mb-1.5">Book a 30-minute discussion</div>
+            <p class="text-sm text-slate-500 mb-5">Pick a time that works for you &mdash; the call happens directly with the program lead, not a salesperson.</p>
+            <!-- Height is capped: long slot lists scroll inside this box instead of stretching the page. -->
+            <div class="max-h-[600px] overflow-y-auto overscroll-contain rounded-xl border border-slate-100">
+                <div id="cal-booking" style="width:100%; min-height:500px; overflow:hidden;"></div>
+            </div>
+            <p class="text-[13px] text-slate-400 mt-4 mb-0">
+                Not ready to book?
+                <a href="program-brief.html" class="font-semibold text-slate-900 underline underline-offset-4 hover:text-slate-600">Read the program brief</a>
+                &mdash; a single page you can print or forward to your management committee.
+            </p>
+        </div>
     </div>
 </section>
 
 </main>
 
 <!-- ============================= FOOTER ============================= -->
-<footer class="pt-12 pb-36 border-t border-slate-200 bg-white" role="contentinfo">
-    <div class="container mx-auto px-6 max-w-4xl">
-        <div class="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div class="text-center md:text-left">
-                <div class="flex items-center justify-center md:justify-start gap-2 mb-2">
-                    <img src="workshoplogo.png" alt="" class="h-5 w-auto opacity-70">
-                    <span class="font-semibold text-slate-900">Dimaag aur Machine</span>
-                </div>
-                <p class="text-slate-500 text-sm">AI literacy workshops for schools &middot; Nashik, Maharashtra</p>
-            </div>
-
-            <div class="flex items-center gap-1">
-                <a href="https://www.linkedin.com/in/amaanshaikh711/" target="_blank" rel="noopener noreferrer" class="p-2 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-colors" aria-label="LinkedIn">
-                    <i data-lucide="linkedin" class="h-5 w-5"></i>
-                </a>
-                <a href="https://www.instagram.com/amaan_711/" target="_blank" rel="noopener noreferrer" class="p-2 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-colors" aria-label="Instagram">
-                    <i data-lucide="instagram" class="h-5 w-5"></i>
-                </a>
-                <!-- TODO: add WhatsApp + email links once the real number and address are confirmed.
-                     The previous placeholders (wa.me/919876543210 and amaan@example.com) were removed
-                     because they pointed at a stranger's number and a non-existent inbox. -->
+<footer class="border-t border-slate-100" role="contentinfo">
+    <div class="max-w-[1180px] mx-auto px-6 py-9 flex items-center justify-between gap-5 flex-wrap">
+        <div class="flex items-center gap-2.5">
+            <img src="workshoplogo.png" alt="" class="h-7 w-auto" style="mix-blend-mode: multiply;">
+            <div>
+                <div class="text-sm font-bold">Dimaag aur Machine</div>
+                <div class="text-[13px] text-slate-400">By Amaan Shaikh &middot; SDE, Germany</div>
             </div>
         </div>
-
-        <div class="mt-8 pt-6 border-t border-slate-100 text-center flex flex-col items-center gap-2">
-            <a href="privacy-policy.html" class="text-slate-400 text-xs hover:text-slate-600 transition-colors">Privacy Policy</a>
-            <p class="text-slate-400 text-xs">&copy; 2026 Dimaag aur Machine. All rights reserved.</p>
+        <div class="flex items-center gap-5 text-[13px] text-slate-400 flex-wrap">
+            <a href="privacy-policy.html" class="hover:text-slate-900 transition-colors">Privacy policy</a>
+            <a href="https://www.linkedin.com/in/amaanshaikh711/" target="_blank" rel="noopener noreferrer" class="hover:text-slate-900 transition-colors">LinkedIn</a>
+            <a href="https://www.instagram.com/amaan_711/" target="_blank" rel="noopener noreferrer" class="hover:text-slate-900 transition-colors">Instagram</a>
+            <span>&copy; 2026 Dimaag aur Machine</span>
         </div>
     </div>
 </footer>
 
+<!-- Full transcript dialog for the AI assistant -->
+<div class="agent-dialog-overlay" id="agentDialog" role="dialog" aria-modal="true" aria-label="Conversation transcript">
+    <div class="agent-dialog">
+        <div class="agent-dialog-head">
+            <h3>Conversation transcript</h3>
+            <button id="agentDialogClose" aria-label="Close transcript">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+        </div>
+        <div class="agent-dialog-body" id="agentDialogBody"></div>
+        <div class="agent-dialog-foot">
+            <button class="btn-secondary" id="agentDialogClose2">Close</button>
+            <button class="btn-primary" id="agentDialogCopy">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+                Copy
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- ============================= SCRIPTS ============================= -->
+
+<!-- Mobile menu -->
 <script>
-    // Lucide renders after its deferred script lands.
-    window.addEventListener('DOMContentLoaded', function () {
-        if (window.lucide) lucide.createIcons();
+(function () {
+    var btn = document.getElementById('menu-btn');
+    var menu = document.getElementById('mobile-menu');
+    if (!btn || !menu) return;
+    function setOpen(open) {
+        menu.classList.toggle('hidden', !open);
+        menu.classList.toggle('flex', open);
+        btn.setAttribute('aria-expanded', String(open));
+        btn.innerHTML = open ? '&#10005;' : '&#9776;';
+    }
+    btn.addEventListener('click', function () { setOpen(menu.classList.contains('hidden')); });
+    menu.querySelectorAll('.menu-link').forEach(function (a) {
+        a.addEventListener('click', function () { setOpen(false); });
     });
+})();
+</script>
+
+<!-- Compare table (8 rows, rendered for desktop + mobile from one source) -->
+<script>
+(function () {
+    var rows = [
+        { q: 'When does my child attend?',           a: 'Anytime — no structure, often abandoned',       b: 'Weekends or after school, adds to the load', c: 'During school hours, no extra burden' },
+        { q: 'Who is teaching my child?',            a: 'Unknown creators, no accountability',           b: 'Fresh graduates trained in coding only',     c: 'Working SDE in Germany, M.Sc. CS, builds AI daily' },
+        { q: 'Will my child actually use AI?',       a: 'Mostly watching videos, little practice',       b: 'Coding exercises, not real AI tools',        c: 'Uses ChatGPT, Claude and Gemini every session' },
+        { q: 'What proof will my child have?',       a: 'Generic completion certificate, if any',        b: 'Centre certificate, not school-recognised',  c: 'School-endorsed certificate plus a working project' },
+        { q: 'Is it safe? Who supervises?',          a: 'No supervision, unsupervised internet',         b: 'Supervised, but not AI-safety focused',      c: 'In school, teacher present, AI ethics taught' },
+        { q: 'Will this help with career clarity?',  a: 'No career guidance',                            b: 'Coding careers only',                        c: '10+ AI career paths mapped to subjects' },
+        { q: "What's the real cost?",                a: 'Free or cheap, with hidden upsells',            b: '₹15–30K+ a year, ongoing subscription', c: 'One-time fee, no subscriptions or upsells' },
+        { q: 'Does the school approve?',             a: 'No school involvement',                         b: 'No school involvement',                      c: 'School-partnered, runs inside campus' }
+    ];
+
+    function el(tag, cls, text) {
+        var e = document.createElement(tag);
+        if (cls) e.className = cls;
+        if (text != null) e.textContent = text;
+        return e;
+    }
+
+    var desktop = document.getElementById('compare-desktop');
+    if (desktop) rows.forEach(function (row) {
+        var r = el('div', 'grid grid-cols-[1.3fr_1fr_1fr_1.15fr] border-t border-slate-100 text-sm hover:bg-[#fcfdfe]');
+        r.appendChild(el('div', 'px-[18px] py-4 font-semibold text-slate-900', row.q));
+        r.appendChild(el('div', 'px-[18px] py-4 text-slate-500', row.a));
+        r.appendChild(el('div', 'px-[18px] py-4 text-slate-500', row.b));
+        r.appendChild(el('div', 'px-[18px] py-4 text-slate-900 font-semibold bg-slate-50', row.c));
+        desktop.appendChild(r);
+    });
+
+    var mobile = document.getElementById('compare-mobile');
+    if (mobile) rows.forEach(function (row) {
+        var card = el('div', 'border border-slate-200 rounded-2xl overflow-hidden');
+        card.appendChild(el('div', 'px-4 py-3.5 bg-slate-50 border-b border-slate-200 text-[15px] font-bold', row.q));
+        var body = el('div', 'px-4 py-3.5 flex flex-col gap-3 text-sm');
+        [['YouTube / Udemy', row.a], ['Coding centres', row.b]].forEach(function (pair) {
+            var block = el('div');
+            block.appendChild(el('div', 'text-[11px] font-bold tracking-[0.08em] uppercase text-slate-400 mb-[3px]', pair[0]));
+            block.appendChild(el('div', 'text-slate-500', pair[1]));
+            body.appendChild(block);
+        });
+        var us = el('div', 'bg-slate-900 text-white rounded-xl px-3.5 py-3');
+        us.appendChild(el('div', 'text-[11px] font-bold tracking-[0.08em] uppercase text-slate-400 mb-[3px]', 'Dimaag aur Machine'));
+        us.appendChild(el('div', 'font-semibold', row.c));
+        body.appendChild(us);
+        card.appendChild(body);
+        mobile.appendChild(card);
+    });
+})();
+</script>
+
+<!-- GSAP choreography: hero word reveal, counter, parallax, section reveals,
+     chip marquee, pinned horizontal gallery. Everything degrades to static
+     content if GSAP fails to load or the visitor prefers reduced motion. -->
+<script>
+window.addEventListener('DOMContentLoaded', function () {
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) return;
+    var tries = 0;
+    function start() {
+        if (!window.gsap || !window.ScrollTrigger) {
+            if (tries++ < 25) return setTimeout(start, 200);
+            return; // CDN failed — content stays fully visible
+        }
+        var gsap = window.gsap;
+        gsap.registerPlugin(window.ScrollTrigger);
+
+        // 1) Headline: split into words, mask-reveal them line by line
+        var h1s = document.getElementById('hero-h1');
+        if (h1s) {
+            var lines = h1s.innerHTML.split(/<br\s*\/?>/i);
+            h1s.classList.remove('shimmer-text');
+            h1s.innerHTML = lines.map(function (line) {
+                return line.trim().split(/\s+/).map(function (w) {
+                    return '<span class="h1-clip"><span class="h1-word shimmer-text">' + w + '</span></span>';
+                }).join(' ');
+            }).join('<br>');
+            gsap.from('.h1-word', {
+                yPercent: 135, duration: 0.9, ease: 'power4.out', stagger: 0.09,
+                onComplete: function () {
+                    // The mask has done its job — unclip so no font metric can
+                    // ever shave a descender afterwards.
+                    document.querySelectorAll('.h1-clip').forEach(function (c) { c.style.overflow = 'visible'; });
+                }
+            });
+        }
+
+        // 2) The 500+ badge counts up once
+        var cnt = document.getElementById('hero-count');
+        if (cnt) {
+            var counter = { v: 0 };
+            gsap.to(counter, {
+                v: 500, duration: 1.6, ease: 'power2.out', delay: 0.2,
+                onUpdate: function () { cnt.textContent = Math.round(counter.v); }
+            });
+        }
+
+        // 3) Hero copy stagger (headline handled above)
+        gsap.from(document.querySelectorAll('[data-hero] > *:not(h1)'), {
+            y: 22, opacity: 0, duration: 0.8, ease: 'power3.out', stagger: 0.09
+        });
+
+        // 4) Portrait: soft entrance + slow parallax against the scroll
+        //    (targets the wrapper — the inner card belongs to vanilla-tilt)
+        var portrait = document.querySelector('[data-hero-parallax]');
+        if (portrait) {
+            gsap.from(portrait, { opacity: 0, scale: 0.96, duration: 1.1, ease: 'power2.out', delay: 0.15 });
+            gsap.to(portrait, {
+                y: -36, ease: 'none',
+                scrollTrigger: { trigger: '#top', start: 'top top', end: 'bottom top', scrub: true }
+            });
+        }
+
+        // 5) Per-section reveals
+        document.querySelectorAll('section').forEach(function (sec) {
+            var kids = sec.querySelectorAll('.gs-item');
+            if (!kids.length) return;
+            gsap.from(kids, {
+                scrollTrigger: { trigger: sec, start: 'top 82%', once: true },
+                y: 26, opacity: 0, duration: 0.7, ease: 'power2.out', stagger: 0.06
+            });
+        });
+
+        // 6) Parents question chips: endless marquee, slows on hover
+        var mq = document.querySelector('[data-marquee]');
+        if (mq) {
+            mq.classList.add('marquee-on');
+            var track = mq.querySelector('.chip-track');
+            if (track) {
+                var tween = gsap.to(track, { xPercent: -50, ease: 'none', duration: 38, repeat: -1 });
+                mq.addEventListener('mouseenter', function () { gsap.to(tween, { timeScale: 0.15, duration: 0.5 }); });
+                mq.addEventListener('mouseleave', function () { gsap.to(tween, { timeScale: 1, duration: 0.5 }); });
+            }
+        }
+
+        // 7) Session wall: the track slides sideways while the section passes
+        //    through the viewport. Deliberately NOT pinned — pinning fixed the
+        //    section to the screen and it superimposed over the instructor and
+        //    assistant sections whenever trigger positions drifted after load.
+        //    On small screens it stays a native swipeable row.
+        var gsec = document.getElementById('gallery');
+        if (gsec && window.innerWidth >= 768) {
+            var viewport = document.getElementById('hscroll-viewport');
+            var htrack = document.getElementById('hscroll-track');
+            var bar = gsec.querySelector('.hprogress > span');
+            if (viewport && htrack) {
+                gsec.classList.add('hscroll-on');
+                var dist = function () { return Math.max(0, htrack.scrollWidth - viewport.clientWidth); };
+                gsap.to(htrack, {
+                    x: function () { return -dist(); },
+                    ease: 'none',
+                    scrollTrigger: {
+                        trigger: gsec,
+                        start: 'top 85%',
+                        end: 'bottom 20%',
+                        scrub: 1,
+                        invalidateOnRefresh: true,
+                        onUpdate: function (self) {
+                            if (bar) bar.style.transform = 'scaleX(' + self.progress + ')';
+                        }
+                    }
+                });
+            }
+        }
+
+        // Re-measure all trigger positions once everything (fonts, images,
+        // embeds) has finished loading, so start/end points never go stale.
+        window.addEventListener('load', function () {
+            window.ScrollTrigger.refresh();
+        });
+    }
+    start();
+});
+</script>
+
+<!-- Hero card: hover tilt + glare (desktop pointers only). The workshop
+     cards use BorderGlow instead — no tilt there. -->
+<script>
+window.addEventListener('DOMContentLoaded', function () {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (!window.matchMedia('(pointer: fine)').matches) return;
+    var card = document.getElementById('hero-tilt');
+    if (!card) return;
+    var tries = 0;
+    (function wait() {
+        if (window.VanillaTilt) {
+            window.VanillaTilt.init(card, {
+                max: 8, speed: 400, perspective: 1000, scale: 1.02,
+                glare: true, 'max-glare': 0.28, gyroscope: false
+            });
+        } else if (tries++ < 25) {
+            setTimeout(wait, 200);
+        }
+    })();
+});
+</script>
+
+<!-- RotatingText (React Bits port): rotates "students"/"teachers" in the
+     workshops heading. Character-split, staggered from the last character,
+     enter y:100%→0 with a spring-like overshoot, exit to y:-120% — same
+     mechanics as the original, driven by GSAP instead of framer-motion.
+     Without JS (or with reduced motion) the heading stays as the static
+     "students & teachers". -->
+<script>
+window.addEventListener('DOMContentLoaded', function () {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var STAGGER = 0.025;
+    var ROTATORS = [
+        {
+            id: 'rot-host', interval: 2200,
+            words: [
+                { text: 'students', cls: 'rot-students' },
+                { text: 'teachers', cls: 'rot-teachers' }
+            ]
+        },
+        {
+            id: 'rot-compare', interval: 2600,
+            words: [
+                { text: 'YouTube / Udemy', cls: 'rot-alt' },
+                { text: 'coding centres', cls: 'rot-alt' },
+                { text: 'Dimaag aur Machine', cls: 'rot-dam' }
+            ]
+        }
+    ];
+    var ALL_CLASSES = ['rot-students', 'rot-teachers', 'rot-alt', 'rot-dam'];
+    var tries = 0;
+    (function wait() {
+        if (window.gsap) ROTATORS.forEach(initRotator);
+        else if (tries++ < 25) setTimeout(wait, 200);
+    })();
+
+    function initRotator(cfg) {
+        var gsap = window.gsap;
+        var host = document.getElementById(cfg.id);
+        if (!host) return;
+        var idx = 0;
+        host.classList.add('rot-on');
+        host.textContent = '';
+        var sr = document.createElement('span');
+        sr.className = 'rot-sr';
+        var stage = document.createElement('span');
+        stage.className = 'rot-stage';
+        stage.setAttribute('aria-hidden', 'true');
+        host.appendChild(sr);
+        host.appendChild(stage);
+
+        function build(word) {
+            stage.textContent = '';
+            Array.from(word).forEach(function (ch) {
+                var s = document.createElement('span');
+                s.className = 'rot-char';
+                s.textContent = ch;
+                stage.appendChild(s);
+            });
+            return stage.children;
+        }
+        function show(i, animateIn) {
+            var w = cfg.words[i];
+            var oldW = host.offsetWidth;
+            ALL_CLASSES.forEach(function (c) { host.classList.remove(c); });
+            host.classList.add(w.cls);
+            sr.textContent = w.text;
+            var chars = build(w.text);
+            if (animateIn) {
+                // Words differ in length, so the badge width is tweened too —
+                // the port of the original component's `layout` animation.
+                var newW = host.offsetWidth;
+                if (Math.abs(newW - oldW) > 1) {
+                    gsap.fromTo(host, { width: oldW + 'px' }, {
+                        width: newW + 'px', duration: 0.35, ease: 'power2.inOut',
+                        clearProps: 'width'
+                    });
+                }
+                gsap.fromTo(chars, { yPercent: 100 }, {
+                    yPercent: 0, duration: 0.5, ease: 'back.out(1.6)',
+                    stagger: { each: STAGGER, from: 'end' }
+                });
+            }
+        }
+        show(0, false);
+        setInterval(function () {
+            gsap.to(stage.children, {
+                yPercent: -120, duration: 0.3, ease: 'power2.in',
+                stagger: { each: STAGGER, from: 'end' },
+                onComplete: function () {
+                    idx = (idx + 1) % cfg.words.length;
+                    show(idx, true);
+                }
+            });
+        }, cfg.interval);
+    }
+});
+</script>
+
+<!-- BorderGlow (React Bits port): feeds --edge-proximity / --cursor-angle
+     to the workshop cards as the pointer moves. Desktop pointers only —
+     without these vars the glow layers stay at opacity 0. -->
+<script>
+window.addEventListener('DOMContentLoaded', function () {
+    if (!window.matchMedia('(pointer: fine)').matches) return;
+    ['card-sense', 'card-practical'].forEach(function (id) {
+        var card = document.getElementById(id);
+        if (!card) return;
+        card.classList.add('border-glow-card');
+        var light = document.createElement('span');
+        light.className = 'edge-light';
+        light.setAttribute('aria-hidden', 'true');
+        card.prepend(light);
+        card.addEventListener('pointermove', function (e) {
+            var r = card.getBoundingClientRect();
+            var x = e.clientX - r.left, y = e.clientY - r.top;
+            var cx = r.width / 2, cy = r.height / 2;
+            var dx = x - cx, dy = y - cy;
+            // Edge proximity: 0 at the centre, 1 at any edge.
+            var kx = dx !== 0 ? cx / Math.abs(dx) : Infinity;
+            var ky = dy !== 0 ? cy / Math.abs(dy) : Infinity;
+            var edge = Math.min(Math.max(1 / Math.min(kx, ky), 0), 1);
+            // Cursor angle, 0deg pointing up.
+            var deg = 0;
+            if (dx !== 0 || dy !== 0) {
+                deg = Math.atan2(dy, dx) * 180 / Math.PI + 90;
+                if (deg < 0) deg += 360;
+            }
+            card.style.setProperty('--edge-proximity', (edge * 100).toFixed(3));
+            card.style.setProperty('--cursor-angle', deg.toFixed(3) + 'deg');
+        });
+    });
+});
 </script>
 
 <!-- Cal.com booking embed -->
@@ -890,36 +1519,21 @@
     });
 </script>
 
-<!-- ElevenLabs conversational assistant -->
-<div class="elevenlabs-glow-wrapper" id="elevenlabs-glow" aria-hidden="true">
-    <div class="glow-ring-outer"></div>
-    <div class="glow-ring"></div>
-</div>
-<elevenlabs-convai agent-id="agent_0401kg1se2h2f968eyratmvn98df"></elevenlabs-convai>
-<script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
-
-<script>
-    // Pulse the assistant glow while the parents section is on screen — that is
-    // where visitors are most likely to have a question they'd rather ask privately.
-    window.addEventListener('DOMContentLoaded', function () {
-        var glow = document.getElementById('elevenlabs-glow');
-        var parents = document.getElementById('parents');
-        if (!glow || !parents || !('IntersectionObserver' in window)) return;
-
-        new IntersectionObserver(function (entries) {
-            glow.classList.toggle('glow-active', entries[0].isIntersecting);
-        }, { threshold: 0.15 }).observe(parents);
-    });
-</script>
-
-<!-- Hero particle ring -->
+<!-- Hero particle ring (three.js) -->
 <script>
 window.addEventListener('DOMContentLoaded', function () {
     const canvas = document.getElementById('particle-canvas');
-    const heroSection = document.getElementById('hero');
+    const heroSection = document.getElementById('top');
     if (!canvas || !heroSection || typeof THREE === 'undefined') return;
 
-    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    // Browsers without WebGL (blocked GPU, very old hardware) just skip the effect.
+    let renderer;
+    try {
+        renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    } catch (e) {
+        canvas.remove();
+        return;
+    }
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setClearColor(0x000000, 0);
 
@@ -929,8 +1543,8 @@ window.addEventListener('DOMContentLoaded', function () {
     camera.position.y = -40;
 
     const PARTICLE_COUNT = 2500;
-    const RING_INNER = 75;
-    const RING_OUTER = 175;
+    const RING_INNER = 112.5;
+    const RING_OUTER = 262.5;
     const DEPTH_RANGE = 60;
     const MOUSE_RADIUS = 45;
     const MOUSE_STRENGTH = 30;
@@ -1119,8 +1733,8 @@ window.addEventListener('DOMContentLoaded', function () {
 
         for (let i = 0; i < PARTICLE_COUNT; i++) {
             const currentAngle = reducedMotion
-                ? orbitAngles[i]
-                : orbitAngles[i] + (warpedElapsed + hoverAngleAccum) * orbitSpeeds[i];
+            ? orbitAngles[i]
+            : orbitAngles[i] + (warpedElapsed + hoverAngleAccum) * orbitSpeeds[i];
             const r = orbitRadii[i] + radiusOffset;
 
             const bx = Math.cos(currentAngle) * r;
@@ -1148,98 +1762,600 @@ window.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
-<!-- Ambient pad on the primary CTA hover -->
+<!-- Jazzy e-piano progression on the primary CTA hover: keeps rolling
+     chord after chord for as long as the pointer stays, quietly. -->
 <script>
 (function () {
-    var audioCtx, masterGain, voices = [], started = false;
-    var chordTimer = null, chordIndex = 0, hovering = false;
-    var FADE_IN = 1.0, FADE_OUT = 1.4, MAX_VOL = 0.13, CHORD_DUR = 5.0, GLIDE = 3.0;
+    var ctx = null, master = null, chordIdx = 0, lastPlay = 0;
+    var hovering = false, hoverIv = null;
+    var CHORD_EVERY_MS = 1900;
 
-    // Cmaj7 → Fmaj7 → Gmaj7 → Amaj7, high register.
-    var chords = [
-        [329.63, 392.00, 493.88, 587.33],
-        [349.23, 440.00, 523.25, 659.25],
-        [392.00, 493.88, 587.33, 739.99],
-        [440.00, 554.37, 659.25, 830.61],
+    // A happy jazz loop — I / IVmaj9 / ii9 / V13 — each chord with a soft
+    // bass root an octave below, rolled like a gentle electric piano.
+    var CHORDS = [
+        [130.81, 261.63, 329.63, 392.00, 493.88, 587.33],   // Cmaj9   (C bass)
+        [174.61, 349.23, 440.00, 523.25, 659.25, 783.99],   // Fmaj9   (F bass)
+        [146.83, 293.66, 349.23, 440.00, 523.25, 659.25],   // Dm9     (D bass)
+        [ 98.00, 196.00, 246.94, 349.23, 440.00, 659.25]    // G13     (G bass)
     ];
-    var voiceVols = [0.30, 0.25, 0.20, 0.15];
 
-    function initAmbient() {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        masterGain = audioCtx.createGain();
-        masterGain.gain.value = 0;
+    function init() {
+        ctx = new (window.AudioContext || window.webkitAudioContext)();
+        master = ctx.createGain();
+        master.gain.value = 0.16; // quiet — an accent, not a soundtrack
 
-        var dryGain = audioCtx.createGain(); dryGain.gain.value = 0.75;
-        var wetGain = audioCtx.createGain(); wetGain.gain.value = 0.3;
-        var delay = audioCtx.createDelay(1); delay.delayTime.value = 0.25;
-        var fb = audioCtx.createGain(); fb.gain.value = 0.2;
-        var lpf = audioCtx.createBiquadFilter(); lpf.type = 'lowpass'; lpf.frequency.value = 3000;
+        var lpf = ctx.createBiquadFilter();
+        lpf.type = 'lowpass'; lpf.frequency.value = 3000; lpf.Q.value = 0.5;
+        master.connect(lpf);
+        lpf.connect(ctx.destination);
 
-        masterGain.connect(dryGain); dryGain.connect(audioCtx.destination);
-        masterGain.connect(delay); delay.connect(fb); fb.connect(delay);
-        delay.connect(lpf); lpf.connect(wetGain); wetGain.connect(audioCtx.destination);
-
-        var initial = chords[0];
-        for (var i = 0; i < 4; i++) {
-            var osc = audioCtx.createOscillator();
-            var g = audioCtx.createGain();
-            osc.type = 'sine';
-            osc.frequency.value = initial[i];
-            g.gain.value = voiceVols[i];
-            osc.connect(g); g.connect(masterGain);
-            osc.start();
-            voices.push(osc);
-
-            var lfo = audioCtx.createOscillator();
-            var lfoG = audioCtx.createGain();
-            lfo.type = 'sine';
-            lfo.frequency.value = 0.1 + Math.random() * 0.1;
-            lfoG.gain.value = 2;
-            lfo.connect(lfoG); lfoG.connect(osc.detune);
-            lfo.start();
-        }
-        started = true;
+        // A whisper of space so the notes don't sound dry.
+        var delay = ctx.createDelay(1); delay.delayTime.value = 0.24;
+        var fb = ctx.createGain(); fb.gain.value = 0.2;
+        var wet = ctx.createGain(); wet.gain.value = 0.16;
+        lpf.connect(delay); delay.connect(fb); fb.connect(delay);
+        delay.connect(wet); wet.connect(ctx.destination);
     }
 
-    function transitionToChord(idx) {
-        var chord = chords[idx], t = audioCtx.currentTime;
-        for (var i = 0; i < voices.length; i++) {
-            voices[i].frequency.cancelScheduledValues(t);
-            voices[i].frequency.setValueAtTime(voices[i].frequency.value, t);
-            voices[i].frequency.exponentialRampToValueAtTime(chord[i], t + GLIDE);
-        }
+    // One e-piano note: sine fundamental with soft upper partials,
+    // fast strike, long natural decay.
+    function note(freq, t, vel) {
+        [[1, 1], [2, 0.28], [3, 0.09]].forEach(function (p) {
+            var o = ctx.createOscillator();
+            var g = ctx.createGain();
+            o.type = 'sine';
+            o.frequency.value = freq * p[0];
+            g.gain.setValueAtTime(0, t);
+            g.gain.linearRampToValueAtTime(vel * p[1], t + 0.012);
+            g.gain.exponentialRampToValueAtTime(0.0001, t + 1.9);
+            o.connect(g); g.connect(master);
+            o.start(t); o.stop(t + 2.0);
+        });
     }
 
-    function fadeIn() {
-        if (!started) initAmbient();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        hovering = true;
-        var t = audioCtx.currentTime;
-        masterGain.gain.cancelScheduledValues(t);
-        masterGain.gain.setValueAtTime(masterGain.gain.value, t);
-        masterGain.gain.linearRampToValueAtTime(MAX_VOL, t + FADE_IN);
-        transitionToChord(chordIndex);
-        if (chordTimer) clearInterval(chordTimer);
-        chordTimer = setInterval(function () {
-            if (hovering) { chordIndex = (chordIndex + 1) % chords.length; transitionToChord(chordIndex); }
-        }, CHORD_DUR * 1000);
+    function playChord() {
+        var now = ctx.currentTime;
+        if (now - lastPlay < 0.3) return;
+        lastPlay = now;
+        var chord = CHORDS[chordIdx++ % CHORDS.length];
+        chord.forEach(function (f, i) {
+            // Bass lands first and softest; upper voices roll in after it.
+            var vel = i === 0 ? 0.10 : 0.15 - i * 0.012;
+            note(f, now + i * 0.055, vel);
+        });
     }
 
-    function fadeOut() {
-        if (!started) return;
+    function startProgression() {
+        try {
+            if (!ctx) init();
+            if (ctx.state === 'suspended') ctx.resume();
+            hovering = true;
+            playChord();
+            if (hoverIv) clearInterval(hoverIv);
+            hoverIv = setInterval(function () {
+                if (hovering) playChord();
+            }, CHORD_EVERY_MS);
+        } catch (e) { /* audio unavailable — stay silent */ }
+    }
+
+    function stopProgression() {
         hovering = false;
-        var t = audioCtx.currentTime;
-        masterGain.gain.cancelScheduledValues(t);
-        masterGain.gain.setValueAtTime(masterGain.gain.value, t);
-        masterGain.gain.linearRampToValueAtTime(0, t + FADE_OUT);
-        if (chordTimer) { clearInterval(chordTimer); chordTimer = null; }
+        if (hoverIv) { clearInterval(hoverIv); hoverIv = null; }
+        // No hard cut: the last chord decays away on its own.
     }
 
     window.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('a[aria-label*="30-minute"]').forEach(function (btn) {
-            btn.addEventListener('mouseenter', fadeIn);
-            btn.addEventListener('mouseleave', fadeOut);
+            btn.addEventListener('mouseenter', startProgression);
+            btn.addEventListener('mouseleave', stopProgression);
         });
+    });
+})();
+</script>
+
+<!-- ============================================================
+     DAM AI ASSISTANT — embedded orb agent.
+     Custom ElevenLabs conversational client over a raw WebSocket:
+     mic → 16kHz PCM16 up, PCM16 down → queued playback. The orb
+     reacts to the live audio level. Handles interruptions,
+     ping/pong, mic-permission denial (text-mode fallback),
+     connection timeout, transcript copy, and page-unload cleanup.
+     ============================================================ -->
+<script>
+(function () {
+    'use strict';
+
+    var AGENT_ID = 'agent_0401kg1se2h2f968eyratmvn98df';
+    var WS_URL = 'wss://api.elevenlabs.io/v1/convai/conversation?agent_id=' + AGENT_ID;
+    var CONNECT_TIMEOUT_MS = 12000;
+
+    // ---------- state ----------
+    var ws = null, audioCtx = null, micStream = null, micSource = null, micProc = null;
+    var inputAn = null, outputAn = null, outputWired = false;
+    var connected = false, connecting = false, muted = false, micAvailable = false;
+    var lastInterrupt = 0, audioQ = [], playing = false, curSrc = null, audioGen = 0;
+    var timerIv = null, timerSec = 0, connectTimer = null, rafId = null, ampCur = 0;
+    var fillCur = 0, fillTarget = 0;
+    var outRate = 16000, inRate = 16000;
+    var transcriptLog = [];
+    var pendingText = null;
+
+    // ---------- elements ----------
+    function $(id) { return document.getElementById(id); }
+    var pulseWrap = $('pulseWrap'), pulseBtn = $('pulseBtn'), pcLabel = $('pcLabel'), pcSub = $('pcSub');
+    var timerEl = $('agentTimer');
+    var modeEl = $('agentMode'), transcript = $('agentTranscript');
+    var muteBtn = $('agentMute'), dialogBtn = $('agentDialogBtn');
+    var form = $('agentForm'), input = $('agentInput'), sendBtn = $('agentSend');
+    var dialog = $('agentDialog'), dialogBody = $('agentDialogBody');
+    var dialogClose = $('agentDialogClose'), dialogClose2 = $('agentDialogClose2'), dialogCopy = $('agentDialogCopy');
+    if (!pulseBtn || !transcript) return;
+
+    var ICO = {
+        mic: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>',
+        micOff: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"><line x1="2" x2="22" y1="2" y2="22"/><path d="M18.89 13.23A7.12 7.12 0 0 0 19 12v-2"/><path d="M5 10v2a7 7 0 0 0 12 5"/><path d="M15 9.34V5a3 3 0 0 0-5.68-1.33"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12"/><line x1="12" x2="12" y1="19" y2="22"/></svg>',
+        check: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>',
+        copy: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>'
+    };
+
+    // ---------- UI helpers ----------
+    function setMode(cls, txt) { modeEl.className = 'agent-mode' + (cls ? ' ' + cls : ''); modeEl.textContent = txt; }
+    // The circle is the whole status UI: its rings show the state, the white
+    // fill morphs in while the agent speaks and out while it listens.
+    function setCircle(state, label, sub) {
+        pulseWrap.className = 'pulse-wrap' + (state ? ' ' + state : '');
+        fillTarget = state === 'speaking' ? 1 : 0;
+        if (label != null) pcLabel.textContent = label;
+        if (sub != null) pcSub.textContent = sub;
+        pulseBtn.setAttribute('aria-label', connected || connecting ? 'End the voice conversation' : 'Start a voice conversation');
+    }
+    function tickTimer() {
+        timerSec++;
+        var m = String(Math.floor(timerSec / 60)).padStart(2, '0');
+        var s = String(timerSec % 60).padStart(2, '0');
+        timerEl.textContent = m + ':' + s;
+    }
+
+    // Transcript entries use textContent only — agent/user text is untrusted.
+    function addMsg(role, text) {
+        if (role !== 'system') transcriptLog.push({ role: role, text: text });
+        transcript.querySelectorAll('.at-msg:not(.old)').forEach(function (el) { el.classList.add('old'); });
+        var el = document.createElement('div');
+        el.className = 'at-msg ' + role;
+        if (role !== 'system') {
+            var who = document.createElement('span');
+            who.className = 'who';
+            who.textContent = role === 'agent' ? 'Assistant' : 'You';
+            el.appendChild(who);
+        }
+        el.appendChild(document.createTextNode(text));
+        transcript.appendChild(el);
+        while (transcript.children.length > 6) transcript.removeChild(transcript.firstChild);
+        dialogBtn.disabled = transcriptLog.length === 0;
+    }
+
+    // ---------- audio helpers (PCM16 <-> base64, resampling) ----------
+    function ab2b64(buf) {
+        var u = new Uint8Array(buf), b = '';
+        for (var i = 0; i < u.length; i += 0x8000) b += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000));
+        return btoa(b);
+    }
+    function b642ab(b64) {
+        var s = atob(b64), u = new Uint8Array(s.length);
+        for (var i = 0; i < s.length; i++) u[i] = s.charCodeAt(i);
+        return u.buffer;
+    }
+    function f32i16(f) {
+        var o = new Int16Array(f.length);
+        for (var i = 0; i < f.length; i++) { var s = Math.max(-1, Math.min(1, f[i])); o[i] = s < 0 ? s * 0x8000 : s * 0x7FFF; }
+        return o;
+    }
+    function i16f32(i16) {
+        var o = new Float32Array(i16.length);
+        for (var k = 0; k < i16.length; k++) o[k] = i16[k] / (i16[k] < 0 ? 0x8000 : 0x7FFF);
+        return o;
+    }
+    function downsample(buf, from, to) {
+        if (from === to) return buf;
+        var r = from / to, n = Math.round(buf.length / r), o = new Float32Array(n);
+        for (var i = 0; i < n; i++) {
+            var x = i * r, l = Math.floor(x), h = Math.min(l + 1, buf.length - 1), f = x - l;
+            o[i] = buf[l] * (1 - f) + buf[h] * f;
+        }
+        return o;
+    }
+
+    // ---------- playback queue (interruption-safe via generation counter) ----------
+    function enqueue(b64) { audioQ.push(b64); if (!playing) drain(); }
+    function drain() {
+        if (!audioQ.length) { playing = false; curSrc = null; if (connected) { setMode('listening', muted ? 'Muted' : (micAvailable ? 'Listening…' : 'Text mode — type below')); setCircle('listening'); } return; }
+        if (!audioCtx) { audioQ.length = 0; playing = false; return; }
+        playing = true;
+        var gen = audioGen;
+        var pcm, f32;
+        try {
+            pcm = b642ab(audioQ.shift());
+            f32 = i16f32(new Int16Array(pcm));
+        } catch (e) { drain(); return; }
+        var buf = audioCtx.createBuffer(1, f32.length, outRate);
+        buf.getChannelData(0).set(f32);
+        var src = audioCtx.createBufferSource();
+        src.buffer = buf;
+        curSrc = src;
+        if (outputAn) {
+            src.connect(outputAn);
+            if (!outputWired) { outputAn.connect(audioCtx.destination); outputWired = true; }
+        } else {
+            src.connect(audioCtx.destination);
+        }
+        src.onended = function () { if (gen === audioGen && curSrc === src) { curSrc = null; drain(); } };
+        src.start();
+    }
+    function flushAudio() {
+        audioGen++; audioQ.length = 0; playing = false;
+        if (curSrc) {
+            var s = curSrc; curSrc = null;
+            try { s.stop(); } catch (_) {}
+            try { s.disconnect(); } catch (_) {}
+        }
+    }
+
+    // ---------- orb visualiser: live audio level → scale + glow ----------
+    function rms(analyser, buf) {
+        analyser.getByteTimeDomainData(buf);
+        var sum = 0;
+        for (var i = 0; i < buf.length; i++) { var d = (buf[i] - 128) / 128; sum += d * d; }
+        return Math.sqrt(sum / buf.length);
+    }
+    var outBuf = null, inBuf = null;
+    function visualLoop() {
+        var target = 0;
+        if (playing && outputAn) {
+            if (!outBuf) outBuf = new Uint8Array(outputAn.fftSize);
+            target = Math.min(0.22, rms(outputAn, outBuf) * 0.9);
+        } else if (!muted && inputAn) {
+            if (!inBuf) inBuf = new Uint8Array(inputAn.fftSize);
+            target = Math.min(0.1, rms(inputAn, inBuf) * 0.45);
+        }
+        ampCur += (target - ampCur) * 0.25;
+        pulseBtn.style.setProperty('--amp', ampCur.toFixed(3));
+        pulseBtn.style.setProperty('--glow', (ampCur * 150).toFixed(1) + 'px');
+        // Seamless fill morph: the white disc grows/shrinks a little every
+        // frame, and the label ink darkens in step so it stays readable.
+        fillCur += (fillTarget - fillCur) * 0.09;
+        pulseBtn.style.setProperty('--fill', fillCur.toFixed(3));
+        var t = fillCur;
+        pcLabel.style.color = 'rgb(' + Math.round(226 + (15 - 226) * t) + ',' + Math.round(232 + (23 - 232) * t) + ',' + Math.round(240 + (42 - 240) * t) + ')';
+        pcSub.style.color   = 'rgb(' + Math.round(148 + (51 - 148) * t) + ',' + Math.round(163 + (65 - 163) * t) + ',' + Math.round(184 + (85 - 184) * t) + ')';
+        rafId = requestAnimationFrame(visualLoop);
+    }
+    function startVisual() { if (rafId == null) rafId = requestAnimationFrame(visualLoop); }
+    function stopVisual() {
+        if (rafId != null) { cancelAnimationFrame(rafId); rafId = null; }
+        ampCur = 0; fillCur = 0; fillTarget = 0;
+        pulseBtn.style.setProperty('--amp', '0');
+        pulseBtn.style.setProperty('--glow', '0px');
+        pulseBtn.style.setProperty('--fill', '0');
+        pcLabel.style.color = '';
+        pcSub.style.color = '';
+    }
+
+    // ---------- microphone ----------
+    function ensureCtx() {
+        if (audioCtx) return audioCtx;
+        var AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return null;
+        try { audioCtx = new AC({ sampleRate: 16000 }); }
+        catch (e) { audioCtx = new AC(); } // browser picks the rate; we resample
+        outputAn = audioCtx.createAnalyser();
+        outputAn.fftSize = 256;
+        outputWired = false;
+        return audioCtx;
+    }
+    function micOn() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            return Promise.reject(new Error('getUserMedia unavailable'));
+        }
+        return navigator.mediaDevices.getUserMedia({
+            audio: { sampleRate: 16000, channelCount: 1, echoCancellation: true, noiseSuppression: true }
+        }).then(function (stream) {
+            micStream = stream;
+            micSource = audioCtx.createMediaStreamSource(stream);
+            inputAn = audioCtx.createAnalyser();
+            inputAn.fftSize = 256;
+            micSource.connect(inputAn);
+            micProc = audioCtx.createScriptProcessor(4096, 1, 1);
+            micProc.onaudioprocess = function (e) {
+                if (!ws || ws.readyState !== 1 || muted) return;
+                var d = downsample(e.inputBuffer.getChannelData(0), audioCtx.sampleRate, inRate);
+                try { ws.send(JSON.stringify({ user_audio_chunk: ab2b64(f32i16(d).buffer) })); } catch (_) {}
+            };
+            micSource.connect(micProc);
+            micProc.connect(audioCtx.destination);
+        });
+    }
+    function micOff() {
+        if (micProc) { try { micProc.disconnect(); } catch (_) {} micProc = null; }
+        if (micSource) { try { micSource.disconnect(); } catch (_) {} micSource = null; }
+        if (micStream) { micStream.getTracks().forEach(function (t) { t.stop(); }); micStream = null; }
+        inputAn = null; inBuf = null;
+    }
+
+    // ---------- connection ----------
+    function failConnect(msg) {
+        if (connectTimer) { clearTimeout(connectTimer); connectTimer = null; }
+        connecting = false; connected = false;
+        if (ws) { try { ws.close(); } catch (_) {} ws = null; }
+        micOff(); flushAudio(); stopVisual();
+        setCircle('', 'Tap to retry', 'voice chat');
+        setMode('', msg || 'Could not connect. Please try again.');
+        timerEl.hidden = true;
+        muteBtn.disabled = true;
+        sendBtn.disabled = true; input.disabled = false;
+        pendingText = null;
+    }
+
+    function connect() {
+        if (connecting || connected) return;
+        if (!window.WebSocket) { failConnect('Your browser does not support voice chat.'); return; }
+        connecting = true;
+        setCircle('connecting', 'Connecting…', 'tap to cancel');
+        setMode('', 'Requesting microphone…');
+
+        var ctx = ensureCtx();
+        if (!ctx) { failConnect('Audio is not supported in this browser.'); return; }
+        if (ctx.state === 'suspended') ctx.resume().catch(function () {});
+
+        micOn().then(function () {
+            micAvailable = true;
+            openSocket();
+        }).catch(function () {
+            // Mic denied or unavailable: continue in text mode. The agent still
+            // speaks its replies; the visitor types instead of talking.
+            micAvailable = false;
+            addMsg('system', 'Microphone unavailable — continuing in text mode.');
+            openSocket();
+        });
+    }
+
+    function openSocket() {
+        setMode('', 'Connecting to the assistant…');
+        try {
+            ws = new WebSocket(WS_URL, ['convai']);
+        } catch (e) {
+            failConnect('Could not open a connection.');
+            return;
+        }
+
+        connectTimer = setTimeout(function () {
+            if (!connected) failConnect('The assistant is taking too long to respond. Please try again.');
+        }, CONNECT_TIMEOUT_MS);
+
+        ws.onopen = function () {
+            try { ws.send(JSON.stringify({ type: 'conversation_initiation_client_data' })); } catch (_) {}
+        };
+
+        ws.onmessage = function (ev) {
+            var m;
+            try { m = JSON.parse(ev.data); } catch (e) { return; }
+            switch (m.type) {
+                case 'conversation_initiation_metadata': {
+                    if (connectTimer) { clearTimeout(connectTimer); connectTimer = null; }
+                    var meta = m.conversation_initiation_metadata_event || {};
+                    var of = /^pcm_(\d+)$/.exec(meta.agent_output_audio_format || '');
+                    var uf = /^pcm_(\d+)$/.exec(meta.user_input_audio_format || '');
+                    if (of) outRate = parseInt(of[1], 10);
+                    if (uf) inRate = parseInt(uf[1], 10);
+                    connecting = false; connected = true; muted = false;
+                    setCircle('listening', 'Tap to end', '');
+                    setMode('listening', micAvailable ? 'Listening…' : 'Text mode — type below');
+                    muteBtn.disabled = !micAvailable;
+                    muteBtn.classList.remove('danger');
+                    muteBtn.innerHTML = ICO.mic;
+                    sendBtn.disabled = false; input.disabled = false;
+                    timerSec = 0; timerEl.textContent = '00:00'; timerEl.hidden = false;
+                    if (timerIv) clearInterval(timerIv);
+                    timerIv = setInterval(tickTimer, 1000);
+                    startVisual();
+                    if (pendingText) { var t = pendingText; pendingText = null; sendUserText(t); }
+                    break;
+                }
+                case 'audio': {
+                    if (m.audio_event && m.audio_event.audio_base_64) {
+                        var eid = m.audio_event.event_id || m.event_id || Infinity;
+                        if (eid >= lastInterrupt) {
+                            enqueue(m.audio_event.audio_base_64);
+                            setMode('speaking', 'Speaking…');
+                            setCircle('speaking');
+                        }
+                    }
+                    break;
+                }
+                case 'agent_response': {
+                    if (m.agent_response_event && m.agent_response_event.agent_response) {
+                        addMsg('agent', m.agent_response_event.agent_response);
+                    }
+                    break;
+                }
+                case 'user_transcript': {
+                    if (m.user_transcription_event && m.user_transcription_event.user_transcript) {
+                        addMsg('user', m.user_transcription_event.user_transcript);
+                    }
+                    break;
+                }
+                case 'interruption': {
+                    lastInterrupt = (m.interruption_event && m.interruption_event.event_id) || m.event_id || Infinity;
+                    flushAudio();
+                    setMode('listening', muted ? 'Muted' : (micAvailable ? 'Listening…' : 'Text mode — type below'));
+                    setCircle('listening');
+                    break;
+                }
+                case 'ping': {
+                    try { ws.send(JSON.stringify({ type: 'pong', event_id: m.ping_event && m.ping_event.event_id })); } catch (_) {}
+                    break;
+                }
+                case 'error': {
+                    if (m.error_event && m.error_event.error_type === 'max_duration_exceeded') {
+                        addMsg('system', 'Maximum conversation length reached.');
+                        disconnect();
+                    }
+                    break;
+                }
+                case 'agent_tool_response': {
+                    if (m.agent_tool_response && m.agent_tool_response.tool_name === 'end_call') disconnect();
+                    break;
+                }
+            }
+        };
+
+        ws.onerror = function () {
+            if (!connected) failConnect('Connection error. Check your internet and try again.');
+            else setMode('', 'Connection lost');
+        };
+
+        ws.onclose = function () {
+            if (connected) { connected = false; disconnect(); }
+            else if (connecting) failConnect('The connection was closed before it was ready.');
+        };
+    }
+
+    function disconnect() {
+        if (connectTimer) { clearTimeout(connectTimer); connectTimer = null; }
+        if (ws) {
+            ws.onclose = null; ws.onerror = null;
+            if (ws.readyState === 0 || ws.readyState === 1) { try { ws.close(1000, 'User ended'); } catch (_) {} }
+            ws = null;
+        }
+        var wasConnected = connected;
+        connected = false; connecting = false; muted = false; lastInterrupt = 0; pendingText = null;
+        flushAudio(); micOff(); stopVisual();
+        if (timerIv) { clearInterval(timerIv); timerIv = null; }
+        setCircle('', 'Tap to start', 'voice chat');
+        setMode('', wasConnected ? 'Conversation ended — tap to start again' : '');
+        timerEl.hidden = true;
+        muteBtn.disabled = true; muteBtn.classList.remove('danger'); muteBtn.innerHTML = ICO.mic;
+        sendBtn.disabled = true;
+        dialogBtn.disabled = transcriptLog.length === 0;
+    }
+
+    // ---------- text input ----------
+    function sendUserText(t) {
+        if (!t || !ws || ws.readyState !== 1) return;
+        try { ws.send(JSON.stringify({ type: 'user_message', text: t })); } catch (_) { return; }
+        addMsg('user', t);
+    }
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var t = input.value.trim();
+        if (!t) return;
+        if (connected) { sendUserText(t); input.value = ''; }
+        else if (!connecting) { pendingText = t; input.value = ''; connect(); }
+        else { pendingText = t; input.value = ''; }
+    });
+
+    // Suggested questions: connect (if needed), then send once live.
+    document.querySelectorAll('.agent-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+            var q = chip.getAttribute('data-q') || chip.textContent;
+            if (connected) sendUserText(q);
+            else if (!connecting) { pendingText = q; connect(); }
+            else pendingText = q;
+        });
+    });
+
+    // ---------- controls ----------
+    pulseBtn.addEventListener('click', function () {
+        if (connected || connecting) disconnect();
+        else connect();
+    });
+
+    muteBtn.addEventListener('click', function () {
+        if (!connected || !micAvailable) return;
+        muted = !muted;
+        if (micStream) micStream.getAudioTracks().forEach(function (t) { t.enabled = !muted; });
+        muteBtn.classList.toggle('danger', muted);
+        muteBtn.innerHTML = muted ? ICO.micOff : ICO.mic;
+        muteBtn.setAttribute('aria-label', muted ? 'Unmute microphone' : 'Mute microphone');
+        muteBtn.title = muted ? 'Unmute' : 'Mute';
+        if (!playing) setMode('listening', muted ? 'Muted' : 'Listening…');
+    });
+
+    // ---------- transcript dialog ----------
+    function openDialog() {
+        dialogBody.innerHTML = '';
+        if (!transcriptLog.length) {
+            var empty = document.createElement('div');
+            empty.style.cssText = 'color:#94a3b8;text-align:center;padding:24px;';
+            empty.textContent = 'No transcript yet.';
+            dialogBody.appendChild(empty);
+        } else {
+            transcriptLog.forEach(function (entry) {
+                var line = document.createElement('div');
+                line.className = 'd-line ' + entry.role;
+                var who = document.createElement('div');
+                who.className = 'd-who';
+                who.textContent = entry.role === 'agent' ? 'Assistant' : 'You';
+                var text = document.createElement('div');
+                text.className = 'd-text';
+                text.textContent = entry.text;
+                line.appendChild(who); line.appendChild(text);
+                dialogBody.appendChild(line);
+            });
+            dialogBody.scrollTop = dialogBody.scrollHeight;
+        }
+        dialog.classList.add('open');
+    }
+    function closeDialog() { dialog.classList.remove('open'); }
+    dialogBtn.addEventListener('click', openDialog);
+    dialogClose.addEventListener('click', closeDialog);
+    dialogClose2.addEventListener('click', closeDialog);
+    dialog.addEventListener('click', function (e) { if (e.target === dialog) closeDialog(); });
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && dialog.classList.contains('open')) closeDialog();
+    });
+
+    function copyPlainTranscript() {
+        var plain = transcriptLog.map(function (e) {
+            return (e.role === 'agent' ? 'Assistant' : 'You') + ':\n' + e.text;
+        }).join('\n\n');
+        function done() {
+            dialogCopy.innerHTML = ICO.check + ' Copied!';
+            setTimeout(function () { dialogCopy.innerHTML = ICO.copy + ' Copy'; }, 1500);
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(plain).then(done).catch(function () { legacyCopy(plain, done); });
+        } else {
+            legacyCopy(plain, done);
+        }
+    }
+    function legacyCopy(text, done) {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try { if (document.execCommand('copy')) done(); } catch (_) {}
+        ta.remove();
+    }
+    dialogCopy.addEventListener('click', copyPlainTranscript);
+
+    // "Talk to the AI assistant" buttons scroll to the embedded agent and pulse the orb.
+    document.querySelectorAll('[data-open-assistant]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var sec = document.getElementById('ai-agent');
+            if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            if (window.gsap && !connected) {
+                window.gsap.fromTo(pulseWrap, { scale: 1 }, { scale: 1.08, duration: 0.35, yoyo: true, repeat: 3, ease: 'power1.inOut', delay: 0.4 });
+            }
+        });
+    });
+
+    // ---------- cleanup ----------
+    window.addEventListener('pagehide', function () {
+        if (connected || connecting) {
+            if (ws) { try { ws.close(1000, 'Page closed'); } catch (_) {} ws = null; }
+            micOff(); flushAudio(); stopVisual();
+        }
     });
 })();
 </script>
