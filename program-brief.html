@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Program Brief | Dimaag aur Machine</title>
+    <meta name="description" content="A one-page program brief for school management: what the Dimaag aur Machine AI literacy workshop covers, how it runs, what the school provides, and what it costs.">
+    <link rel="canonical" href="https://dimaagaurmachine.github.io/website/program-brief.html">
+    <meta name="robots" content="index, follow">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --ink:      #0f172a;
+            --body:     #334155;
+            --muted:    #64748b;
+            --faint:    #94a3b8;
+            --line:     #e2e8f0;
+            --wash:     #f8fafc;
+            --accent:   #047857;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+            color: var(--body);
+            background: #eef1f5;
+            line-height: 1.55;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* The sheet: sized to A4 so print and screen agree */
+        .sheet {
+            max-width: 210mm;
+            margin: 0 auto;
+            background: #fff;
+            padding: 18mm 17mm 16mm;
+            box-shadow: 0 10px 40px rgba(15, 23, 42, .10);
+        }
+
+        /* ---------- Screen-only toolbar ---------- */
+        .toolbar {
+            max-width: 210mm;
+            margin: 0 auto;
+            padding: 20px 17mm 14px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .toolbar a, .toolbar button {
+            font: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 999px;
+            padding: 9px 18px;
+            cursor: pointer;
+            text-decoration: none;
+            border: 1px solid var(--line);
+            background: #fff;
+            color: var(--body);
+            transition: border-color .15s, color .15s;
+        }
+        .toolbar a:hover, .toolbar button:hover { border-color: var(--ink); color: var(--ink); }
+        .toolbar .primary { background: var(--ink); color: #fff; border-color: var(--ink); }
+        .toolbar .primary:hover { background: #1e293b; color: #fff; }
+
+        /* ---------- Masthead ---------- */
+        .masthead {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 20px;
+            padding-bottom: 14px;
+            border-bottom: 2px solid var(--ink);
+        }
+        .brand { display: flex; align-items: center; gap: 9px; }
+        .brand img { height: 26px; width: auto; mix-blend-mode: multiply; }
+        .brand span { font-weight: 800; color: var(--ink); font-size: 16px; letter-spacing: -.01em; }
+        .masthead .meta { text-align: right; font-size: 11px; color: var(--faint); line-height: 1.5; }
+
+        h1 {
+            font-size: 26px;
+            line-height: 1.2;
+            letter-spacing: -.02em;
+            color: var(--ink);
+            margin: 20px 0 8px;
+            font-weight: 800;
+        }
+        .standfirst { font-size: 14px; color: var(--muted); margin: 0 0 22px; max-width: 62ch; }
+
+        h2 {
+            font-size: 11px;
+            letter-spacing: .13em;
+            text-transform: uppercase;
+            color: var(--faint);
+            font-weight: 700;
+            margin: 26px 0 10px;
+        }
+        h3 { font-size: 14px; color: var(--ink); margin: 0 0 5px; font-weight: 700; }
+        p  { margin: 0 0 10px; font-size: 13.5px; }
+
+        /* ---------- At a glance ---------- */
+        .glance {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            background: var(--line);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .glance div { background: #fff; padding: 11px 13px; }
+        .glance dt { font-size: 10.5px; text-transform: uppercase; letter-spacing: .07em; color: var(--faint); font-weight: 600; margin-bottom: 3px; }
+        .glance dd { margin: 0; font-size: 13px; color: var(--ink); font-weight: 600; }
+
+        /* ---------- Modules ---------- */
+        .modules { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .module {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 14px 15px;
+            background: var(--wash);
+        }
+        .tag {
+            display: inline-block;
+            font-size: 9.5px;
+            font-weight: 700;
+            letter-spacing: .09em;
+            text-transform: uppercase;
+            background: var(--ink);
+            color: #fff;
+            padding: 3px 8px;
+            border-radius: 999px;
+            margin-bottom: 9px;
+        }
+        .tag.alt { background: #475569; }
+
+        ul { margin: 0; padding-left: 17px; }
+        li { font-size: 12.5px; margin-bottom: 4px; }
+
+        /* ---------- Responsibilities ---------- */
+        .split { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .split ul li { margin-bottom: 5px; }
+        .yes li::marker { color: var(--accent); }
+        .no  li::marker { color: var(--faint); }
+
+        /* ---------- Fees ---------- */
+        .fees { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .fees th, .fees td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+        .fees thead th { font-size: 10.5px; text-transform: uppercase; letter-spacing: .07em; color: var(--faint); border-bottom: 1px solid var(--line); }
+        .fees td:last-child, .fees th:last-child { text-align: right; }
+        .fees tbody tr:last-child td { border-bottom: none; }
+        .fees .amount { font-weight: 700; color: var(--ink); white-space: nowrap; }
+
+        /* ---------- Instructor ---------- */
+        .instructor { display: flex; gap: 15px; align-items: flex-start; }
+        .instructor img {
+            width: 78px;
+            height: 100px;
+            object-fit: cover;
+            object-position: center 22%;
+            border-radius: 6px;
+            flex-shrink: 0;
+        }
+
+        .callout {
+            border-left: 3px solid var(--ink);
+            padding: 3px 0 3px 14px;
+            margin: 22px 0 0;
+        }
+        .callout p { margin: 0; font-size: 13.5px; color: var(--ink); }
+        .callout a { color: var(--ink); font-weight: 700; }
+
+        footer {
+            margin-top: 26px;
+            padding-top: 12px;
+            border-top: 1px solid var(--line);
+            font-size: 10.5px;
+            color: var(--faint);
+            display: flex;
+            justify-content: space-between;
+            gap: 14px;
+        }
+
+        /* ---------- Small screens ---------- */
+        @media (max-width: 720px) {
+            .sheet { padding: 24px 20px 28px; box-shadow: none; }
+            .toolbar { padding: 16px 20px 10px; }
+            .glance { grid-template-columns: 1fr 1fr; }
+            .modules, .split { grid-template-columns: 1fr; }
+            .masthead { flex-direction: column; gap: 10px; }
+            .masthead .meta { text-align: left; }
+            h1 { font-size: 22px; }
+        }
+
+        /* ---------- Print ---------- */
+        @page { size: A4; margin: 12mm; }
+        @media print {
+            body { background: #fff; }
+            .toolbar { display: none !important; }
+            .sheet { box-shadow: none; max-width: none; padding: 0; }
+            h2 { margin-top: 16px; }
+            .module, .glance, section, .instructor { page-break-inside: avoid; }
+            a { color: inherit; text-decoration: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="toolbar">
+    <a href="index.html">&larr; Back to the site</a>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button onclick="window.print()">Print / Save as PDF</button>
+        <a class="primary" href="index.html#book">Book a 30-min discussion</a>
+    </div>
+</div>
+
+<div class="sheet">
+
+    <header class="masthead">
+        <div class="brand">
+            <img src="workshoplogo.png" alt="">
+            <span>Dimaag aur Machine</span>
+        </div>
+        <div class="meta">
+            Program brief for school management<br>
+            Nashik, Maharashtra &middot; Academic year 2026&ndash;27
+        </div>
+    </header>
+
+    <h1>AI literacy, taught inside your school.</h1>
+    <p class="standfirst">
+        A two or three day workshop for Classes 9 to 12, conducted on school premises during school hours,
+        with a school teacher present in every session. It is not a coding class and not exam preparation.
+        It teaches students to use AI tools competently, judge what those tools produce, and understand
+        where they must not be trusted.
+    </p>
+
+    <section>
+        <h2>At a glance</h2>
+        <dl class="glance">
+            <div><dt>Who it is for</dt><dd>Classes 9&ndash;12, all streams</dd></div>
+            <div><dt>Duration</dt><dd>2 or 3 days, max 4 hrs/day</dd></div>
+            <div><dt>Batch size</dt><dd>50&ndash;200 students</dd></div>
+            <div><dt>Where</dt><dd>Your premises, school hours</dd></div>
+            <div><dt>Language</dt><dd>English and Hindi</dd></div>
+            <div><dt>Boards</dt><dd>CBSE, ICSE, SSC, IB</dd></div>
+        </dl>
+    </section>
+
+    <section>
+        <h2>The two modules</h2>
+        <div class="modules">
+            <div class="module">
+                <span class="tag">For students</span>
+                <h3>AI Sense&trade;</h3>
+                <p style="font-size:12px; color:var(--muted); margin-bottom:8px;">Core &mdash; 2 days &nbsp;&middot;&nbsp; Applied &mdash; 3 days</p>
+                <ul>
+                    <li>How tools like ChatGPT, Claude and Gemini actually work</li>
+                    <li>Prompt engineering, and how to judge an answer critically</li>
+                    <li>Where AI fails and hallucinates, and when not to trust it</li>
+                    <li>Using AI to study rather than to shortcut thinking</li>
+                    <li>Ethics, responsible use, online safety, AI career landscape</li>
+                    <li>The three-day version adds one complete hands-on project</li>
+                </ul>
+            </div>
+            <div class="module">
+                <span class="tag alt">For teachers</span>
+                <h3>AI Made Practical&trade; &mdash; Subject Edition</h3>
+                <p style="font-size:12px; color:var(--muted); margin-bottom:8px;">Department-wise &nbsp;&middot;&nbsp; 2&ndash;6 hrs per subject</p>
+                <ul>
+                    <li>Turn an existing chapter into quizzes, flashcards, worksheets and revision material</li>
+                    <li>Built around each teacher's own subject &mdash; Maths, Physics, Chemistry, Biology, Languages, Humanities</li>
+                    <li>Output is reusable year after year, reducing fresh preparation</li>
+                    <li>No prior technical background assumed</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>What each side is responsible for</h2>
+        <div class="split">
+            <div>
+                <h3 style="margin-bottom:7px;">The school provides</h3>
+                <ul class="yes">
+                    <li>A venue and a time slot inside the timetable</li>
+                    <li>Management approval for the batch</li>
+                    <li>Communication to parents about enrolment</li>
+                    <li>One teacher present during sessions, for supervision</li>
+                </ul>
+            </div>
+            <div>
+                <h3 style="margin-bottom:7px;">We handle everything else</h3>
+                <ul class="no">
+                    <li>Curriculum, facilitation and all session materials</li>
+                    <li>Certificates, co-signed by the school</li>
+                    <li>All parent queries and concerns, directly &mdash; never routed through school staff</li>
+                    <li>Devices where needed; sessions adapt to whatever is available</li>
+                </ul>
+            </div>
+        </div>
+        <p style="margin-top:12px; font-size:12.5px; color:var(--muted);">
+            Teachers are not evaluated on program outcomes, are not held responsible for student performance
+            during sessions, and are not expected to prepare anything beforehand. Students never use AI tools
+            unsupervised, and there is no homework or after-school commitment.
+        </p>
+    </section>
+
+    <section>
+        <h2>Fees</h2>
+        <table class="fees">
+            <thead>
+                <tr><th>Module</th><th>Paid by</th><th>Amount</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>AI Sense &mdash; Core (2 days)</td>
+                    <td>Parents</td>
+                    <td class="amount">&#8377;1,200 &ndash; &#8377;1,500 <span style="font-weight:400; color:var(--muted);">/ student</span></td>
+                </tr>
+                <tr>
+                    <td>AI Sense &mdash; Applied (3 days)</td>
+                    <td>Parents</td>
+                    <td class="amount">up to &#8377;1,700 <span style="font-weight:400; color:var(--muted);">/ student</span></td>
+                </tr>
+                <tr>
+                    <td>AI Made Practical &mdash; Subject Edition</td>
+                    <td>School</td>
+                    <td class="amount">Quoted on departments</td>
+                </tr>
+            </tbody>
+        </table>
+        <p style="margin-top:10px; font-size:12.5px; color:var(--muted);">
+            The school pays nothing for the student program. Enrolment is voluntary and each family decides.
+            All fees are one-time &mdash; there is no subscription, no material sold afterwards, and no follow-up
+            program to decline later.
+        </p>
+    </section>
+
+    <section>
+        <h2>Who delivers it</h2>
+        <div class="instructor">
+            <img src="amaan_shaikh_bw.jpg" alt="Amaan Shaikh">
+            <div>
+                <h3>Amaan Shaikh</h3>
+                <p style="margin-bottom:7px; font-size:12.5px; color:var(--muted);">
+                    Software Development Engineer, Germany &middot; M.Sc. Computer Science, University of Konstanz
+                    &middot; B.Tech Computer Science, MIT ADT University, Pune
+                </p>
+                <p style="font-size:12.5px;">
+                    Every session is designed and delivered personally &mdash; there is no rotating pool of trainers
+                    and no franchise arrangement. The material comes out of day-to-day professional work with
+                    large language models and production AI systems, translated for a regular Indian classroom.
+                    Over 500 students have been taught across school and university sessions in the past two years.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <div class="callout">
+        <p>
+            <strong>Next step:</strong> a 30-minute discussion, to walk through how the days would be structured
+            for your school and answer whatever management needs answered.
+            <a href="index.html#book">Book a slot &rarr;</a>
+        </p>
+    </div>
+
+    <footer>
+        <span>Dimaag aur Machine &middot; AI literacy workshops for schools &middot; Nashik, Maharashtra</span>
+        <span>dimaagaurmachine.github.io/website</span>
+    </footer>
+
+</div>
+
+</body>
+</html>

@@ -1,20 +1,7 @@
-# robots.txt for Dimag aur Machine
-# https://futureskills.in
+# robots.txt for Dimaag aur Machine
+# https://dimaagaurmachine.github.io/website/
 
 User-agent: *
 Allow: /
 
-# Sitemap location
-Sitemap: https://futureskills.in/sitemap.xml
-
-# Crawl-delay for polite crawling
-Crawl-delay: 1
-
-# Block common non-content paths (adjust as needed)
-Disallow: /admin/
-Disallow: /private/
-Disallow: /*.json$
-Disallow: /*.xml$
-
-# Allow important files
-Allow: /sitemap.xml
+Sitemap: https://dimaagaurmachine.github.io/website/sitemap.xml
