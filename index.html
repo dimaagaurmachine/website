@@ -65,7 +65,7 @@
     {
         "@context": "https://schema.org",
         "@type": "Course",
-        "name": "AI Sense - Dimaag aur Machine",
+        "name": "Soch aur System - Dimaag aur Machine",
         "description": "A 2 or 3 day practical AI literacy workshop for students in Classes 9 to 12, conducted inside school premises under teacher supervision",
         "provider": {
             "@type": "EducationalOrganization",
@@ -93,7 +93,7 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- GSAP + ScrollTrigger: section reveals, hero choreography, horizontal gallery -->
+    <!-- GSAP + ScrollTrigger: section reveals, hero choreography, accordion gallery -->
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 
@@ -265,7 +265,7 @@
         #card-sense, #card-practical {
             transition: background-color .5s ease, border-color .5s ease;
         }
-        /* AI Sense: indigo mesh, indigo-tinted hover fill */
+        /* Soch aur System: indigo mesh, indigo-tinted hover fill */
         #card-sense.border-glow-card { --card-bg: #eef2ff; }
         #card-sense:hover { background-color: #eef2ff; border-color: #a5b4fc; }
         #card-sense.border-glow-card {
@@ -279,7 +279,7 @@
             --bg-g7: radial-gradient(at 51% 4%,  #a5b4fc 0px, transparent 50%);
             --bg-base: linear-gradient(#818cf8 0 100%);
         }
-        /* AI Made Practical: emerald mesh, emerald-tinted hover fill */
+        /* Chalk aur Calibration: emerald mesh, emerald-tinted hover fill */
         #card-practical.border-glow-card { --card-bg: #ecfdf5; }
         #card-practical:hover { background-color: #ecfdf5; border-color: #6ee7b7; }
         #card-practical.border-glow-card {
@@ -293,7 +293,6 @@
             --bg-g7: radial-gradient(at 51% 4%,  #6ee7b7 0px, transparent 50%);
             --bg-base: linear-gradient(#34d399 0 100%);
         }
-
         /* RotatingText (ported from React Bits) in the workshops heading:
            static "students & teachers" until JS upgrades it to a rotating
            badge whose colors track the two workshop cards. */
@@ -327,54 +326,171 @@
         .marquee-on .chip-dup { display: inline-flex; }
 
         /* Horizontal session gallery: swipeable row by default, pinned scrub when GSAP runs */
-        .hscroll-viewport { overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -ms-overflow-style: none; }
-        .hscroll-viewport::-webkit-scrollbar { display: none; }
-        .hscroll-track { display: flex; gap: 16px; width: max-content; will-change: transform; }
-        .hscroll-card { scroll-snap-align: start; flex: 0 0 auto; }
-        .hscroll-on .hscroll-viewport { overflow: visible; scroll-snap-type: none; }
+        /* AccordionGallery (ported from React Bits, JS-CSS variant): the session
+           photos sit in one row; the hovered/focused panel expands while the
+           rest tilt away, desaturate and dim. GSAP drives the transitions; the
+           .no-gsap class falls back to plain CSS transitions. */
+        .accordion-gallery {
+            --ag-accent: #6366f1;
+            --ag-overlay: #0f172a;
+            --ag-text: #ffffff;
+            --ag-gap: 10px;
+            --ag-radius: 16px;
+            --ag-media-size: 320px;
+            display: flex; flex-direction: row; gap: var(--ag-gap);
+            width: 100%; max-width: 100%;
+            height: clamp(320px, 40vw, 460px);
+            perspective: 1400px; perspective-origin: 50% 50%;
+        }
+        .ag-panel {
+            position: relative; flex: 1 1 0; min-width: 0; min-height: 0; overflow: hidden;
+            border-radius: var(--ag-radius); cursor: pointer; display: block; outline: none;
+            transform-style: preserve-3d; transform-origin: center center;
+            background: #0f172a; box-shadow: 0 10px 30px -18px rgba(0, 0, 0, 0.8);
+            will-change: flex-grow, transform;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .ag-panel:focus-visible { box-shadow: 0 0 0 2px var(--ag-accent), 0 10px 30px -18px rgba(0, 0, 0, 0.8); }
+        .ag-panel__frame { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; }
+        .ag-panel__media {
+            --ag-gray: 1; --ag-dim: 0.35;
+            position: absolute; top: 50%; left: 50%;
+            width: var(--ag-media-size); height: 100%;
+            transform: translate(-50%, -50%);
+            filter: grayscale(var(--ag-gray));
+            will-change: transform, filter;
+        }
+        .ag-panel__media img {
+            width: 100%; height: 100%; object-fit: cover; display: block;
+            user-select: none; -webkit-user-drag: none;
+        }
+        .ag-panel__overlay {
+            position: absolute; inset: 0; pointer-events: none;
+            background:
+                linear-gradient(180deg, transparent 45%, color-mix(in srgb, var(--ag-overlay) 78%, transparent) 100%),
+                color-mix(in srgb, var(--ag-overlay) calc(var(--ag-dim, 0.35) * 100%), transparent);
+        }
+        .ag-panel__label {
+            position: absolute; left: 20px; bottom: 20px; right: 20px;
+            display: flex; align-items: center; gap: 12px; pointer-events: none; z-index: 2;
+        }
+        .ag-panel__bar {
+            flex: 0 0 auto; width: 3px; height: 26px; border-radius: 3px;
+            background: var(--ag-accent); opacity: 0;
+            box-shadow: 0 0 12px color-mix(in srgb, var(--ag-accent) 60%, transparent);
+        }
+        .ag-panel__text {
+            color: var(--ag-text); font-family: inherit; font-weight: 600;
+            font-size: clamp(1rem, 1.4vw, 1.4rem); letter-spacing: 0.01em;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            opacity: 0; text-shadow: 0 2px 14px rgba(0, 0, 0, 0.55);
+        }
+        .accordion-gallery.no-gsap .ag-panel { transition: flex-grow .6s cubic-bezier(.22,1,.36,1), transform .6s cubic-bezier(.22,1,.36,1); }
+        .accordion-gallery.no-gsap .ag-panel__media { transition: transform .6s cubic-bezier(.22,1,.36,1), filter .6s ease; }
+        .accordion-gallery.no-gsap .ag-panel__bar,
+        .accordion-gallery.no-gsap .ag-panel__text { transition: opacity .4s ease, transform .4s ease; }
+        @media (max-width: 520px) {
+            .accordion-gallery { flex-direction: column; perspective: none; height: auto !important; }
+            .ag-panel { min-height: 84px; transform: none !important; }
+            .accordion-gallery .ag-panel__media { width: 100%; height: var(--ag-media-size); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .ag-panel, .ag-panel__media { will-change: auto; }
+        }
 
         .sr-only {
             position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
             overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border-width: 0;
         }
 
-        /* ======================= Embedded AI assistant (pulsing circle) ======================= */
-        .agent-stage { display: flex; flex-direction: column; align-items: center; gap: 10px; min-width: 0; }
+        /* ======================= Embedded AI assistant (voice-reactive glow card) ======================= */
+        .agent-stage { display: flex; flex-direction: column; align-items: stretch; justify-content: flex-end; gap: 12px; min-width: 0; }
+        .agent-col { position: relative; z-index: 2; }
 
-        .pulse-wrap { position: relative; width: 176px; height: 176px; margin: 8px auto; }
-        .pulse-circle {
-            position: absolute; inset: 0; border-radius: 50%; cursor: pointer; padding: 0;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
-            font-family: inherit; color: #e2e8f0;
-            /* Top layer: a white disc that grows from the centre. --fill (0..1) is
-               driven every animation frame by JS, so the filled/unfilled change is
-               one continuous morph — no fade, no slide. */
+        /* The private-support card: light grey surface wrapped in a seamless
+           conic gradient border. Its bloom reacts to the conversation the way
+           the strands used to — window.DAMGlow drives --glow-angle (the
+           gradient slowly revolves, faster while connecting/speaking) and
+           --voice-amp (0..1 with the live audio level). */
+        .agent-glow-card {
+            --glow-angle: 120deg;
+            --voice-amp: 0;
+            border: 1.5px solid transparent;
             background:
-                radial-gradient(circle closest-side,
+                linear-gradient(#0f172a, #0f172a) padding-box,
+                conic-gradient(from var(--glow-angle),
+                    #6366f1, #8b5cf6, #06b6d4, #818cf8, #6366f1) border-box;
+            box-shadow:
+                0 0 calc(var(--voice-amp) * 44px) calc(var(--voice-amp) * 5px) rgba(99,102,241, calc(var(--voice-amp) * 0.32)),
+                0 0 calc(var(--voice-amp) * 90px) calc(var(--voice-amp) * 12px) rgba(139,92,246, calc(var(--voice-amp) * 0.18));
+        }
+        .agent-glow-card::before {
+            content: ""; position: absolute; z-index: -1;
+            inset: calc(-3px - var(--voice-amp) * 8px);
+            border-radius: inherit; pointer-events: none;
+            padding: calc(10px + var(--voice-amp) * 12px);
+            background: conic-gradient(from var(--glow-angle),
+                #6366f1, #8b5cf6, #06b6d4, #818cf8, #6366f1);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: exclude;
+            filter: blur(16px);
+            opacity: calc(0.2 + var(--voice-amp) * 0.8);
+        }
+
+        /* Rotating "parents usually ask" question — hidden while a conversation
+           is live (the agent script toggles .ask-hidden). */
+        .agent-ask { transition: opacity .45s ease, transform .45s ease; }
+        .agent-ask.ask-hidden { opacity: 0; transform: translateY(8px); pointer-events: none; }
+        .rot-badge.rot-ask {
+            font-size: 15px; font-weight: 600; color: #c7d2fe;
+            background: rgba(99,102,241,.16); border: 1px solid rgba(129,140,248,.3);
+            border-radius: 0.5em; padding: 0.34em 0.7em 0.4em;
+        }
+
+        /* Tap-to-start button: same style as the "Book a 30-min" CTA. The old
+           orb's live vars still apply — --amp nudges scale and adds an indigo
+           glow with the audio level, --fill sweeps the button white while the
+           agent speaks (the agent script darkens the label in step). */
+        .pulse-wrap { position: relative; width: fit-content; margin: 0; }
+        .pulse-circle {
+            position: relative; border-radius: 12px; cursor: pointer;
+            padding: 15px 24px; margin: 0;
+            display: inline-flex; align-items: baseline; justify-content: center; gap: 8px;
+            font-family: inherit; color: #ffffff;
+            background:
+                radial-gradient(circle farthest-side,
                     rgba(255,255,255,.97) calc(var(--fill, 0) * 100%),
                     rgba(255,255,255,0) calc(var(--fill, 0) * 100% + 2%)),
-                radial-gradient(circle closest-side, rgba(255,255,255,.06), rgba(255,255,255,.02));
-            border: 1px solid rgba(255,255,255,.45);
+                rgba(15,23,42,.55);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,.4);
             box-shadow:
-                0 0 calc(20px + var(--glow, 0px)) rgba(255,255,255, calc(0.16 + var(--amp, 0) * 0.9)),
-                0 0 70px rgba(129,140,248, calc(0.12 + var(--amp, 0) * 0.8));
-            transform: scale(calc(1 + var(--amp, 0)));
-            transition: border-color .4s ease;
+                0 8px 24px rgba(0,0,0,.3),
+                0 0 calc(8px + var(--glow, 0px) * 0.5) rgba(129,140,248, calc(var(--amp, 0) * 0.8));
+            transform: scale(calc(1 + var(--amp, 0) * 0.4));
+            transition: transform .15s ease, border-color .3s ease;
             will-change: transform;
         }
-        .pulse-circle:hover { border-color: rgba(255,255,255,.9); }
-        .pulse-circle:focus-visible { outline: 2px solid #ffffff; outline-offset: 6px; }
-        .pc-label { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; }
-        .pc-sub { font-size: 11px; font-weight: 600; color: #94a3b8; letter-spacing: .02em; }
+        .pulse-circle:hover { border-color: rgba(255,255,255,.85); }
+        .pulse-circle:active { transform: scale(.97); }
+        .pulse-circle:focus-visible { outline: 2px solid #ffffff; outline-offset: 3px; }
+        .pc-label { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+        .pc-sub { font-size: 12px; font-weight: 500; color: #94a3b8; letter-spacing: .02em; }
+        .pc-sub:empty { display: none; }
         .pulse-ring {
-            position: absolute; inset: 0; border-radius: 50%;
+            position: absolute; inset: 0; border-radius: 12px;
             border: 1px solid rgba(255,255,255,.38); opacity: 0; pointer-events: none;
         }
+        .agent-status {
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+            width: 100%; min-height: 26px;
+        }
         .agent-timer {
-            position: absolute; top: 0; right: 0; z-index: 2;
             font-size: 12px; font-weight: 600; color: #e2e8f0; font-variant-numeric: tabular-nums;
             background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.22);
-            border-radius: 10px; padding: 4px 11px;
+            border-radius: 10px; padding: 4px 11px; flex-shrink: 0;
         }
         .pulse-wrap .pulse-ring.r1 { animation: pulse-ring 3.4s ease-out infinite; }
         .pulse-wrap .pulse-ring.r2 { animation: pulse-ring 3.4s ease-out 1.7s infinite; }
@@ -384,55 +500,65 @@
         .pulse-wrap.speaking .pulse-ring.r2 { animation: none; }
         @keyframes pulse-ring {
             0%   { transform: scale(1); opacity: .55; }
-            100% { transform: scale(1.42); opacity: 0; }
+            100% { transform: scale(1.35); opacity: 0; }
         }
 
         .agent-mode {
-            text-align: center; font-size: 12.5px; font-weight: 600; color: #64748b;
+            text-align: left; font-size: 12.5px; font-weight: 600; color: #94a3b8;
             min-height: 20px; transition: color .4s ease;
         }
-        .agent-mode.listening { color: #818cf8; }
+        .agent-mode.listening { color: #a5b4fc; }
         .agent-mode.speaking  { color: #34d399; }
 
-        .agent-transcript {
-            display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
-            gap: 6px; width: 100%; min-height: 84px; max-height: 148px; overflow: hidden;
-            padding: 0 8px;
-            -webkit-mask-image: linear-gradient(to bottom, transparent 0, black 36%);
-            mask-image: linear-gradient(to bottom, transparent 0, black 36%);
+        /* Strands (ported from React Bits) span the complete dark card behind
+           the content and react to the conversation like the border glow does —
+           calm drift when idle, surging with the live audio level while the
+           assistant listens and speaks. The card keeps overflow visible for
+           the border bloom, so the strands clip themselves to its radius; a
+           veil darkens the text side and the bottom for legibility. */
+        .strands-bg {
+            position: absolute; inset: 0; z-index: 0; pointer-events: none;
+            border-radius: inherit; overflow: hidden;
         }
-        .at-msg { text-align: center; max-width: 44em; font-size: 13.5px; line-height: 1.5; user-select: text; word-break: break-word; animation: at-in .25s ease; transition: opacity .5s ease; }
-        .at-msg .who { display: block; font-size: 9px; letter-spacing: .12em; text-transform: uppercase; font-weight: 700; margin-bottom: 1px; }
-        .at-msg.agent { color: rgba(255,255,255,.82); }
-        .at-msg.agent .who { color: rgba(255,255,255,.28); }
-        .at-msg.user { color: #a5b4fc; font-weight: 500; }
-        .at-msg.user .who { color: rgba(165,180,252,.45); }
-        .at-msg.system { color: #64748b; font-size: 12px; }
-        .at-msg.old { opacity: .22; }
-        @keyframes at-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+        .strands-bg canvas { display: block; width: 100%; height: 100%; background: transparent; }
+        .strands-veil {
+            position: absolute; inset: 0; z-index: 1; pointer-events: none;
+            border-radius: inherit;
+            background:
+                linear-gradient(90deg, rgba(15,23,42,.66) 0%, rgba(15,23,42,.22) 46%, rgba(15,23,42,0) 68%),
+                linear-gradient(0deg, rgba(15,23,42,.56) 0%, rgba(15,23,42,0) 42%);
+        }
 
-        .agent-controls { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; max-width: 460px; }
+        /* The on-card transcript feed stays in the DOM (the agent script keeps
+           appending to it and building the log), but it never shows — the full
+           conversation lives behind the transcript-dialog button instead. */
+        .agent-transcript { display: none; }
+
+        .agent-controls { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; }
         .agent-round {
-            width: 42px; height: 42px; border-radius: 50%;
-            border: 1px solid #253248; background: #16233a; color: #94a3b8; cursor: pointer;
+            width: 46px; height: 46px; border-radius: 12px; flex-shrink: 0;
+            border: 1px solid #334155; background: rgba(2,6,23,.68); color: #cbd5e1; cursor: pointer;
             display: flex; align-items: center; justify-content: center;
+            backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
             transition: all .25s cubic-bezier(.22,1,.36,1);
         }
-        .agent-round:hover:not(:disabled) { background: #1e3050; color: #fff; border-color: #3a5578; transform: scale(1.07); }
-        .agent-round:disabled { opacity: .3; cursor: default; }
+        .agent-round:hover:not(:disabled) { background: #1e3050; color: #fff; border-color: #64748b; transform: scale(1.05); }
+        .agent-round:disabled { opacity: .45; cursor: default; }
         .agent-round.danger { color: #f87171; border-color: rgba(248,113,113,.3); background: rgba(248,113,113,.08); }
         .agent-round svg { width: 17px; height: 17px; stroke-width: 2; }
 
         .agent-textbar {
             display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0;
             padding: 5px 5px 5px 14px;
-            background: rgba(2,6,23,.55); border: 1px solid #1e293b; border-radius: 13px;
+            background: rgba(2,6,23,.72); border: 1px solid #334155; border-radius: 12px;
+            backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
         }
+        .agent-textbar:focus-within { border-color: #818cf8; }
         .agent-textbar input {
             flex: 1; background: none; border: none; outline: none;
-            color: #f1f5f9; font-size: 13.5px; font-family: inherit; padding: 7px 0; min-width: 0;
+            color: #f1f5f9; font-size: 13.5px; font-family: inherit; padding: 8px 0; min-width: 0;
         }
-        .agent-textbar input::placeholder { color: #475569; }
+        .agent-textbar input::placeholder { color: #64748b; }
         .agent-textbar input:disabled { opacity: .5; }
         .agent-send {
             width: 34px; height: 34px; border-radius: 9px; border: none;
@@ -495,7 +621,7 @@
         }
 
         @media print {
-            header, #particle-canvas, .agent-stage, .agent-dialog-overlay { display: none !important; }
+            header, #particle-canvas, .agent-stage, .agent-dialog-overlay, .pulse-wrap, .agent-ask, .strands-bg, .strands-veil { display: none !important; }
             body { background: #fff !important; }
             section { page-break-inside: avoid; }
         }
@@ -701,8 +827,8 @@
             <article id="card-sense" class="gs-item bg-white border border-slate-200 rounded-[20px] p-[30px] flex flex-col gap-[22px]">
                 <div>
                     <div class="inline-block text-[11px] font-bold tracking-[0.1em] uppercase text-slate-600 bg-slate-100 rounded-full px-3 py-[5px] mb-4">For students &middot; Class 9&ndash;12</div>
-                    <h3 class="text-[26px] font-extrabold tracking-[-0.03em] mb-2"><span class="shimmer-text">AI Sense&trade;</span></h3>
-                    <p class="text-slate-600 m-0">Understanding AI. Using it right. Thinking beyond it.</p>
+                    <h3 class="text-[26px] font-extrabold tracking-[-0.03em] mb-2"><span class="shimmer-text">Soch aur System&trade;</span></h3>
+                    <p class="text-slate-600 m-0">Machine jawab de sakti hai. Sochna tumhe hai.</p>
                 </div>
                 <div class="grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-[18px] py-[18px] border-y border-slate-100">
                     <div>
@@ -728,15 +854,15 @@
                     <b class="text-slate-700 font-bold">This is not:</b> coding coaching, exam preparation, or a hackathon.
                 </div>
                 <div class="flex-1"></div>
-                <a href="#book" class="bg-slate-900 text-white text-center px-5 py-3.5 rounded-xl font-semibold text-[15px] hover:bg-slate-700 transition-colors">See how AI Sense works in your school</a>
+                <a href="#book" class="bg-slate-900 text-white text-center px-5 py-3.5 rounded-xl font-semibold text-[15px] hover:bg-slate-700 transition-colors">See how Soch aur System works in your school</a>
             </article>
 
             <!-- Teachers -->
             <article id="card-practical" class="gs-item bg-white border border-slate-200 rounded-[20px] p-[30px] flex flex-col gap-[22px]">
                 <div>
                     <div class="inline-block text-[11px] font-bold tracking-[0.1em] uppercase text-slate-600 bg-slate-100 rounded-full px-3 py-[5px] mb-4">For teachers &middot; Subject edition</div>
-                    <h3 class="text-[26px] font-extrabold tracking-[-0.03em] mb-2"><span class="shimmer-text">AI Made Practical&trade;</span></h3>
-                    <p class="text-slate-600 m-0">Less effort. Better learning. Same syllabus.</p>
+                    <h3 class="text-[26px] font-extrabold tracking-[-0.03em] mb-2"><span class="shimmer-text">Chalk aur Calibration&trade;</span></h3>
+                    <p class="text-slate-600 m-0">Teacher wahi. Toolkit nayi.</p>
                 </div>
                 <div class="grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-[18px] py-[18px] border-y border-slate-100">
                     <div>
@@ -761,7 +887,7 @@
                     <b class="text-slate-700 font-bold">For teachers:</b> no extra responsibility, no evaluation, no tech background needed. All parent queries are handled by us.
                 </div>
                 <div class="flex-1"></div>
-                <a href="#book" class="border border-slate-300 text-slate-900 text-center px-5 py-[13px] rounded-xl font-semibold text-[15px] hover:bg-slate-50 transition-colors">Explore AI Made Practical for your subject</a>
+                <a href="#book" class="border border-slate-300 text-slate-900 text-center px-5 py-[13px] rounded-xl font-semibold text-[15px] hover:bg-slate-50 transition-colors">Explore Chalk aur Calibration for your subject</a>
             </article>
         </div>
     </div>
@@ -921,34 +1047,36 @@
 
 <!-- ============================= 10. AI ASSISTANT (embedded, below the instructor) ============================= -->
 <section id="ai-agent" class="max-w-[1180px] mx-auto px-6 py-[76px]">
-    <div class="gs-item bg-slate-900 text-white rounded-3xl px-8 md:px-10 py-11 grid md:grid-cols-2 gap-12 items-center overflow-hidden relative">
-        <div class="relative">
+    <div id="ai-agent-card" class="gs-item agent-glow-card text-white rounded-3xl px-8 md:px-10 py-11 grid md:grid-cols-2 gap-10 md:gap-12 items-stretch relative">
+        <div class="strands-bg" id="agentStrands" aria-hidden="true"></div>
+        <div class="strands-veil" aria-hidden="true"></div>
+        <div class="agent-col flex flex-col">
             <div class="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-500 mb-3.5">Private support</div>
             <h2 class="text-[clamp(26px,3vw,36px)] leading-[1.14] tracking-[-0.03em] font-extrabold mb-3.5">Hesitant to ask? Talk to our AI assistant privately.</h2>
             <p class="text-slate-300 mb-6 max-w-[32em]">If you're not ready to book a call, ask anything about the program at your own pace &mdash; voice or text, no salesperson, no follow-up calls. It runs right here on this page.</p>
-            <div class="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-500 mb-2.5">Tap a question to ask it</div>
-            <div class="flex flex-col gap-2.5">
-                <button class="agent-chip text-left border border-slate-800 rounded-xl px-4 py-3.5 text-[15px] text-slate-200 hover:border-indigo-400/50 hover:bg-white/5 transition-colors cursor-pointer font-sans" data-q="What will my child actually learn?">&ldquo;What will my child actually learn?&rdquo;</button>
-                <button class="agent-chip text-left border border-slate-800 rounded-xl px-4 py-3.5 text-[15px] text-slate-200 hover:border-indigo-400/50 hover:bg-white/5 transition-colors cursor-pointer font-sans" data-q="Is this safe for my child?">&ldquo;Is this safe for my child?&rdquo;</button>
-                <button class="agent-chip text-left border border-slate-800 rounded-xl px-4 py-3.5 text-[15px] text-slate-200 hover:border-indigo-400/50 hover:bg-white/5 transition-colors cursor-pointer font-sans" data-q="How much does it cost?">&ldquo;How much does it cost?&rdquo;</button>
-                <button class="agent-chip text-left border border-slate-800 rounded-xl px-4 py-3.5 text-[15px] text-slate-200 hover:border-indigo-400/50 hover:bg-white/5 transition-colors cursor-pointer font-sans" data-q="Who is teaching this?">&ldquo;Who is teaching this?&rdquo;</button>
+            <div class="agent-ask" id="agentAsk">
+                <div class="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-500 mb-2.5">Parents usually ask</div>
+                <span id="rot-ask" class="rot-badge rot-ask">&ldquo;What will my child actually learn?&rdquo;</span>
+            </div>
+            <div class="mt-auto pt-9">
+                <div class="pulse-wrap" id="pulseWrap">
+                    <span class="pulse-ring r1" aria-hidden="true"></span>
+                    <span class="pulse-ring r2" aria-hidden="true"></span>
+                    <button class="pulse-circle" id="pulseBtn" aria-label="Start or end the voice conversation">
+                        <span class="pc-label" id="pcLabel">Tap to start</span>
+                        <span class="pc-sub" id="pcSub">voice chat</span>
+                    </button>
+                </div>
             </div>
         </div>
 
-        <div class="agent-stage relative" aria-label="Live AI assistant">
-            <span class="agent-timer" id="agentTimer" hidden>00:00</span>
-            <div class="pulse-wrap" id="pulseWrap">
-                <span class="pulse-ring r1" aria-hidden="true"></span>
-                <span class="pulse-ring r2" aria-hidden="true"></span>
-                <button class="pulse-circle" id="pulseBtn" aria-label="Start or end the voice conversation">
-                    <span class="pc-label" id="pcLabel">Tap to start</span>
-                    <span class="pc-sub" id="pcSub">voice chat</span>
-                </button>
-            </div>
-
-            <div class="agent-mode" id="agentMode"></div>
-
+        <div class="agent-stage agent-col" aria-label="Live AI assistant">
             <div class="agent-transcript" id="agentTranscript" aria-live="polite"></div>
+
+            <div class="agent-status">
+                <div class="agent-mode" id="agentMode"></div>
+                <span class="agent-timer" id="agentTimer" hidden>00:00</span>
+            </div>
 
             <div class="agent-controls">
                 <button id="agentMute" class="agent-round" disabled aria-label="Mute microphone" title="Mute">
@@ -968,7 +1096,7 @@
     </div>
 </section>
 
-<!-- ============================= 11. IN ACTION (HORIZONTAL GALLERY) ============================= -->
+<!-- ============================= 11. IN ACTION (ACCORDION GALLERY) ============================= -->
 <section id="gallery" class="bg-white overflow-hidden" aria-label="Photos from real sessions">
     <div class="max-w-[1180px] mx-auto px-6 py-[76px]">
         <div class="gs-item flex items-end justify-between gap-6 flex-wrap mb-8">
@@ -976,25 +1104,71 @@
                 <div class="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-400 mb-3.5">In action</div>
                 <h2 class="text-[clamp(28px,3.4vw,40px)] leading-[1.12] tracking-[-0.03em] font-extrabold m-0">Real sessions. Real classrooms.</h2>
             </div>
-            <p class="text-sm text-slate-400 m-0">Keep scrolling &mdash; the wall moves sideways.</p>
+            <p class="text-sm text-slate-400 m-0">Hover or tap a photo &mdash; it opens up.</p>
         </div>
     </div>
     <div class="max-w-[1180px] mx-auto px-6 pb-[76px]">
-        <div class="hscroll-viewport" id="hscroll-viewport">
-            <div class="hscroll-track" id="hscroll-track">
-                <figure class="hscroll-card m-0"><img src="Testimonials/teaching-3.png" alt="Workshop session" loading="lazy" class="w-[300px] md:w-[420px] h-[240px] md:h-[300px] object-cover rounded-2xl border border-slate-200 block"></figure>
-                <figure class="hscroll-card m-0"><img src="Testimonials/1.png"          alt="Workshop session" loading="lazy" class="w-[300px] md:w-[420px] h-[240px] md:h-[300px] object-cover rounded-2xl border border-slate-200 block"></figure>
-                <figure class="hscroll-card m-0"><img src="Testimonials/teaching-6.png" alt="Workshop session" loading="lazy" class="w-[300px] md:w-[420px] h-[240px] md:h-[300px] object-cover rounded-2xl border border-slate-200 block"></figure>
-                <figure class="hscroll-card m-0"><img src="Testimonials/teaching-1.png" alt="Workshop session" loading="lazy" class="w-[300px] md:w-[420px] h-[240px] md:h-[300px] object-cover rounded-2xl border border-slate-200 block"></figure>
-                <figure class="hscroll-card m-0"><img src="Testimonials/2.png"          alt="Workshop session" loading="lazy" class="w-[300px] md:w-[420px] h-[240px] md:h-[300px] object-cover rounded-2xl border border-slate-200 block"></figure>
-                <figure class="hscroll-card m-0"><img src="Testimonials/teaching-4.png" alt="Workshop session" loading="lazy" class="w-[300px] md:w-[420px] h-[240px] md:h-[300px] object-cover rounded-2xl border border-slate-200 block"></figure>
-                <figure class="hscroll-card m-0"><img src="Testimonials/teaching-2.png" alt="Workshop session" loading="lazy" class="w-[300px] md:w-[420px] h-[240px] md:h-[300px] object-cover rounded-2xl border border-slate-200 block"></figure>
-                <figure class="hscroll-card m-0"><img src="Testimonials/teaching-5.png" alt="Workshop session" loading="lazy" class="w-[300px] md:w-[420px] h-[240px] md:h-[300px] object-cover rounded-2xl border border-slate-200 block"></figure>
-                <figure class="hscroll-card m-0"><img src="Testimonials/teaching-7.png" alt="Workshop session" loading="lazy" class="w-[300px] md:w-[420px] h-[240px] md:h-[300px] object-cover rounded-2xl border border-slate-200 block"></figure>
+        <div class="accordion-gallery" id="agGallery" role="list" aria-label="Photos from real workshop sessions">
+            <div class="ag-panel" role="listitem" tabindex="0" aria-label="Transformers, explained live">
+                <span class="ag-panel__frame">
+                    <span class="ag-panel__media"><img src="Testimonials/teaching-1.png" alt="Session on how AI models read and process text" loading="lazy" draggable="false"></span>
+                    <span class="ag-panel__overlay" aria-hidden="true"></span>
+                </span>
+                <span class="ag-panel__label" aria-hidden="true">
+                    <span class="ag-panel__bar"></span>
+                    <span class="ag-panel__text">Transformers, explained live</span>
+                </span>
             </div>
-        </div>
-        <div class="hprogress mt-6 h-[3px] bg-slate-200 rounded-full overflow-hidden hidden md:block" aria-hidden="true">
-            <span class="block h-full w-full bg-slate-900 origin-left" style="transform: scaleX(0);"></span>
+            <div class="ag-panel" role="listitem" tabindex="0" aria-label="Generative AI on the big screen">
+                <span class="ag-panel__frame">
+                    <span class="ag-panel__media"><img src="Testimonials/teaching-4.png" alt="Showing AI-generated imagery on the classroom screen" loading="lazy" draggable="false"></span>
+                    <span class="ag-panel__overlay" aria-hidden="true"></span>
+                </span>
+                <span class="ag-panel__label" aria-hidden="true">
+                    <span class="ag-panel__bar"></span>
+                    <span class="ag-panel__text">Generative AI on the big screen</span>
+                </span>
+            </div>
+            <div class="ag-panel" role="listitem" tabindex="0" aria-label="Language models, made simple">
+                <span class="ag-panel__frame">
+                    <span class="ag-panel__media"><img src="Testimonials/teaching-5.png" alt="Explaining how language models understand words" loading="lazy" draggable="false"></span>
+                    <span class="ag-panel__overlay" aria-hidden="true"></span>
+                </span>
+                <span class="ag-panel__label" aria-hidden="true">
+                    <span class="ag-panel__bar"></span>
+                    <span class="ag-panel__text">Language models, made simple</span>
+                </span>
+            </div>
+            <div class="ag-panel" role="listitem" tabindex="0" aria-label="Real datasets, real results">
+                <span class="ag-panel__frame">
+                    <span class="ag-panel__media"><img src="Testimonials/teaching-2.png" alt="Walking the class through a machine-learning project on real data" loading="lazy" draggable="false"></span>
+                    <span class="ag-panel__overlay" aria-hidden="true"></span>
+                </span>
+                <span class="ag-panel__label" aria-hidden="true">
+                    <span class="ag-panel__bar"></span>
+                    <span class="ag-panel__text">Real datasets, real results</span>
+                </span>
+            </div>
+            <div class="ag-panel" role="listitem" tabindex="0" aria-label="Questions from the room">
+                <span class="ag-panel__frame">
+                    <span class="ag-panel__media"><img src="Testimonials/teaching-6.png" alt="Answering questions during a classroom session" loading="lazy" draggable="false"></span>
+                    <span class="ag-panel__overlay" aria-hidden="true"></span>
+                </span>
+                <span class="ag-panel__label" aria-hidden="true">
+                    <span class="ag-panel__bar"></span>
+                    <span class="ag-panel__text">Questions from the room</span>
+                </span>
+            </div>
+            <div class="ag-panel" role="listitem" tabindex="0" aria-label="Hands-on machine learning">
+                <span class="ag-panel__frame">
+                    <span class="ag-panel__media"><img src="Testimonials/teaching-3.png" alt="Demonstrating a clustering model at the projector" loading="lazy" draggable="false"></span>
+                    <span class="ag-panel__overlay" aria-hidden="true"></span>
+                </span>
+                <span class="ag-panel__label" aria-hidden="true">
+                    <span class="ag-panel__bar"></span>
+                    <span class="ag-panel__text">Hands-on machine learning</span>
+                </span>
+            </div>
         </div>
         <p class="text-sm text-slate-400 mt-4">Workshops conducted in school and university environments across Nashik and Pune.</p>
     </div>
@@ -1043,7 +1217,7 @@
                 <span>How long is the program?</span>
                 <span class="faq-icon text-slate-400 text-xl font-normal">+</span>
             </summary>
-            <p class="mt-3 mb-0 text-slate-500 text-[15px]">AI Sense runs as a 2-day core or 3-day applied format during school hours. Longer school engagements run 8&ndash;10 sessions of 45&ndash;60 minutes, typically spread over 4&ndash;6 weeks.</p>
+            <p class="mt-3 mb-0 text-slate-500 text-[15px]">Soch aur System runs as a 2-day core or 3-day applied format during school hours. Longer school engagements run 8&ndash;10 sessions of 45&ndash;60 minutes, typically spread over 4&ndash;6 weeks.</p>
         </details>
         <details class="border-b border-slate-100 py-5">
             <summary class="flex items-center justify-between gap-5 text-[17px] font-semibold text-slate-900">
@@ -1224,8 +1398,8 @@
 </script>
 
 <!-- GSAP choreography: hero word reveal, counter, parallax, section reveals,
-     chip marquee, pinned horizontal gallery. Everything degrades to static
-     content if GSAP fails to load or the visitor prefers reduced motion. -->
+     chip marquee. Everything degrades to static content if GSAP fails to
+     load or the visitor prefers reduced motion. -->
 <script>
 window.addEventListener('DOMContentLoaded', function () {
     var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1307,35 +1481,8 @@ window.addEventListener('DOMContentLoaded', function () {
             }
         }
 
-        // 7) Session wall: the track slides sideways while the section passes
-        //    through the viewport. Deliberately NOT pinned — pinning fixed the
-        //    section to the screen and it superimposed over the instructor and
-        //    assistant sections whenever trigger positions drifted after load.
-        //    On small screens it stays a native swipeable row.
-        var gsec = document.getElementById('gallery');
-        if (gsec && window.innerWidth >= 768) {
-            var viewport = document.getElementById('hscroll-viewport');
-            var htrack = document.getElementById('hscroll-track');
-            var bar = gsec.querySelector('.hprogress > span');
-            if (viewport && htrack) {
-                gsec.classList.add('hscroll-on');
-                var dist = function () { return Math.max(0, htrack.scrollWidth - viewport.clientWidth); };
-                gsap.to(htrack, {
-                    x: function () { return -dist(); },
-                    ease: 'none',
-                    scrollTrigger: {
-                        trigger: gsec,
-                        start: 'top 85%',
-                        end: 'bottom 20%',
-                        scrub: 1,
-                        invalidateOnRefresh: true,
-                        onUpdate: function (self) {
-                            if (bar) bar.style.transform = 'scaleX(' + self.progress + ')';
-                        }
-                    }
-                });
-            }
-        }
+        // 7) Session wall: now an accordion gallery, wired up by its own
+        //    script further down (it also runs without GSAP).
 
         // Re-measure all trigger positions once everything (fonts, images,
         // embeds) has finished loading, so start/end points never go stale.
@@ -1394,9 +1541,18 @@ window.addEventListener('DOMContentLoaded', function () {
                 { text: 'coding centres', cls: 'rot-alt' },
                 { text: 'Dimaag aur Machine', cls: 'rot-dam' }
             ]
+        },
+        {
+            id: 'rot-ask', interval: 3200,
+            words: [
+                { text: '“What will my child actually learn?”', cls: 'rot-ask' },
+                { text: '“Is this safe for my child?”', cls: 'rot-ask' },
+                { text: '“How much does it cost?”', cls: 'rot-ask' },
+                { text: '“Who is teaching this?”', cls: 'rot-ask' }
+            ]
         }
     ];
-    var ALL_CLASSES = ['rot-students', 'rot-teachers', 'rot-alt', 'rot-dam'];
+    var ALL_CLASSES = ['rot-students', 'rot-teachers', 'rot-alt', 'rot-dam', 'rot-ask'];
     var tries = 0;
     (function wait() {
         if (window.gsap) ROTATORS.forEach(initRotator);
@@ -1854,10 +2010,460 @@ window.addEventListener('DOMContentLoaded', function () {
 </script>
 
 <!-- ============================================================
-     DAM AI ASSISTANT — embedded orb agent.
+     ACCORDION GALLERY — ported from React Bits <AccordionGallery/>
+     (JS-CSS variant, no build step). Hover / focus / tap expands a
+     panel; GSAP animates flex-grow, tilt, parallax drift,
+     desaturation and the caption reveal. Falls back to plain CSS
+     transitions when GSAP is unavailable.
+     ============================================================ -->
+<script>
+window.addEventListener('DOMContentLoaded', function () {
+    'use strict';
+    var root = document.getElementById('agGallery');
+    if (!root) return;
+
+    var CFG = {
+        defaultIndex: 2, expandRatio: 0.55, duration: 0.6, ease: 'power3.out',
+        parallax: 0.5, tilt: 8, stagger: 0.06, gap: 10, grayscale: true
+    };
+    var panels = Array.prototype.slice.call(root.querySelectorAll('.ag-panel'));
+    var count = panels.length;
+    if (!count) return;
+    var medias = panels.map(function (p) { return p.querySelector('.ag-panel__media'); });
+    var bars   = panels.map(function (p) { return p.querySelector('.ag-panel__bar'); });
+    var texts  = panels.map(function (p) { return p.querySelector('.ag-panel__text'); });
+
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var g = window.gsap || null;
+    if (!g) root.classList.add('no-gsap');
+
+    var active = Math.min(Math.max(CFG.defaultIndex, 0), count - 1);
+    var mediaSize = 320;
+    var firstRun = true;
+    var tl = null;
+
+    function applyLayout(animate) {
+        var r = Math.min(Math.max(CFG.expandRatio, 0.2), 0.9);
+        var grow = count > 1 ? (r * (count - 1)) / (1 - r) : 1;
+        var dur = animate && !reduced ? CFG.duration : 0;
+
+        if (tl) { tl.kill(); tl = null; }
+        if (g) tl = g.timeline();
+
+        panels.forEach(function (panel, i) {
+            var isActive = i === active;
+            var rot = isActive ? 0 : (i < active ? CFG.tilt : -CFG.tilt);
+            var drift = Math.max(-1.5, Math.min(1.5, active - i));
+            var shift = drift * CFG.parallax * mediaSize * 0.06;
+            var gray = CFG.grayscale ? (isActive ? 0 : 1) : 0;
+            var dim = isActive ? 0 : 0.35;
+
+            panel.setAttribute('aria-current', isActive ? 'true' : 'false');
+
+            if (g) {
+                tl.to(panel, { flexGrow: isActive ? grow : 1, rotateY: rot, duration: dur, ease: CFG.ease }, 0);
+                tl.to(medias[i], {
+                    xPercent: -50, yPercent: -50, x: isActive ? 0 : shift, y: 0,
+                    '--ag-gray': gray, '--ag-dim': dim, duration: dur, ease: CFG.ease
+                }, 0);
+                if (isActive) {
+                    tl.to([bars[i], texts[i]], { opacity: 1, x: 0, duration: dur, ease: CFG.ease, stagger: reduced ? 0 : CFG.stagger }, 0);
+                } else {
+                    tl.to([bars[i], texts[i]], { opacity: 0, x: -14, duration: dur * 0.6, ease: CFG.ease }, 0);
+                }
+            } else {
+                panel.style.flexGrow = isActive ? grow : 1;
+                panel.style.transform = rot ? 'rotateY(' + rot + 'deg)' : 'none';
+                medias[i].style.transform = 'translate(-50%, -50%) translateX(' + (isActive ? 0 : shift).toFixed(1) + 'px)';
+                medias[i].style.setProperty('--ag-gray', gray);
+                medias[i].style.setProperty('--ag-dim', dim);
+                bars[i].style.opacity = isActive ? 1 : 0;
+                texts[i].style.opacity = isActive ? 1 : 0;
+                texts[i].style.transform = isActive ? 'none' : 'translateX(-14px)';
+            }
+        });
+    }
+
+    function setActive(i) {
+        if (i === active) return;
+        active = i;
+        applyLayout(true);
+    }
+
+    function measure() {
+        var rect = root.getBoundingClientRect();
+        var usable = Math.max(rect.width - CFG.gap * (count - 1), 120);
+        mediaSize = Math.max(140, usable * Math.min(Math.max(CFG.expandRatio, 0.2), 0.9) * 1.22);
+        root.style.setProperty('--ag-media-size', Math.round(mediaSize) + 'px');
+        applyLayout(!firstRun);
+        firstRun = false;
+    }
+
+    measure();
+    if (window.ResizeObserver) {
+        new ResizeObserver(measure).observe(root);
+    } else {
+        window.addEventListener('resize', measure);
+    }
+
+    panels.forEach(function (panel, i) {
+        panel.addEventListener('mouseenter', function () { setActive(i); });
+        panel.addEventListener('click', function () { setActive(i); });
+        panel.addEventListener('focus', function () { setActive(i); });
+        panel.addEventListener('keydown', function (e) {
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); setActive((i + 1) % count); }
+            else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); setActive((i - 1 + count) % count); }
+        });
+    });
+});
+</script>
+
+<!-- ============================================================
+     VOICE-REACTIVE BORDER GLOW — the private-support card's conic
+     gradient border and its bloom react to the assistant the way
+     the strands used to: a slow revolve when idle, a fast spin
+     while connecting, and a pulse with the live audio level while
+     listening and speaking. The agent script drives it through
+     window.DAMGlow = { setState, setLevel }. Pure CSS variables,
+     no WebGL involved.
+     ============================================================ -->
+<script>
+(function () {
+    'use strict';
+    var card = document.getElementById('ai-agent-card');
+    if (!card) return;
+
+    // degrees/sec of gradient revolve, baseline bloom, and audio-level gain
+    var STATES = {
+        idle:       { speed: 14,  base: 0.00, gain: 0   },
+        connecting: { speed: 170, base: 0.24, gain: 0   },
+        listening:  { speed: 28,  base: 0.20, gain: 2.4 },
+        speaking:   { speed: 75,  base: 0.32, gain: 3.0 }
+    };
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var state = 'idle', level = 0;
+    var angle = 120, amp = 0, rafId = null, lastT = 0, inView = true;
+
+    function apply() {
+        card.style.setProperty('--glow-angle', (angle % 360).toFixed(2) + 'deg');
+        card.style.setProperty('--voice-amp', amp.toFixed(3));
+    }
+
+    window.DAMGlow = {
+        setState: function (s) {
+            state = STATES[s] ? s : 'idle';
+            if (reduced) { amp = STATES[state].base; apply(); }
+        },
+        setLevel: function (a) { level = a || 0; }
+    };
+
+    function frame(now) {
+        rafId = requestAnimationFrame(frame);
+        var dt = lastT ? Math.min((now - lastT) / 1000, 0.1) : 0.016;
+        lastT = now;
+        var st = STATES[state];
+        angle += st.speed * dt;
+        var target = st.base + level * st.gain;
+        if (state === 'connecting') target += 0.08 * (1 + Math.sin(now / 180));
+        amp += (Math.min(target, 1) - amp) * 0.12;
+        apply();
+    }
+    function start() {
+        if (reduced || rafId != null || !inView || document.hidden) return;
+        lastT = 0;
+        rafId = requestAnimationFrame(frame);
+    }
+    function stop() {
+        if (rafId != null) { cancelAnimationFrame(rafId); rafId = null; }
+    }
+
+    if ('IntersectionObserver' in window) {
+        new IntersectionObserver(function (entries) {
+            inView = entries[0].isIntersecting;
+            if (inView) start(); else stop();
+        }, { rootMargin: '80px' }).observe(card);
+    }
+    document.addEventListener('visibilitychange', function () {
+        if (document.hidden) stop(); else start();
+    });
+
+    if (reduced) apply(); else start();
+})();
+</script>
+
+<!-- ============================================================
+     STRANDS — ported from React Bits <Strands/> (ogl replaced
+     with raw WebGL2, same shader). Luminous indigo/violet/cyan
+     waves span the complete dark card and react to the conversation:
+     calm drift when idle, quick ripple while connecting, and a
+     surge with the live audio level while listening and speaking
+     (the palette leans emerald while the agent talks). State is
+     read from the pulse button's classes and the card's
+     --voice-amp variable, so no extra agent wiring is needed.
+     Renders one static frame under reduced motion; disappears
+     gracefully when WebGL2 is unavailable.
+     ============================================================ -->
+<script>
+(function () {
+    'use strict';
+    var host = document.getElementById('agentStrands');
+    var card = document.getElementById('ai-agent-card');
+    var stateEl = document.getElementById('pulseWrap');
+    if (!host) return;
+
+    var canvas = document.createElement('canvas');
+    var gl = canvas.getContext('webgl2', { alpha: true, premultipliedAlpha: true, antialias: true });
+    if (!gl) return; // no WebGL2: the column simply stays clean
+
+    var MAX_STRANDS = 12, MAX_COLORS = 8;
+
+    var VERT = [
+        '#version 300 es',
+        'in vec2 position;',
+        'void main() { gl_Position = vec4(position, 0.0, 1.0); }'
+    ].join('\n');
+
+    var FRAG = [
+        '#version 300 es',
+        'precision highp float;',
+        'uniform float uTime;',
+        'uniform vec2 uResolution;',
+        'uniform vec3 uColors[' + MAX_COLORS + '];',
+        'uniform int uColorCount;',
+        'uniform int uStrandCount;',
+        'uniform float uSpeed;',
+        'uniform float uAmplitude;',
+        'uniform float uWaviness;',
+        'uniform float uThickness;',
+        'uniform float uGlow;',
+        'uniform float uTaper;',
+        'uniform float uSpread;',
+        'uniform float uHueShift;',
+        'uniform float uIntensity;',
+        'uniform float uOpacity;',
+        'uniform float uScale;',
+        'uniform float uSaturation;',
+        'out vec4 fragColor;',
+        'const float PI = 3.14159265;',
+        'vec3 spectrum(float t) {',
+        '  return 0.5 + 0.5 * cos(2.0 * PI * (t + vec3(0.00, 0.33, 0.67)));',
+        '}',
+        'vec3 samplePalette(float t) {',
+        '  t = fract(t);',
+        '  float scaled = t * float(uColorCount);',
+        '  int idx = int(floor(scaled));',
+        '  float blend = fract(scaled);',
+        '  int nextIdx = idx + 1;',
+        '  if (nextIdx >= uColorCount) nextIdx = 0;',
+        '  return mix(uColors[idx], uColors[nextIdx], blend);',
+        '}',
+        'vec3 strandColor(float t) {',
+        '  if (uColorCount > 0) return samplePalette(t);',
+        '  return spectrum(t);',
+        '}',
+        'void main() {',
+        '  vec2 uv = (gl_FragCoord.xy - 0.5 * uResolution) / uResolution.y;',
+        '  uv /= max(uScale, 0.0001);',
+        '  float e = 0.06 + uIntensity * 0.94;',
+        '  float env = pow(max(cos(uv.x * PI * 1.3), 0.0), uTaper);',
+        '  vec3 col = vec3(0.0);',
+        '  for (int i = 0; i < ' + MAX_STRANDS + '; i++) {',
+        '    if (i >= uStrandCount) break;',
+        '    float fi = float(i);',
+        '    float ph = fi * 1.7 * uSpread;',
+        '    float freq = (2.0 + fi * 0.35) * uWaviness;',
+        '    float spd = 1.4 + fi * 1.2;',
+        '    float tt = uTime * uSpeed;',
+        '    float w = sin(uv.x * freq + tt * spd + ph) * 0.60',
+        '            + sin(uv.x * freq * 1.1 - tt * spd * 0.7 + ph * 1.7) * 0.40;',
+        '    float amp = (0.1 + 0.02 * e) * env * uAmplitude;',
+        '    float y = w * amp;',
+        '    float d = abs(uv.y - y);',
+        '    float thick = (0.001 + 0.05 * e) * (0.35 + env) * uThickness;',
+        '    float g = thick / (d + thick * 0.45);',
+        '    g = g * g;',
+        '    float h = fi / float(uStrandCount) + uv.x * 0.30 + uTime * 0.04 + uHueShift;',
+        '    col += strandColor(h) * g * env;',
+        '  }',
+        '  col *= 0.45 + 0.7 * e;',
+        '  col = 1.0 - exp(-col * uGlow);',
+        '  float gray = dot(col, vec3(0.2126, 0.7152, 0.0722));',
+        '  col = max(mix(vec3(gray), col, uSaturation), 0.0);',
+        '  float lum = max(max(col.r, col.g), col.b);',
+        '  float alpha = clamp(lum, 0.0, 1.0) * uOpacity;',
+        '  fragColor = vec4(col * uOpacity, alpha);',
+        '}'
+    ].join('\n');
+
+    function makeShader(type, src) {
+        var s = gl.createShader(type);
+        gl.shaderSource(s, src);
+        gl.compileShader(s);
+        if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) return null;
+        return s;
+    }
+    var vs = makeShader(gl.VERTEX_SHADER, VERT);
+    var fs = makeShader(gl.FRAGMENT_SHADER, FRAG);
+    if (!vs || !fs) return;
+    var prog = gl.createProgram();
+    gl.attachShader(prog, vs);
+    gl.attachShader(prog, fs);
+    gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return;
+    gl.useProgram(prog);
+
+    var buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    var posLoc = gl.getAttribLocation(prog, 'position');
+    gl.enableVertexAttribArray(posLoc);
+    gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
+
+    var U = {};
+    ['uTime', 'uResolution', 'uColors', 'uColorCount', 'uStrandCount', 'uSpeed', 'uAmplitude',
+     'uWaviness', 'uThickness', 'uGlow', 'uTaper', 'uSpread', 'uHueShift', 'uIntensity',
+     'uOpacity', 'uScale', 'uSaturation'].forEach(function (n) { U[n] = gl.getUniformLocation(prog, n); });
+
+    gl.clearColor(0, 0, 0, 0);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+
+    // ---------- palettes: idle indigo/violet/cyan, emerald-forward while speaking ----------
+    function hex2rgb(h) {
+        var n = parseInt(h.slice(1), 16);
+        return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
+    }
+    var IDLE_PAL = ['#6366f1', '#8b5cf6', '#06b6d4'].map(hex2rgb);
+    var TALK_PAL = ['#34d399', '#22d3ee', '#818cf8'].map(hex2rgb);
+    var COLOR_COUNT = 3;
+    var palArr = new Float32Array(MAX_COLORS * 3);
+
+    // Baselines per state; the card's live --voice-amp rides on top.
+    var STATES = {
+        idle:       { intensity: 0.42, amplitude: 0.85, speed: 0.40, glow: 2.3, thickness: 0.62, mix: 0 },
+        connecting: { intensity: 0.50, amplitude: 0.75, speed: 2.10, glow: 2.6, thickness: 0.55, mix: 0 },
+        listening:  { intensity: 0.50, amplitude: 0.95, speed: 0.55, glow: 2.4, thickness: 0.62, mix: 0 },
+        speaking:   { intensity: 0.55, amplitude: 1.05, speed: 1.05, glow: 2.7, thickness: 0.68, mix: 1 }
+    };
+    var cur = { intensity: 0.42, amplitude: 0.85, speed: 0.40, glow: 2.3, thickness: 0.62, mix: 0 };
+
+    function readState() {
+        if (!stateEl) return 'idle';
+        var c = stateEl.classList;
+        if (c.contains('speaking')) return 'speaking';
+        if (c.contains('connecting')) return 'connecting';
+        if (c.contains('listening')) return 'listening';
+        return 'idle';
+    }
+    function readAmp() {
+        return card ? parseFloat(card.style.getPropertyValue('--voice-amp')) || 0 : 0;
+    }
+
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var scaleU = 1.5;
+    function resize() {
+        var w = host.clientWidth, h = host.clientHeight;
+        if (!w || !h) return;
+        canvas.width = Math.round(w * dpr);
+        canvas.height = Math.round(h * dpr);
+        gl.viewport(0, 0, canvas.width, canvas.height);
+        gl.uniform2f(U.uResolution, canvas.width, canvas.height);
+        // Widen the taper envelope so the strands span the container's full
+        // width whatever its aspect ratio.
+        scaleU = Math.max(1.15, (w / h) / 0.72);
+        if (reduced) render(0.016);
+    }
+
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var inView = true, rafId = null, lastT = 0, phase = 8;
+
+    function render(dt) {
+        var state = readState();
+        var vamp = readAmp();
+        var tgt = STATES[state];
+        var k = 0.06;
+        cur.intensity += (tgt.intensity - cur.intensity) * k;
+        cur.amplitude += (tgt.amplitude - cur.amplitude) * k;
+        cur.speed     += (tgt.speed     - cur.speed)     * k;
+        cur.glow      += (tgt.glow      - cur.glow)      * k;
+        cur.thickness += (tgt.thickness - cur.thickness) * k;
+        cur.mix       += (tgt.mix       - cur.mix)       * 0.05;
+
+        phase += dt * cur.speed;
+
+        var intensity = cur.intensity + vamp * 0.7;
+        var amplitude = cur.amplitude + vamp * 1.1;
+        var glow = cur.glow + vamp * 1.2;
+        var thickness = cur.thickness + vamp * 0.35;
+
+        for (var i = 0; i < MAX_COLORS; i++) {
+            var src = i < COLOR_COUNT ? i : COLOR_COUNT - 1;
+            palArr[i * 3]     = IDLE_PAL[src][0] + (TALK_PAL[src][0] - IDLE_PAL[src][0]) * cur.mix;
+            palArr[i * 3 + 1] = IDLE_PAL[src][1] + (TALK_PAL[src][1] - IDLE_PAL[src][1]) * cur.mix;
+            palArr[i * 3 + 2] = IDLE_PAL[src][2] + (TALK_PAL[src][2] - IDLE_PAL[src][2]) * cur.mix;
+        }
+
+        gl.uniform1f(U.uTime, phase);
+        gl.uniform3fv(U.uColors, palArr);
+        gl.uniform1i(U.uColorCount, COLOR_COUNT);
+        gl.uniform1i(U.uStrandCount, 5);
+        gl.uniform1f(U.uSpeed, 1.0); // speed is integrated into `phase` for seamless state changes
+        gl.uniform1f(U.uAmplitude, amplitude);
+        gl.uniform1f(U.uWaviness, 1.0);
+        gl.uniform1f(U.uThickness, thickness);
+        gl.uniform1f(U.uGlow, glow);
+        gl.uniform1f(U.uTaper, 2.0);
+        gl.uniform1f(U.uSpread, 1.0);
+        gl.uniform1f(U.uHueShift, 0.0);
+        gl.uniform1f(U.uIntensity, intensity);
+        gl.uniform1f(U.uOpacity, 0.95);
+        gl.uniform1f(U.uScale, scaleU);
+        gl.uniform1f(U.uSaturation, 1.5);
+
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+    }
+
+    function loop(now) {
+        rafId = requestAnimationFrame(loop);
+        var dt = lastT ? Math.min((now - lastT) / 1000, 0.1) : 0.016;
+        lastT = now;
+        render(dt);
+    }
+    function startLoop() {
+        if (reduced || rafId != null || !inView || document.hidden) return;
+        lastT = 0;
+        rafId = requestAnimationFrame(loop);
+    }
+    function stopLoop() {
+        if (rafId != null) { cancelAnimationFrame(rafId); rafId = null; }
+    }
+
+    host.appendChild(canvas);
+    resize();
+    if (window.ResizeObserver) new ResizeObserver(resize).observe(host);
+    else window.addEventListener('resize', resize);
+
+    if ('IntersectionObserver' in window) {
+        new IntersectionObserver(function (entries) {
+            inView = entries[0].isIntersecting;
+            if (inView) startLoop(); else stopLoop();
+        }, { rootMargin: '80px' }).observe(host);
+    }
+    document.addEventListener('visibilitychange', function () {
+        if (document.hidden) stopLoop(); else startLoop();
+    });
+
+    if (reduced) render(0.016); else startLoop();
+})();
+</script>
+
+<!-- ============================================================
+     DAM AI ASSISTANT — embedded agent (CTA button + glow-border card).
      Custom ElevenLabs conversational client over a raw WebSocket:
-     mic → 16kHz PCM16 up, PCM16 down → queued playback. The orb
-     reacts to the live audio level. Handles interruptions,
+     mic → 16kHz PCM16 up, PCM16 down → queued playback. The button
+     and the card's glow border react to the live audio level.
+     Handles interruptions,
      ping/pong, mic-permission denial (text-mode fallback),
      connection timeout, transcript copy, and page-unload cleanup.
      ============================================================ -->
@@ -1883,6 +2489,7 @@ window.addEventListener('DOMContentLoaded', function () {
     // ---------- elements ----------
     function $(id) { return document.getElementById(id); }
     var pulseWrap = $('pulseWrap'), pulseBtn = $('pulseBtn'), pcLabel = $('pcLabel'), pcSub = $('pcSub');
+    var askEl = $('agentAsk');
     var timerEl = $('agentTimer');
     var modeEl = $('agentMode'), transcript = $('agentTranscript');
     var muteBtn = $('agentMute'), dialogBtn = $('agentDialogBtn');
@@ -1905,6 +2512,9 @@ window.addEventListener('DOMContentLoaded', function () {
     function setCircle(state, label, sub) {
         pulseWrap.className = 'pulse-wrap' + (state ? ' ' + state : '');
         fillTarget = state === 'speaking' ? 1 : 0;
+        if (window.DAMGlow) window.DAMGlow.setState(state || 'idle');
+        // The rotating question makes way while a conversation is live.
+        if (askEl) askEl.classList.toggle('ask-hidden', !!state);
         if (label != null) pcLabel.textContent = label;
         if (sub != null) pcSub.textContent = sub;
         pulseBtn.setAttribute('aria-label', connected || connecting ? 'End the voice conversation' : 'Start a voice conversation');
@@ -2020,6 +2630,7 @@ window.addEventListener('DOMContentLoaded', function () {
         ampCur += (target - ampCur) * 0.25;
         pulseBtn.style.setProperty('--amp', ampCur.toFixed(3));
         pulseBtn.style.setProperty('--glow', (ampCur * 150).toFixed(1) + 'px');
+        if (window.DAMGlow) window.DAMGlow.setLevel(ampCur);
         // Seamless fill morph: the white disc grows/shrinks a little every
         // frame, and the label ink darkens in step so it stays readable.
         fillCur += (fillTarget - fillCur) * 0.09;
@@ -2033,6 +2644,7 @@ window.addEventListener('DOMContentLoaded', function () {
     function stopVisual() {
         if (rafId != null) { cancelAnimationFrame(rafId); rafId = null; }
         ampCur = 0; fillCur = 0; fillTarget = 0;
+        if (window.DAMGlow) window.DAMGlow.setLevel(0);
         pulseBtn.style.setProperty('--amp', '0');
         pulseBtn.style.setProperty('--glow', '0px');
         pulseBtn.style.setProperty('--fill', '0');
@@ -2251,16 +2863,6 @@ window.addEventListener('DOMContentLoaded', function () {
         if (connected) { sendUserText(t); input.value = ''; }
         else if (!connecting) { pendingText = t; input.value = ''; connect(); }
         else { pendingText = t; input.value = ''; }
-    });
-
-    // Suggested questions: connect (if needed), then send once live.
-    document.querySelectorAll('.agent-chip').forEach(function (chip) {
-        chip.addEventListener('click', function () {
-            var q = chip.getAttribute('data-q') || chip.textContent;
-            if (connected) sendUserText(q);
-            else if (!connecting) { pendingText = q; connect(); }
-            else pendingText = q;
-        });
     });
 
     // ---------- controls ----------
