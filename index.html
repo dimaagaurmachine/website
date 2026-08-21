@@ -253,33 +253,36 @@
         #card-sense, #card-practical {
             transition: background-color .5s ease, border-color .5s ease;
         }
-        /* Soch aur System: indigo mesh, indigo-tinted hover fill */
-        #card-sense.border-glow-card { --card-bg: #eef2ff; }
-        #card-sense:hover { background-color: #eef2ff; border-color: #a5b4fc; }
+        /* Soch aur System (students): light orange mesh, orange-tinted hover fill.
+           Only the palette differs from before; every position and stop is
+           unchanged, so the glow behaves exactly as it did. */
+        #card-sense.border-glow-card { --card-bg: #fff7ed; }
+        #card-sense:hover { background-color: #fff7ed; border-color: #fed7aa; }
         #card-sense.border-glow-card {
-            --glow-hsl: 234deg 89% 60%;
-            --bg-g1: radial-gradient(at 80% 55%, #818cf8 0px, transparent 50%);
-            --bg-g2: radial-gradient(at 69% 34%, #a5b4fc 0px, transparent 50%);
-            --bg-g3: radial-gradient(at 8% 6%,   #6366f1 0px, transparent 50%);
-            --bg-g4: radial-gradient(at 41% 38%, #818cf8 0px, transparent 50%);
-            --bg-g5: radial-gradient(at 86% 85%, #a5b4fc 0px, transparent 50%);
-            --bg-g6: radial-gradient(at 82% 18%, #6366f1 0px, transparent 50%);
-            --bg-g7: radial-gradient(at 51% 4%,  #a5b4fc 0px, transparent 50%);
-            --bg-base: linear-gradient(#818cf8 0 100%);
+            --glow-hsl: 31deg 97% 72%;
+            --bg-g1: radial-gradient(at 80% 55%, #fdba74 0px, transparent 50%);
+            --bg-g2: radial-gradient(at 69% 34%, #fed7aa 0px, transparent 50%);
+            --bg-g3: radial-gradient(at 8% 6%,   #fb923c 0px, transparent 50%);
+            --bg-g4: radial-gradient(at 41% 38%, #fdba74 0px, transparent 50%);
+            --bg-g5: radial-gradient(at 86% 85%, #fed7aa 0px, transparent 50%);
+            --bg-g6: radial-gradient(at 82% 18%, #fb923c 0px, transparent 50%);
+            --bg-g7: radial-gradient(at 51% 4%,  #fed7aa 0px, transparent 50%);
+            --bg-base: linear-gradient(#fdba74 0 100%);
         }
-        /* Chalk aur Calibration: emerald mesh, emerald-tinted hover fill */
-        #card-practical.border-glow-card { --card-bg: #ecfdf5; }
-        #card-practical:hover { background-color: #ecfdf5; border-color: #6ee7b7; }
+        /* Chalk aur Calibration (teachers): light blue mesh, sky-tinted hover
+           fill. Same positions and stops as before, palette only. */
+        #card-practical.border-glow-card { --card-bg: #f0f9ff; }
+        #card-practical:hover { background-color: #f0f9ff; border-color: #7dd3fc; }
         #card-practical.border-glow-card {
-            --glow-hsl: 158deg 74% 40%;
-            --bg-g1: radial-gradient(at 80% 55%, #34d399 0px, transparent 50%);
-            --bg-g2: radial-gradient(at 69% 34%, #6ee7b7 0px, transparent 50%);
-            --bg-g3: radial-gradient(at 8% 6%,   #10b981 0px, transparent 50%);
-            --bg-g4: radial-gradient(at 41% 38%, #34d399 0px, transparent 50%);
-            --bg-g5: radial-gradient(at 86% 85%, #6ee7b7 0px, transparent 50%);
-            --bg-g6: radial-gradient(at 82% 18%, #10b981 0px, transparent 50%);
-            --bg-g7: radial-gradient(at 51% 4%,  #6ee7b7 0px, transparent 50%);
-            --bg-base: linear-gradient(#34d399 0 100%);
+            --glow-hsl: 199deg 89% 48%;
+            --bg-g1: radial-gradient(at 80% 55%, #38bdf8 0px, transparent 50%);
+            --bg-g2: radial-gradient(at 69% 34%, #7dd3fc 0px, transparent 50%);
+            --bg-g3: radial-gradient(at 8% 6%,   #0ea5e9 0px, transparent 50%);
+            --bg-g4: radial-gradient(at 41% 38%, #38bdf8 0px, transparent 50%);
+            --bg-g5: radial-gradient(at 86% 85%, #7dd3fc 0px, transparent 50%);
+            --bg-g6: radial-gradient(at 82% 18%, #0ea5e9 0px, transparent 50%);
+            --bg-g7: radial-gradient(at 51% 4%,  #7dd3fc 0px, transparent 50%);
+            --bg-base: linear-gradient(#38bdf8 0 100%);
         }
         /* RotatingText (ported from React Bits) in the workshops heading:
            static "students & teachers" until JS upgrades it to a rotating
@@ -291,8 +294,10 @@
         }
         .rot-stage { display: inline-flex; white-space: pre; }
         .rot-char { display: inline-block; white-space: pre; will-change: transform; }
-        .rot-badge.rot-students { background: #eef2ff; color: #4f46e5; }
-        .rot-badge.rot-teachers { background: #ecfdf5; color: #059669; }
+        /* these two track the workshop cards: light orange for students,
+           light blue for teachers, darkened text so it stays legible */
+        .rot-badge.rot-students { background: #ffedd5; color: #c2410c; }
+        .rot-badge.rot-teachers { background: #e0f2fe; color: #0369a1; }
         .rot-badge.rot-alt { background: #f1f5f9; color: #475569; }
         .rot-badge.rot-dam { background: #0f172a; color: #ffffff; }
         .rot-sr {
@@ -803,15 +808,16 @@
 
         /* ======================================================================
            DynamicIsland (cult-ui port, vanilla JS/CSS)
-           Five of the component's shape presets are actually used here, ordered
-           so no two consecutive states share an outline: tall, board, note,
-           long, compact. The React version springs width/height/radius from a
-           preset table; here the presets are data-size attributes and the spring
-           is an overshoot curve. Content swaps behind a blur/scale fade, as
-           DynamicContainer does, and a hairline bar tracks each state's dwell.
+           Four of the component's shape presets are used here, ordered so no
+           two consecutive states share an outline: tall, board, note, long.
+           The React version springs width/height/radius from a preset table;
+           here the presets are data-size attributes and the spring is an
+           overshoot curve. Content swaps behind a blur/scale fade, as
+           DynamicContainer does. It rests on the four-boards state and only
+           cycles while hovered (tapped, on touch).
            ====================================================================== */
 
-        /* Fixed-height stage: the island ranges from 50px to 172px tall, so
+        /* Fixed-height stage: the island ranges from 56px to 172px tall, so
            without this the whole page below would jump on every state change. */
         .di-stage { display: flex; align-items: center; min-height: 184px; }
 
@@ -825,7 +831,6 @@
                         height .55s cubic-bezier(.32, 1.3, .4, 1),
                         border-radius .5s ease;
         }
-        .di-shell[data-size="compact"] { --di-w: 196px; --di-h: 50px;  --di-r: 25px; }
         .di-shell[data-size="board"]   { --di-w: 452px; --di-h: 92px;  --di-r: 24px; }
         .di-shell[data-size="note"]    { --di-w: 512px; --di-h: 64px;  --di-r: 32px; }
         .di-shell[data-size="long"]    { --di-w: 576px; --di-h: 56px;  --di-r: 28px; }
@@ -838,13 +843,6 @@
             transition: opacity .16s ease, transform .16s ease, filter .16s ease;
         }
         .di-shell.di-swap .di-view { opacity: 0; transform: scale(.94); filter: blur(4px); }
-
-        /* dwell indicator: fills across the state's lifetime, resets on change */
-        .di-prog {
-            position: absolute; left: 0; bottom: 0; height: 2px; width: 0;
-            background: linear-gradient(90deg, rgba(148, 163, 184, .25), rgba(226, 232, 240, .8));
-            pointer-events: none;
-        }
 
         /* every leading mark springs in as its state lands */
         .di-logo-tile, .di-chip { animation: di-pop .34s cubic-bezier(.34, 1.5, .5, 1) both; }
@@ -866,11 +864,6 @@
             background: var(--di-chip, rgba(148, 163, 184, .16));
         }
         .di-chip svg { width: 18px; height: 18px; stroke-width: 1.8; color: var(--di-ico, #cbd5e1); }
-
-        /* --- compact: just the mark and a short label, centred --- */
-        .di-compact { gap: 11px; padding: 0 16px; justify-content: center; }
-        .di-compact .di-logo-tile { width: 36px; height: 36px; border-radius: 10px; }
-        .di-compact-name { font-size: 14px; font-weight: 700; letter-spacing: -0.01em; color: #f1f5f9; }
 
         /* --- board: mark, name, and how the program fits it --- */
         .di-board { gap: 16px; padding: 0 22px; }
@@ -905,6 +898,90 @@
             .di-tall-row { gap: 9px; }
             .di-logo { height: calc(var(--lh, 38px) - 5px); }
         }
+
+        /* ======================================================================
+           NotificationList (Animate UI community component, vanilla JS/CSS port)
+           Same mechanics as the original: cards stack via negative margin-top
+           with a per-card scaleX taper, and the footer label crossfades between
+           the idle text and "View all". Two deliberate changes for 7 items
+           instead of the shipped 3: the taper is 2.5% per card rather than 5%
+           (at 5% the seventh card is 70% wide and reads as a funnel), and the
+           collapsed margins are measured from each card's real height in JS so
+           every card peeks by exactly the same amount however its text wraps.
+           ====================================================================== */
+
+        /* Reserves the expanded height (set by JS) so hovering cannot push the
+           rest of the page down by ~330px. Same reason the island has a stage. */
+        /* Accordion: the list stays in normal flow and no height is reserved,
+           so the section is tight when closed and grows as the stack unfolds.
+           The card margins are transitioned, so the content below slides down
+           over the same 420ms rather than jumping. */
+        .nl-stage { position: relative; }
+
+        .nl-wrap {
+            background: #f1f5f9;
+            padding: 12px;
+            border-radius: 24px;
+            box-shadow: 0 4px 10px -4px rgba(15, 23, 42, .12);
+        }
+        .nl-stack { display: flex; flex-direction: column; }
+
+        .nl-card {
+            position: relative;
+            display: grid;
+            grid-template-columns: 24px 1fr;
+            gap: 12px;
+            align-items: start;
+            background: #ffffff;
+            border-radius: 13px;
+            padding: 15px 17px 16px;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, .07);
+            margin-top: var(--mt-c, 0px);
+            transform: scaleX(var(--sx-c, 1));
+            transition: margin-top .42s cubic-bezier(.22, 1.18, .36, 1),
+                        transform .42s cubic-bezier(.22, 1.18, .36, 1),
+                        box-shadow .2s ease;
+        }
+        .nl-wrap.is-open .nl-card { margin-top: 4px; transform: scaleX(1); }
+        .nl-wrap.is-open .nl-card:first-child { margin-top: 0; }
+        .nl-wrap.is-open .nl-card:hover { box-shadow: 0 10px 22px -8px rgba(15, 23, 42, .22); }
+
+        /* transitions off while JS measures the expanded height */
+        .nl-wrap.nl-measuring .nl-card { transition: none; }
+
+        .nl-num {
+            width: 24px; height: 24px; border-radius: 50%;
+            background: #eef2f7; color: #334155;
+            font-size: 11.5px; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            margin-top: 1px;
+        }
+        .nl-title { display: block; font-size: 14.5px; font-weight: 700; letter-spacing: -0.01em; color: #0f172a; }
+        .nl-desc  { display: block; font-size: 13px; line-height: 1.45; color: #64748b; margin-top: 3px; }
+
+        .nl-foot { display: flex; align-items: center; gap: 9px; padding: 11px 4px 2px; }
+        .nl-count {
+            width: 21px; height: 21px; border-radius: 50%; flex: 0 0 auto;
+            background: #0f172a; color: #fff;
+            font-size: 11.5px; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+        }
+        /* both labels share one grid cell so they crossfade in place */
+        .nl-labels { display: grid; }
+        .nl-label {
+            grid-row-start: 1; grid-column-start: 1;
+            display: flex; align-items: center; gap: 4px;
+            font-size: 14px; font-weight: 600; color: #475569;
+            transition: opacity .22s ease, transform .22s ease;
+        }
+        .nl-label svg { width: 15px; height: 15px; stroke-width: 2; }
+        .nl-label-idle { opacity: 1; transform: translateY(0); }
+        .nl-label-open { opacity: 0; transform: translateY(16px); pointer-events: none; }
+        .nl-wrap.is-open .nl-label-idle { opacity: 0; transform: translateY(-16px); pointer-events: none; }
+        .nl-wrap.is-open .nl-label-open { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+        /* touch: no hover, so the stack is tapped open and says so */
+        .nl-wrap.nl-tap { cursor: pointer; }
 
         /* Reduced motion: the dock stops magnifying and the comet stops tilting
            (their scripts also bail out early) */
@@ -1114,11 +1191,10 @@
      The island is decorative for assistive tech; every fact it shows is also
      in the sr-only list beside it. -->
 <section id="boards" class="bg-white" aria-label="Boards and in-school guarantees">
-    <div class="max-w-[1180px] mx-auto px-6 pt-10 pb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-6 md:gap-12">
+    <div class="max-w-[1180px] mx-auto px-6 pt-20 pb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-6 md:gap-12">
         <div class="di-stage">
             <div class="di-shell" id="boardIsland" data-size="tall" aria-hidden="true">
                 <div class="di-view di-tall" id="boardIslandView"></div>
-                <span class="di-prog" id="boardIslandProg"></span>
             </div>
         </div>
 
@@ -1141,46 +1217,88 @@
 </section>
 
 <!-- ============================= 4. PROCESS ============================= -->
-<section id="process" class="max-w-[1180px] mx-auto px-6 py-[76px]">
+<section id="process" class="max-w-[1180px] mx-auto px-6 pt-[52px] pb-[76px]">
     <div class="grid md:grid-cols-2 gap-14">
         <div class="gs-item">
             <div class="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-400 mb-3.5">How it works</div>
-            <h2 class="text-[clamp(28px,3.4vw,40px)] leading-[1.12] tracking-[-0.03em] font-extrabold mb-4">How this runs in your school</h2>
-            <p class="text-slate-500 mb-6 max-w-[26em]">A simple, predictable process. This is exactly how the program runs &mdash; there are no variations.</p>
+            <h2 class="text-[clamp(28px,3.4vw,40px)] leading-[1.12] tracking-[-0.03em] font-extrabold mb-4">How Dimaag aur Machine runs in your school</h2>
+            <p class="text-slate-500 mb-6 max-w-[26em]">A simple, predictable process. This is exactly how the program runs. There are no variations.</p>
             <div class="border border-slate-200 bg-slate-50 rounded-[14px] px-5 py-[18px] text-[15px] text-slate-700 max-w-[26em]">
-                The entire process is managed by us. The school only provides a venue and a time slot &mdash; at zero cost.
+                The entire process is managed by us. The school only provides a venue and a time slot, at zero cost.
             </div>
         </div>
-        <ol class="gs-item list-none m-0 p-0 flex flex-col">
-            <li class="grid grid-cols-[34px_1fr] gap-4 py-[18px] border-t border-slate-100">
-                <span class="text-[13px] font-bold text-slate-400 pt-[3px]">01</span>
-                <span class="text-[15px]"><b class="font-bold">School approves the batch.</b> <span class="text-slate-500">Management reviews the program. No cost to the school.</span></span>
-            </li>
-            <li class="grid grid-cols-[34px_1fr] gap-4 py-[18px] border-t border-slate-100">
-                <span class="text-[13px] font-bold text-slate-400 pt-[3px]">02</span>
-                <span class="text-[15px]"><b class="font-bold">Parents are informed by the school.</b> <span class="text-slate-500">Enrolment stays optional and parent-funded.</span></span>
-            </li>
-            <li class="grid grid-cols-[34px_1fr] gap-4 py-[18px] border-t border-slate-100">
-                <span class="text-[13px] font-bold text-slate-400 pt-[3px]">03</span>
-                <span class="text-[15px]"><b class="font-bold">Sessions run during school hours.</b> <span class="text-slate-500">Fits the timetable without touching syllabus time.</span></span>
-            </li>
-            <li class="grid grid-cols-[34px_1fr] gap-4 py-[18px] border-t border-slate-100">
-                <span class="text-[13px] font-bold text-slate-400 pt-[3px]">04</span>
-                <span class="text-[15px]"><b class="font-bold">A school teacher is present in every class.</b> <span class="text-slate-500">Supervision is never handed over to us.</span></span>
-            </li>
-            <li class="grid grid-cols-[34px_1fr] gap-4 py-[18px] border-t border-slate-100">
-                <span class="text-[13px] font-bold text-slate-400 pt-[3px]">05</span>
-                <span class="text-[15px]"><b class="font-bold">Students practise under supervision.</b> <span class="text-slate-500">All AI use happens in class. No unsupervised internet access.</span></span>
-            </li>
-            <li class="grid grid-cols-[34px_1fr] gap-4 py-[18px] border-t border-slate-100">
-                <span class="text-[13px] font-bold text-slate-400 pt-[3px]">06</span>
-                <span class="text-[15px]"><b class="font-bold">Certificate issued.</b> <span class="text-slate-500">School-endorsed participation certificate for each student.</span></span>
-            </li>
-            <li class="grid grid-cols-[34px_1fr] gap-4 py-[18px] border-y border-slate-100">
-                <span class="text-[13px] font-bold text-slate-400 pt-[3px]">07</span>
-                <span class="text-[15px]"><b class="font-bold">Program ends.</b> <span class="text-slate-500">One-time program. No subscriptions, no follow-ups, no upsells.</span></span>
-            </li>
-        </ol>
+        <!-- NotificationList (Animate UI community component, ported to vanilla).
+             Collapsed it is a stack of seven cards each peeking 10px; hovering
+             anywhere (tapping, on touch) expands it and the footer label
+             crossfades to "View all". Every card stays in the DOM in both
+             states, so the collapse is purely visual and assistive tech always
+             reads all seven steps in order. -->
+        <div class="gs-item nl-stage" id="procStage">
+            <div class="nl-wrap" id="procList">
+                <ol class="nl-stack" id="procStack">
+                    <li class="nl-card">
+                        <span class="nl-num">1</span>
+                        <span>
+                            <span class="nl-title">School approves the batch.</span>
+                            <span class="nl-desc">Management reviews the program. No cost to the school.</span>
+                        </span>
+                    </li>
+                    <li class="nl-card">
+                        <span class="nl-num">2</span>
+                        <span>
+                            <span class="nl-title">Parents are informed by the school.</span>
+                            <span class="nl-desc">Enrolment stays optional and parent-funded.</span>
+                        </span>
+                    </li>
+                    <li class="nl-card">
+                        <span class="nl-num">3</span>
+                        <span>
+                            <span class="nl-title">Sessions run during school hours.</span>
+                            <span class="nl-desc">Fits the timetable without touching syllabus time.</span>
+                        </span>
+                    </li>
+                    <li class="nl-card">
+                        <span class="nl-num">4</span>
+                        <span>
+                            <span class="nl-title">A school teacher is present in every class.</span>
+                            <span class="nl-desc">Supervision is never handed over to us.</span>
+                        </span>
+                    </li>
+                    <li class="nl-card">
+                        <span class="nl-num">5</span>
+                        <span>
+                            <span class="nl-title">Students practise under supervision.</span>
+                            <span class="nl-desc">All AI use happens in class. No unsupervised internet access.</span>
+                        </span>
+                    </li>
+                    <li class="nl-card">
+                        <span class="nl-num">6</span>
+                        <span>
+                            <span class="nl-title">Certificate issued.</span>
+                            <span class="nl-desc">School-endorsed participation certificate for each student.</span>
+                        </span>
+                    </li>
+                    <li class="nl-card">
+                        <span class="nl-num">7</span>
+                        <span>
+                            <span class="nl-title">Program ends.</span>
+                            <span class="nl-desc">One-time program. No subscriptions, no follow-ups, no upsells.</span>
+                        </span>
+                    </li>
+                </ol>
+                <div class="nl-foot">
+                    <span class="nl-count">7</span>
+                    <span class="nl-labels">
+                        <span class="nl-label nl-label-idle" id="procIdleLabel">Hover to view the process steps</span>
+                        <span class="nl-label nl-label-open">View all
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M7 7h10v10"/><path d="M7 17 17 7"/>
+                            </svg>
+                        </span>
+                    </span>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
 
@@ -1829,14 +1947,13 @@ window.addEventListener('DOMContentLoaded', function () {
 </script>
 
 <!-- DynamicIsland (cult-ui port): the boards + promises strip.
-     Five shape presets, ordered so consecutive states never share an outline,
-     each with its own dwell. The hairline bar tracks that dwell; hovering
-     freezes both the bar and the cycle so a line can be finished. -->
+     Rests on the four-boards state and only cycles while hovered (tapped, on
+     touch); leaving returns it to that resting state. Four shape presets,
+     ordered so consecutive states never share an outline. -->
 <script>
 window.addEventListener('DOMContentLoaded', function () {
     var shell = document.getElementById('boardIsland');
     var view  = document.getElementById('boardIslandView');
-    var prog  = document.getElementById('boardIslandProg');
     if (!shell || !view) return;
 
     var LOGOS = {
@@ -1847,8 +1964,7 @@ window.addEventListener('DOMContentLoaded', function () {
     };
 
     // One named colour per promise, at 400-weight so it carries on the near
-    // black shell without going neon. Chip backgrounds are the same hue at low
-    // alpha. Board logos stay greyscale.
+    // black shell without going neon. Chips are the same hue at low alpha.
     var C = {
         sky:     ['#38bdf8', 'rgba(56,189,248,.15)'],
         emerald: ['#34d399', 'rgba(52,211,153,.15)'],
@@ -1874,119 +1990,161 @@ window.addEventListener('DOMContentLoaded', function () {
                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" ' +
                'stroke-linejoin="round">' + icon + '</svg></span>';
     }
+    function boardState(logo, name, copy, dwell) {
+        return { size: 'board', dwell: dwell || 3000, html:
+            tile(logo) +
+            '<span class="di-board-text"><span class="di-board-name">' + name + '</span>' +
+            '<span class="di-board-copy">' + copy + '</span></span>' };
+    }
+    function noteState(size, icon, colour, copy, dwell) {
+        return { size: size, dwell: dwell || 2800, html:
+            chip(icon, colour) + '<span class="di-note-copy">' + copy + '</span>' };
+    }
 
-    // Ten states. Shapes cycle tall -> note -> board -> long -> compact so the
-    // outline changes every single time, which is the whole point of the island.
+    // State 0 is the resting state: all four boards at once. Every board now
+    // gets its own card with a description, so `compact` is no longer used.
     var STATES = [
-        { size: 'tall', dwell: 3400, html:
+        { size: 'tall', dwell: 3200, html:
             '<span class="di-tall-row">' + tile(LOGOS.cbse) + tile(LOGOS.cisce) + tile(LOGOS.ib) + tile(LOGOS.ssc) + '</span>' +
             '<span class="di-tall-line">Four boards. One program.' +
-            '<span class="di-tall-sub">CBSE, ICSE, IB and State Board.</span></span>' },
+            '<span class="di-tall-sub">CBSE, ICSE, IB and SSC Maharashtra Board.</span></span>' },
 
-        { size: 'note', dwell: 2800, html:
-            chip(I.clock, C.sky) +
-            '<span class="di-note-copy">Every session runs inside school hours, in your timetable.</span>' },
-
-        { size: 'board', dwell: 3000, html:
-            tile(LOGOS.cbse) +
-            '<span class="di-board-text"><span class="di-board-name">CBSE</span>' +
-            '<span class="di-board-copy">Runs alongside the CBSE timetable, inside school hours.</span></span>' },
-
-        { size: 'long', dwell: 2800, html:
-            chip(I.house, C.violet) +
-            '<span class="di-note-copy">Nothing goes home. No homework, no evening screen time.</span>' },
-
-        { size: 'compact', dwell: 2000, html:
-            tile(LOGOS.ib) + '<span class="di-compact-name">IB</span>' },
-
-        { size: 'note', dwell: 2800, html:
-            chip(I.teacher, C.emerald) +
-            '<span class="di-note-copy">A school teacher stays in the room for every class.</span>' },
-
-        { size: 'board', dwell: 3000, html:
-            tile(LOGOS.cisce) +
-            '<span class="di-board-text"><span class="di-board-name">CISCE / ICSE</span>' +
-            '<span class="di-board-copy">Maps to ICSE computer applications and project work.</span></span>' },
-
-        { size: 'long', dwell: 2800, html:
-            chip(I.shield, C.rose) +
-            '<span class="di-note-copy">AI tools are used in class only, always supervised.</span>' },
-
-        { size: 'compact', dwell: 2000, html:
-            tile(LOGOS.ssc) + '<span class="di-compact-name">State Board</span>' },
-
-        { size: 'note', dwell: 2800, html:
-            chip(I.book, C.amber) +
-            '<span class="di-note-copy">Nothing in the syllabus is replaced or postponed.</span>' }
+        noteState('note', I.clock, C.sky, 'Every session runs inside school hours, in your timetable.'),
+        boardState(LOGOS.cbse,  'CBSE',                 'Runs alongside the CBSE timetable, inside school hours.'),
+        noteState('long', I.house, C.violet, 'Nothing goes home. No homework, no evening screen time.'),
+        boardState(LOGOS.cisce, 'CISCE / ICSE',         'Maps to ICSE computer applications and project work.'),
+        noteState('note', I.teacher, C.emerald, 'A school teacher stays in the room for every class.'),
+        boardState(LOGOS.ib,    'IB',                   'Supports inquiry-led learning and independent research.'),
+        noteState('long', I.shield, C.rose, 'AI tools are used in class only, always supervised.'),
+        boardState(LOGOS.ssc,   'SSC Maharashtra Board', 'Taught in simple language for State Board classrooms.'),
+        noteState('note', I.book, C.amber, 'Nothing in the syllabus is replaced or postponed.')
     ];
 
     var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var idx = -1, swapTimer = null, nextTimer = null, paused = false;
-
-    function runProgress(ms) {
-        if (!prog) return;
-        prog.style.transition = 'none';
-        prog.style.width = '0%';
-        void prog.offsetWidth;                       // commit the reset
-        if (reduced) return;
-        prog.style.transition = 'width ' + ms + 'ms linear';
-        prog.style.width = '100%';
-    }
-    function freezeProgress() {
-        if (!prog) return;
-        var w = prog.getBoundingClientRect().width;
-        prog.style.transition = 'none';
-        prog.style.width = w + 'px';
-    }
+    var idx = -1, swapTimer = null, nextTimer = null, cycling = false;
 
     function apply(st) {
         shell.setAttribute('data-size', st.size);
         view.className = 'di-view di-' + st.size;
         view.innerHTML = st.html;
-        runProgress(st.dwell);
-    }
-
-    function schedule(ms) {
-        clearTimeout(nextTimer);
-        nextTimer = setTimeout(step, ms);
     }
 
     function paint(next) {
+        if (next === idx) return;
         var first = idx === -1;
         idx = next;
         var st = STATES[idx];
-        if (first) { apply(st); return st; }
-        shell.classList.add('di-swap');              // blur the outgoing view away
+        if (first) { apply(st); return; }        // no fade on the very first frame
+        shell.classList.add('di-swap');          // blur the outgoing view away
         clearTimeout(swapTimer);
         swapTimer = setTimeout(function () {
             apply(st);
             shell.classList.remove('di-swap');
         }, 150);
-        return st;
     }
 
     function step() {
-        var st = paint((idx + 1) % STATES.length);
-        if (!paused && !reduced) schedule(st.dwell);
+        paint((idx + 1) % STATES.length);
+        if (cycling) {
+            clearTimeout(nextTimer);
+            nextTimer = setTimeout(step, STATES[idx].dwell);
+        }
     }
 
-    // Hovering holds the state (and the bar) so a slow reader can finish.
-    shell.addEventListener('mouseenter', function () {
-        paused = true;
+    function startCycle() {
+        if (cycling || reduced) return;
+        cycling = true;
         clearTimeout(nextTimer);
-        freezeProgress();
-    });
-    shell.addEventListener('mouseleave', function () {
-        if (!paused) return;
-        paused = false;
-        if (reduced) return;
-        var st = STATES[idx];
-        runProgress(st.dwell);                       // restart this state's dwell
-        schedule(st.dwell);
+        nextTimer = setTimeout(step, 420);       // respond promptly to the hover
+    }
+
+    function stopCycle() {
+        cycling = false;
+        clearTimeout(nextTimer);
+        paint(0);                                // back to the four boards
+    }
+
+    paint(0);                                    // rest here until interacted with
+
+    if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+        shell.addEventListener('mouseenter', startCycle);
+        shell.addEventListener('mouseleave', stopCycle);
+    } else {
+        // No hover on touch, so it is a tap target: tap to run, tap to rest.
+        shell.style.cursor = 'pointer';
+        shell.addEventListener('click', function () {
+            if (cycling) stopCycle(); else startCycle();
+        });
+    }
+});
+</script>
+
+<!-- NotificationList (Animate UI community component, vanilla port).
+     The original hard-codes marginTop:-44 because its three cards are a known
+     uniform height. These seven wrap to different heights, so the collapsed
+     offset is measured per card, which keeps every peek exactly 10px. Only the
+     first three show when collapsed; the rest hide flush behind them, and the
+     section grows with the stack rather than reserving room for it. -->
+<script>
+window.addEventListener('DOMContentLoaded', function () {
+    var stage = document.getElementById('procStage');
+    var wrap  = document.getElementById('procList');
+    var stack = document.getElementById('procStack');
+    if (!stage || !wrap || !stack) return;
+
+    var cards = Array.prototype.slice.call(stack.querySelectorAll('.nl-card'));
+    if (!cards.length) return;
+
+    var PEEK = 10;      // px of each card left visible behind the one above
+    var SHOWN = 3;      // cards visible when collapsed; the rest hide exactly behind
+    var TAPER = 0.025;  // scaleX step per card (the original's 0.05 funnels at 7)
+
+    // Deepest card paints first so card 1 stays on top of the pile.
+    cards.forEach(function (c, i) { c.style.zIndex = String(cards.length - i); });
+
+    function layout() {
+        // Measure at natural (expanded) geometry with transitions suppressed,
+        // then derive the collapsed offsets. Nothing is reserved: the section
+        // grows and shrinks with the stack, accordion style.
+        wrap.classList.add('nl-measuring', 'is-open');
+        var heights = cards.map(function (c) { return c.offsetHeight; });
+        cards.forEach(function (c, i) {
+            // First card sits flush; the next two peek by PEEK; everything past
+            // that pulls up its full height so it contributes nothing and hides
+            // exactly behind card three. Keeping the taper on the hidden ones
+            // means they stay narrower than card three and never poke out.
+            var mt = i === 0 ? 0
+                   : (i < SHOWN ? -(heights[i] - PEEK) : -heights[i]);
+            c.style.setProperty('--mt-c', mt + 'px');
+            c.style.setProperty('--sx-c', (1 - i * TAPER).toFixed(3));
+        });
+        wrap.classList.remove('is-open');
+        void wrap.offsetWidth;                    // commit before re-enabling
+        wrap.classList.remove('nl-measuring');
+    }
+
+    layout();
+    // Fonts landing late change the wrapping, so re-measure once loaded.
+    window.addEventListener('load', layout);
+
+    var rz;
+    window.addEventListener('resize', function () {
+        clearTimeout(rz);
+        rz = setTimeout(layout, 150);
     });
 
-    var first = paint(0);
-    if (!reduced) schedule(first.dwell);
+    var fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    if (fine) {
+        wrap.addEventListener('mouseenter', function () { wrap.classList.add('is-open'); });
+        wrap.addEventListener('mouseleave', function () { wrap.classList.remove('is-open'); });
+    } else {
+        // No hover to work with, so the stack is tapped open. The idle label
+        // says so, otherwise six of seven steps sit behind an invisible gesture.
+        wrap.classList.add('nl-tap');
+        var idle = document.getElementById('procIdleLabel');
+        if (idle) idle.textContent = 'Tap to view the process steps';
+        wrap.addEventListener('click', function () { wrap.classList.toggle('is-open'); });
+    }
 });
 </script>
 
