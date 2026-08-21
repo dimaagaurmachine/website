@@ -396,172 +396,97 @@
             overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border-width: 0;
         }
 
-        /* ======================= Embedded AI assistant (voice-reactive glow card) ======================= */
-        .agent-stage { display: flex; flex-direction: column; align-items: stretch; justify-content: flex-end; gap: 12px; min-width: 0; }
-        .agent-col { position: relative; z-index: 2; }
+        /* ======================= Embedded AI assistant: North =======================
+           Rebuilt as a DynamicIsland-style widget (cult-ui): one dark pill with a
+           circular strands orb and the invitation beside it. Clicking it connects
+           and the island expands downward to the live controls. The glow card,
+           tap-to-start button, pulse rings, rotating question and text bar are all
+           gone. #ai-agent-card keeps its id because DAMGlow writes
+           --glow-angle/--voice-amp there and the strands shader reads --voice-amp
+           off it every frame. */
+        .ni-stage { display: flex; justify-content: center; }
+        @media (min-width: 768px) { .ni-stage { justify-content: flex-end; } }
 
-        /* The private-support card: light grey surface wrapped in a seamless
-           conic gradient border. Its bloom reacts to the conversation the way
-           the strands used to — window.DAMGlow drives --glow-angle (the
-           gradient slowly revolves, faster while connecting/speaking) and
-           --voice-amp (0..1 with the live audio level). */
-        .agent-glow-card {
-            --glow-angle: 120deg;
+        .ni-island {
             --voice-amp: 0;
-            border: 1.5px solid transparent;
-            background:
-                linear-gradient(#0f172a, #0f172a) padding-box,
-                conic-gradient(from var(--glow-angle),
-                    #6366f1, #8b5cf6, #06b6d4, #818cf8, #6366f1) border-box;
+            position: relative; width: 100%; max-width: 560px;
+            background: #0b1220; border: 1px solid rgba(255, 255, 255, .1);
+            border-radius: 28px; padding: 14px;
+            box-shadow: 0 24px 60px -26px rgba(0, 0, 0, .85);
+            transition: border-color .5s ease, box-shadow .5s ease;
+        }
+        .ni-island[data-live="1"] {
+            border-color: rgba(255, 255, 255, .2);
             box-shadow:
-                0 0 calc(var(--voice-amp) * 44px) calc(var(--voice-amp) * 5px) rgba(99,102,241, calc(var(--voice-amp) * 0.32)),
-                0 0 calc(var(--voice-amp) * 90px) calc(var(--voice-amp) * 12px) rgba(139,92,246, calc(var(--voice-amp) * 0.18));
-        }
-        .agent-glow-card::before {
-            content: ""; position: absolute; z-index: -1;
-            inset: calc(-3px - var(--voice-amp) * 8px);
-            border-radius: inherit; pointer-events: none;
-            padding: calc(10px + var(--voice-amp) * 12px);
-            background: conic-gradient(from var(--glow-angle),
-                #6366f1, #8b5cf6, #06b6d4, #818cf8, #6366f1);
-            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            mask-composite: exclude;
-            filter: blur(16px);
-            opacity: calc(0.2 + var(--voice-amp) * 0.8);
+                0 24px 60px -26px rgba(0, 0, 0, .9),
+                0 0 calc(var(--voice-amp) * 46px) calc(var(--voice-amp) * 4px) rgba(96, 165, 250, calc(var(--voice-amp) * .3));
         }
 
-        /* Rotating "parents usually ask" question — hidden while a conversation
-           is live (the agent script toggles .ask-hidden). */
-        .agent-ask { transition: opacity .45s ease, transform .45s ease; }
-        .agent-ask.ask-hidden { opacity: 0; transform: translateY(8px); pointer-events: none; }
-        .rot-badge.rot-ask {
-            font-size: 15px; font-weight: 600; color: #c7d2fe;
-            background: rgba(99,102,241,.16); border: 1px solid rgba(129,140,248,.3);
-            border-radius: 0.5em; padding: 0.34em 0.7em 0.4em;
+        /* the clickable head: orb plus copy */
+        .ni-head {
+            display: flex; align-items: center; gap: 16px; width: 100%;
+            background: none; border: 0; margin: 0; padding: 4px;
+            text-align: left; cursor: pointer; color: inherit; font: inherit;
+            border-radius: 22px;
         }
+        .ni-head:focus-visible { outline: 2px solid #ffffff; outline-offset: 3px; }
 
-        /* Tap-to-start button: same style as the "Book a 30-min" CTA. The old
-           orb's live vars still apply — --amp nudges scale and adds an indigo
-           glow with the audio level, --fill sweeps the button white while the
-           agent speaks (the agent script darkens the label in step). */
-        .pulse-wrap { position: relative; width: fit-content; margin: 0; }
-        .pulse-circle {
-            position: relative; border-radius: 12px; cursor: pointer;
-            padding: 15px 24px; margin: 0;
-            display: inline-flex; align-items: baseline; justify-content: center; gap: 8px;
-            font-family: inherit; color: #ffffff;
-            background:
-                radial-gradient(circle farthest-side,
-                    rgba(255,255,255,.97) calc(var(--fill, 0) * 100%),
-                    rgba(255,255,255,0) calc(var(--fill, 0) * 100% + 2%)),
-                rgba(15,23,42,.55);
-            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-            border: 1px solid rgba(255,255,255,.4);
-            box-shadow:
-                0 8px 24px rgba(0,0,0,.3),
-                0 0 calc(8px + var(--glow, 0px) * 0.5) rgba(129,140,248, calc(var(--amp, 0) * 0.8));
-            transform: scale(calc(1 + var(--amp, 0) * 0.4));
-            transition: transform .15s ease, border-color .3s ease;
-            will-change: transform;
+        /* The orb. setCircle() rewrites this element's className to
+           'pulse-wrap <state>', so every orb style has to hang off .pulse-wrap. */
+        .pulse-wrap {
+            position: relative; flex: 0 0 auto;
+            width: 74px; height: 74px; border-radius: 50%;
+            overflow: hidden; background: #060a14;
+            border: 1.5px solid #ffffff;
+            transition: box-shadow .4s ease, transform .4s ease;
         }
-        .pulse-circle:hover { border-color: rgba(255,255,255,.85); }
-        .pulse-circle:active { transform: scale(.97); }
-        .pulse-circle:focus-visible { outline: 2px solid #ffffff; outline-offset: 3px; }
-        .pc-label { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
-        .pc-sub { font-size: 12px; font-weight: 500; color: #94a3b8; letter-spacing: .02em; }
-        .pc-sub:empty { display: none; }
-        .pulse-ring {
-            position: absolute; inset: 0; border-radius: 12px;
-            border: 1px solid rgba(255,255,255,.38); opacity: 0; pointer-events: none;
-        }
-        .agent-status {
-            display: flex; align-items: center; justify-content: space-between; gap: 10px;
-            width: 100%; min-height: 26px;
-        }
-        .agent-timer {
-            font-size: 12px; font-weight: 600; color: #e2e8f0; font-variant-numeric: tabular-nums;
-            background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.22);
-            border-radius: 10px; padding: 4px 11px; flex-shrink: 0;
-        }
-        .pulse-wrap .pulse-ring.r1 { animation: pulse-ring 3.4s ease-out infinite; }
-        .pulse-wrap .pulse-ring.r2 { animation: pulse-ring 3.4s ease-out 1.7s infinite; }
-        .pulse-wrap.connecting .pulse-ring.r1 { animation-duration: 1.2s; }
-        .pulse-wrap.connecting .pulse-ring.r2 { animation-duration: 1.2s; animation-delay: .6s; }
-        .pulse-wrap.speaking .pulse-ring.r1,
-        .pulse-wrap.speaking .pulse-ring.r2 { animation: none; }
-        @keyframes pulse-ring {
-            0%   { transform: scale(1); opacity: .55; }
-            100% { transform: scale(1.35); opacity: 0; }
-        }
+        .ni-head:hover .pulse-wrap { transform: scale(1.04); }
+        .pulse-wrap.connecting { box-shadow: 0 0 0 4px rgba(251, 146, 60, .3); }
+        .pulse-wrap.listening  { box-shadow: 0 0 0 4px rgba(96, 165, 250, .32); }
+        .pulse-wrap.speaking   { box-shadow: 0 0 0 5px rgba(192, 132, 252, .36); }
 
-        .agent-mode {
-            text-align: left; font-size: 12.5px; font-weight: 600; color: #94a3b8;
-            min-height: 20px; transition: color .4s ease;
-        }
-        .agent-mode.listening { color: #a5b4fc; }
-        .agent-mode.speaking  { color: #34d399; }
+        .strands-bg { position: absolute; inset: 0; }
+        .strands-bg canvas { display: block; width: 100%; height: 100%; }
 
-        /* Strands (ported from React Bits) span the complete dark card behind
-           the content and react to the conversation like the border glow does —
-           calm drift when idle, surging with the live audio level while the
-           assistant listens and speaks. The card keeps overflow visible for
-           the border bloom, so the strands clip themselves to its radius; a
-           veil darkens the text side and the bottom for legibility. */
-        .strands-bg {
-            position: absolute; inset: 0; z-index: 0; pointer-events: none;
-            border-radius: inherit; overflow: hidden;
-        }
-        .strands-bg canvas { display: block; width: 100%; height: 100%; background: transparent; }
-        .strands-veil {
-            position: absolute; inset: 0; z-index: 1; pointer-events: none;
-            border-radius: inherit;
-            background:
-                linear-gradient(90deg, rgba(15,23,42,.66) 0%, rgba(15,23,42,.22) 46%, rgba(15,23,42,0) 68%),
-                linear-gradient(0deg, rgba(15,23,42,.56) 0%, rgba(15,23,42,0) 42%);
-        }
+        .ni-copy { min-width: 0; }
+        .ni-title { display: block; font-size: 17px; font-weight: 700; letter-spacing: -0.02em; color: #f1f5f9; }
+        /* setMode() rewrites this to 'agent-mode <state>' */
+        .agent-mode { display: block; font-size: 13px; color: #94a3b8; margin-top: 3px; min-height: 1.25em; }
+        .agent-mode.listening { color: #60a5fa; }
+        .agent-mode.speaking  { color: #c084fc; }
+        .agent-mode:empty::before { content: "Tap to talk. No booking, no salesperson."; color: #64748b; }
 
-        /* The on-card transcript feed stays in the DOM (the agent script keeps
-           appending to it and building the log), but it never shows — the full
-           conversation lives behind the transcript-dialog button instead. */
-        .agent-transcript { display: none; }
+        /* live controls, revealed as the island expands */
+        .ni-live {
+            max-height: 0; opacity: 0; overflow: hidden;
+            transition: max-height .45s cubic-bezier(.22, 1.05, .36, 1), opacity .3s ease;
+        }
+        .ni-island[data-live="1"] .ni-live { max-height: 130px; opacity: 1; }
+        .ni-live-inner { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 16px 4px 4px; }
+        .agent-timer { font-variant-numeric: tabular-nums; font-size: 12.5px; color: #64748b; margin-right: 4px; }
 
-        .agent-controls { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; }
         .agent-round {
-            width: 46px; height: 46px; border-radius: 12px; flex-shrink: 0;
-            border: 1px solid #334155; background: rgba(2,6,23,.68); color: #cbd5e1; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-            transition: all .25s cubic-bezier(.22,1,.36,1);
+            width: 40px; height: 40px; border-radius: 50%; flex: 0 0 auto;
+            border: 1px solid rgba(255, 255, 255, .16); background: #101a2c; color: #cbd5e1;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            transition: background-color .2s ease, color .2s ease, border-color .2s ease;
         }
-        .agent-round:hover:not(:disabled) { background: #1e3050; color: #fff; border-color: #64748b; transform: scale(1.05); }
-        .agent-round:disabled { opacity: .45; cursor: default; }
-        .agent-round.danger { color: #f87171; border-color: rgba(248,113,113,.3); background: rgba(248,113,113,.08); }
+        .agent-round:hover:not(:disabled) { background: #17243c; color: #ffffff; }
+        .agent-round:disabled { opacity: .4; cursor: default; }
+        .agent-round.danger { color: #f87171; border-color: rgba(248, 113, 113, .4); }
+        .agent-round.danger:hover:not(:disabled) { background: rgba(248, 113, 113, .14); color: #fca5a5; }
         .agent-round svg { width: 17px; height: 17px; stroke-width: 2; }
 
-        .agent-textbar {
-            display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0;
-            padding: 5px 5px 5px 14px;
-            background: rgba(2,6,23,.72); border: 1px solid #334155; border-radius: 12px;
-            backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+        /* the agent script still writes here; the dialog is the only view of it */
+        .agent-transcript { display: none; }
+        .pc-label, .pc-sub { display: none; }
+
+        @media (max-width: 520px) {
+            .ni-title { font-size: 15.5px; }
+            .pulse-wrap { width: 62px; height: 62px; }
+            .ni-head { gap: 13px; }
         }
-        .agent-textbar:focus-within { border-color: #818cf8; }
-        .agent-textbar input {
-            flex: 1; background: none; border: none; outline: none;
-            color: #f1f5f9; font-size: 13.5px; font-family: inherit; padding: 8px 0; min-width: 0;
-        }
-        .agent-textbar input::placeholder { color: #64748b; }
-        .agent-textbar input:disabled { opacity: .5; }
-        .agent-send {
-            width: 34px; height: 34px; border-radius: 9px; border: none;
-            background: #6366f1; color: #fff; cursor: pointer; flex-shrink: 0;
-            display: flex; align-items: center; justify-content: center;
-            transition: all .2s cubic-bezier(.22,1,.36,1);
-        }
-        .agent-send:hover:not(:disabled) { background: #818cf8; transform: scale(1.07); }
-        .agent-send:disabled { opacity: .35; cursor: default; }
-        .agent-send svg { width: 15px; height: 15px; stroke-width: 2; }
+
 
         /* Full transcript dialog */
         .agent-dialog-overlay {
@@ -983,6 +908,87 @@
         /* touch: no hover, so the stack is tapped open and says so */
         .nl-wrap.nl-tap { cursor: pointer; }
 
+        /* ======================================================================
+           AnimatedTooltip (Aceternity port) — the instructor switcher row.
+           Overlapping avatars; hovering one lifts it and floats a name card
+           above it, tilted by where the pointer sits across the avatar. The
+           original springs rotate/translateX with useSpring; here they are
+           custom properties written on pointermove with a short transition,
+           which reads the same at this size.
+           ====================================================================== */
+        .tt-row { display: flex; align-items: center; }
+        .tt-item {
+            position: relative; margin-right: -16px;
+            background: none; border: 0; padding: 0; cursor: pointer;
+            line-height: 0; border-radius: 50%;
+        }
+        .tt-item:hover, .tt-item:focus-visible { z-index: 30; outline: none; }
+        .tt-av {
+            display: block; width: 56px; height: 56px; border-radius: 50%;
+            border: 2px solid #ffffff; object-fit: cover; object-position: top;
+            transition: transform .5s ease, box-shadow .3s ease;
+            background: #1e293b;
+        }
+        .tt-item:hover .tt-av, .tt-item:focus-visible .tt-av { transform: scale(1.06); }
+        /* this row is also the selector, so the current one is ringed */
+        .tt-item.is-active .tt-av { box-shadow: 0 0 0 3px rgba(56, 189, 248, .95); }
+        /* placeholder stand-ins: initials, never a stock face */
+        .tt-mono {
+            display: flex; align-items: center; justify-content: center;
+            font-size: 15px; font-weight: 800; letter-spacing: .02em;
+            color: #cbd5e1; background: #1e293b; line-height: 1;
+        }
+        .tt-tip {
+            position: absolute; left: 50%; bottom: calc(100% + 14px); z-index: 50;
+            display: flex; flex-direction: column; align-items: center;
+            padding: 8px 16px; border-radius: 11px; background: #000000;
+            border: 1.5px solid #ffffff;
+            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, .8);
+            white-space: nowrap; pointer-events: none; opacity: 0;
+            line-height: 1.35;
+            transform: translateX(-50%) translateY(20px) scale(.6);
+            transition: opacity .18s ease, transform .28s cubic-bezier(.2, 1.5, .4, 1);
+        }
+        .tt-item:hover .tt-tip, .tt-item:focus-visible .tt-tip {
+            opacity: 1;
+            transform: translateX(calc(-50% + var(--tt-tx, 0px))) translateY(0) scale(1) rotate(var(--tt-rot, 0deg));
+        }
+        .tt-name { font-size: 15px; font-weight: 700; line-height: 1.3; color: #fff; }
+        .tt-role { font-size: 11.5px; line-height: 1.3; color: #94a3b8; margin-top: 2px; }
+
+        /* ======================================================================
+           Instructor card. The 3D-pin treatment was removed on request, so this
+           is a plain card: portrait, name, role, and a mode badge that the card
+           reveals on click telling you whether they teach offline, online or
+           both.
+           ====================================================================== */
+        .pin-stage { position: relative; display: flex; align-items: center; justify-content: center; }
+        .pin-wrap { position: relative; }
+        .pin-card {
+            position: relative; width: 320px; max-width: 100%;
+            padding: 14px; border-radius: 18px;
+            background: #000000; border: 1px solid rgba(255, 255, 255, .1);
+            box-shadow: 0 8px 16px rgb(0 0 0 / .4);
+            transition: border-color .4s ease, transform .4s ease;
+        }
+        .pin-figure {
+            position: relative; border-radius: 12px; overflow: hidden;
+            background: #0f172a; aspect-ratio: 4 / 5;
+        }
+        .pin-figure img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .pin-name { font-size: 16px; font-weight: 700; color: #f1f5f9; margin-top: 13px; margin-bottom: 2px; }
+
+        /* mode badge: always on, white rounded border over the portrait */
+        .pin-mode {
+            position: absolute; left: 12px; right: 12px; bottom: 12px; z-index: 5;
+            border-radius: 14px; padding: 10px 14px;
+            background: rgba(2, 6, 23, .82); backdrop-filter: blur(6px);
+            border: 1.5px solid #ffffff;
+        }
+        .pin-mode-label { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 700; color: #fff; }
+        .pin-mode-dot { width: 7px; height: 7px; border-radius: 50%; background: #34d399; flex: 0 0 auto; }
+        .pin-mode-detail { font-size: 11.5px; color: #cbd5e1; margin-top: 2px; }
+
         /* Reduced motion: the dock stops magnifying and the comet stops tilting
            (their scripts also bail out early) */
         @media (prefers-reduced-motion: reduce) {
@@ -1001,7 +1007,7 @@
         }
 
         @media print {
-            header, #particle-canvas, .agent-stage, .agent-dialog-overlay, .dam-modal-overlay, .fp-cursor, .pulse-wrap, .agent-ask, .strands-bg, .strands-veil { display: none !important; }
+            header, #particle-canvas, .ni-island, .agent-dialog-overlay, .dam-modal-overlay, .fp-cursor, .strands-bg { display: none !important; }
             body { background: #fff !important; }
             section { page-break-inside: avoid; }
         }
@@ -1315,7 +1321,7 @@
             <!-- Students -->
             <article id="card-sense" class="gs-item bg-white border border-slate-200 rounded-[20px] p-[30px] flex flex-col gap-[22px]">
                 <div>
-                    <div class="inline-block text-[11px] font-bold tracking-[0.1em] uppercase text-slate-600 bg-slate-100 rounded-full px-3 py-[5px] mb-4">For students &middot; Class 9&ndash;12</div>
+                    <div class="inline-block text-[11px] font-bold tracking-[0.1em] uppercase text-slate-900 bg-white border border-slate-900 rounded-full px-3 py-[5px] mb-4">For students &middot; Class 9&ndash;12</div>
                     <h3 class="text-[26px] font-extrabold tracking-[-0.03em] mb-2"><span class="shimmer-text">Soch aur System&trade;</span></h3>
                     <p class="text-slate-600 m-0">Machine jawab de sakti hai. Sochna tumhe hai.</p>
                 </div>
@@ -1349,7 +1355,7 @@
             <!-- Teachers -->
             <article id="card-practical" class="gs-item bg-white border border-slate-200 rounded-[20px] p-[30px] flex flex-col gap-[22px]">
                 <div>
-                    <div class="inline-block text-[11px] font-bold tracking-[0.1em] uppercase text-slate-600 bg-slate-100 rounded-full px-3 py-[5px] mb-4">For teachers &middot; Subject edition</div>
+                    <div class="inline-block text-[11px] font-bold tracking-[0.1em] uppercase text-slate-900 bg-white border border-slate-900 rounded-full px-3 py-[5px] mb-4">For teachers &middot; Subject edition</div>
                     <h3 class="text-[26px] font-extrabold tracking-[-0.03em] mb-2"><span class="shimmer-text">Chalk aur Calibration&trade;</span></h3>
                     <p class="text-slate-600 m-0">Teacher wahi. Toolkit nayi.</p>
                 </div>
@@ -1501,86 +1507,97 @@
 </section>
 
 <!-- ============================= 9. PROGRAM LEAD ============================= -->
-<section id="lead" class="bg-slate-900 text-white">
+<!-- ============================= 9. INSTRUCTORS =============================
+     Three instructors behind one switcher. The avatar row is an AnimatedTooltip
+     port (Aceternity) and doubles as the selector: hovering previews an
+     instructor, clicking pins them. The portrait sits in a 3D-pin card
+     (PinContainer port) whose sonar rings and spike rise on hover, and clicking
+     the card reveals whether that instructor teaches offline, online or both.
+     Instructors two and three are placeholders: initials rather than photos and
+     obviously-unfinished copy, so nothing here can be mistaken for a real
+     person before you fill them in. -->
+<section id="lead" class="bg-black text-white">
     <div class="max-w-[1180px] mx-auto px-6 py-20 grid md:grid-cols-2 gap-14 items-center">
         <div class="gs-item">
-            <div class="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-500 mb-3.5">Program lead</div>
-            <h2 class="text-[clamp(28px,3.4vw,40px)] leading-[1.12] tracking-[-0.03em] font-extrabold mb-[18px]">I don't just teach AI &mdash; I build with it every day.</h2>
-            <p class="text-slate-300 mb-[26px] max-w-[32em]">As a Software Development Engineer developing AI systems for companies in Germany, I work with large language models professionally. This program brings that experience directly into Indian classrooms &mdash; in simple language, for regular classrooms, with no fancy labs required.</p>
-            <div class="grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-4 mb-[26px]">
-                <div class="border border-slate-800 rounded-[14px] px-[18px] py-4">
+            <div class="tt-row mb-8" id="leadAvatars" role="tablist" aria-label="Choose an instructor"></div>
+
+            <h2 class="text-[clamp(28px,3.4vw,40px)] leading-[1.12] tracking-[-0.03em] font-extrabold mb-[18px]" id="leadHeading">I don't just teach AI &mdash; I build with it every day.</h2>
+            <p class="text-slate-300 mb-[26px] max-w-[32em]" id="leadBio">As a Software Development Engineer developing AI systems for companies in Germany, I work with large language models professionally. This program brings that experience directly into Indian classrooms &mdash; in simple language, for regular classrooms, with no fancy labs required.</p>
+
+            <div class="grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-4 mb-[26px]" id="leadCreds">
+                <div class="border border-white/10 rounded-[14px] px-[18px] py-4">
                     <div class="text-[15px] font-bold">M.Sc. Computer Science</div>
                     <div class="text-[13px] text-slate-400 mt-1">University of Konstanz, Germany</div>
                 </div>
-                <div class="border border-slate-800 rounded-[14px] px-[18px] py-4">
+                <div class="border border-white/10 rounded-[14px] px-[18px] py-4">
                     <div class="text-[15px] font-bold">B.Tech Computer Science</div>
                     <div class="text-[13px] text-slate-400 mt-1">MIT ADT University, Pune</div>
                 </div>
-                <div class="border border-slate-800 rounded-[14px] px-[18px] py-4">
+                <div class="border border-white/10 rounded-[14px] px-[18px] py-4">
                     <div class="text-[15px] font-bold">5+ years experience</div>
                     <div class="text-[13px] text-slate-400 mt-1">LLMs, RAG systems, agentic AI</div>
                 </div>
             </div>
-            <blockquote class="m-0 pl-[18px] border-l-2 border-slate-700 text-slate-200 text-[17px] leading-[1.5]">&ldquo;Students don't need motivation. They need clarity &mdash; at the right age.&rdquo;</blockquote>
+
+            <blockquote class="m-0 pl-[18px] border-l-2 border-white/20 text-slate-200 text-[17px] leading-[1.5]" id="leadQuote">&ldquo;Students don't need motivation. They need clarity &mdash; at the right age.&rdquo;</blockquote>
         </div>
-        <div class="gs-item border border-slate-800 rounded-[20px] overflow-hidden bg-[#111c2f]">
-            <img src="amaan_shaikh_inst.jpg" alt="Amaan Shaikh" loading="lazy"
-                 class="w-full h-[380px] object-cover block" style="object-position: 50% 40%; filter: brightness(1.2);">
-            <div class="px-[22px] py-5 border-t border-slate-800">
-                <div class="text-lg font-bold">Amaan Shaikh</div>
-                <div class="text-sm text-slate-400 mt-1">SDE &amp; AI specialist &middot; Works with Python, LangChain, RAG systems and multi-agent AI daily.</div>
+
+        <div class="gs-item pin-stage">
+            <div class="pin-wrap" id="leadPin">
+                <div class="pin-card">
+                    <div class="pin-figure" id="pinFigure">
+                        <img src="amaan_shaikh_inst.jpg" alt="Amaan Shaikh" loading="lazy"
+                             style="object-position: 50% 40%; filter: brightness(1.15);">
+                        <div class="pin-mode" id="pinMode">
+                            <div class="pin-mode-label"><span class="pin-mode-dot"></span><span id="pinModeLabel">Offline</span></div>
+                            <div class="pin-mode-detail" id="pinModeDetail">Runs sessions inside your school</div>
+                        </div>
+                    </div>
+                    <div class="pin-name" id="pinName">Amaan Shaikh</div>
+                </div>
+
             </div>
         </div>
     </div>
 </section>
 
 <!-- ============================= 10. AI ASSISTANT (embedded, below the instructor) ============================= -->
+<!-- ============================= 10. NORTH (embedded AI assistant) =============================
+     A DynamicIsland-style widget: strands orb plus the invitation, expanding to
+     the live controls once connected. Voice only by design, so there is no text
+     bar and no on-card transcript; the transcript lives behind the dialog. -->
 <section id="ai-agent" class="max-w-[1180px] mx-auto px-6 py-[76px]">
-    <div id="ai-agent-card" class="gs-item agent-glow-card text-white rounded-3xl px-8 md:px-10 py-11 grid md:grid-cols-2 gap-10 md:gap-12 items-stretch relative">
-        <div class="strands-bg" id="agentStrands" aria-hidden="true"></div>
-        <div class="strands-veil" aria-hidden="true"></div>
-        <div class="agent-col flex flex-col">
-            <div class="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-500 mb-3.5">Private support</div>
-            <h2 class="text-[clamp(26px,3vw,36px)] leading-[1.14] tracking-[-0.03em] font-extrabold mb-3.5">Hesitant to ask? Talk to our AI assistant privately.</h2>
-            <p class="text-slate-300 mb-6 max-w-[32em]">If you're not ready to book a call, ask anything about the program at your own pace &mdash; voice or text, no salesperson, no follow-up calls. It runs right here on this page.</p>
-            <div class="agent-ask" id="agentAsk">
-                <div class="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-500 mb-2.5">Parents usually ask</div>
-                <span id="rot-ask" class="rot-badge rot-ask">&ldquo;What will my child actually learn?&rdquo;</span>
-            </div>
-            <div class="mt-auto pt-9">
-                <div class="pulse-wrap" id="pulseWrap">
-                    <span class="pulse-ring r1" aria-hidden="true"></span>
-                    <span class="pulse-ring r2" aria-hidden="true"></span>
-                    <button class="pulse-circle" id="pulseBtn" aria-label="Start or end the voice conversation">
-                        <span class="pc-label" id="pcLabel">Tap to start</span>
-                        <span class="pc-sub" id="pcSub">voice chat</span>
-                    </button>
-                </div>
-            </div>
+    <div class="grid md:grid-cols-2 gap-10 md:gap-14 items-center">
+        <div class="gs-item">
+            <h2 class="text-[clamp(26px,3vw,36px)] leading-[1.12] tracking-[-0.03em] font-extrabold mb-4">Students build this in class.</h2>
+            <p class="text-[17px] leading-[1.55] text-slate-600 max-w-[28em]">North is a live AI voice agent. Classes 9 to 12 learn to build one like it.</p>
         </div>
 
-        <div class="agent-stage agent-col" aria-label="Live AI assistant">
+        <div class="ni-stage">
+        <div class="ni-island gs-item" id="ai-agent-card" data-live="0">
+            <button type="button" class="ni-head" id="pulseBtn" aria-label="Start a voice conversation with North">
+                <span class="pulse-wrap" id="pulseWrap">
+                    <span class="strands-bg" id="agentStrands" aria-hidden="true"></span>
+                </span>
+                <span class="ni-copy">
+                    <span class="ni-title">Hesitant to ask? Talk to North.</span>
+                    <span class="agent-mode" id="agentMode"></span>
+                </span>
+            </button>
+
+            <div class="ni-live">
+                <div class="ni-live-inner">
+                    <span class="agent-timer" id="agentTimer" hidden>00:00</span>
+                    <button id="agentMute" class="agent-round" disabled aria-label="Mute microphone" title="Mute"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg></button>
+                    <button id="agentDialogBtn" class="agent-round" disabled aria-label="View the transcript" title="Transcript"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg></button>
+                    <button id="agentEnd" type="button" class="agent-round danger" aria-label="End the conversation" title="End"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+                </div>
+            </div>
+
+            <span class="pc-label" id="pcLabel"></span>
+            <span class="pc-sub" id="pcSub"></span>
             <div class="agent-transcript" id="agentTranscript" aria-live="polite"></div>
-
-            <div class="agent-status">
-                <div class="agent-mode" id="agentMode"></div>
-                <span class="agent-timer" id="agentTimer" hidden>00:00</span>
-            </div>
-
-            <div class="agent-controls">
-                <button id="agentMute" class="agent-round" disabled aria-label="Mute microphone" title="Mute">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
-                </button>
-                <form class="agent-textbar" id="agentForm">
-                    <input id="agentInput" type="text" placeholder="Or type a message&hellip;" autocomplete="off" maxlength="500" aria-label="Type a message to the assistant">
-                    <button type="submit" class="agent-send" id="agentSend" aria-label="Send message" disabled>
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>
-                    </button>
-                </form>
-                <button id="agentDialogBtn" class="agent-round" disabled aria-label="View full transcript" title="Transcript">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
-                </button>
-            </div>
+        </div>
         </div>
     </div>
 </section>
@@ -1752,7 +1769,7 @@
             </div>
             <p class="mt-7 text-sm text-slate-400">
                 Prefer to ask privately first?
-                <button data-open-assistant class="underline underline-offset-4 font-semibold text-white hover:text-slate-300 bg-transparent border-none cursor-pointer p-0 font-sans text-sm">Talk to the AI assistant</button>
+                <button data-open-assistant class="underline underline-offset-4 font-semibold text-white hover:text-slate-300 bg-transparent border-none cursor-pointer p-0 font-sans text-sm">Talk to North</button>
                 &mdash; no salesperson, just answers.
             </p>
         </div>
@@ -1820,7 +1837,7 @@
                 <span>A school teacher present in every session</span>
             </div>
             <p class="dm-alt">Rather ask privately first?
-                <button type="button" id="bookModalAssistant">Talk to the AI assistant</button>.
+                <button type="button" id="bookModalAssistant">Talk to North</button>.
                 No salesperson, just answers.
             </p>
         </div>
@@ -2145,6 +2162,159 @@ window.addEventListener('DOMContentLoaded', function () {
         if (idle) idle.textContent = 'Tap to view the process steps';
         wrap.addEventListener('click', function () { wrap.classList.toggle('is-open'); });
     }
+});
+</script>
+
+<!-- Instructors: AnimatedTooltip switcher (Aceternity port) driving one card.
+     Hovering an avatar previews that instructor, clicking pins them, and leaving
+     the row falls back to whoever is pinned. The offline/online badge on the
+     portrait is always visible.
+     NOTE: instructors two and three are DUMMY entries. Their names, bios and
+     quotes are invented and their portraits are generated silhouettes, not
+     photographs of real people. Replace both before this goes in front of
+     schools. -->
+<script>
+window.addEventListener('DOMContentLoaded', function () {
+    var row = document.getElementById('leadAvatars');
+    var pin = document.getElementById('leadPin');
+    if (!row || !pin) return;
+
+    var DUMMY_2 = 'data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20400%20500%22%3E%3Cdefs%3E%3ClinearGradient%20id=%22g%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%23233043%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%230d1424%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width=%22400%22%20height=%22500%22%20fill=%22url%28%23g%29%22/%3E%3Ccircle%20cx=%22200%22%20cy=%22205%22%20r=%2266%22%20fill=%22%237c8ba1%22/%3E%3Cpath%20d=%22M72%20500c0-70%2057-127%20128-127s128%2057%20128%20127z%22%20fill=%22%237c8ba1%22/%3E%3C/svg%3E';
+    var DUMMY_3 = 'data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20400%20500%22%3E%3Cdefs%3E%3ClinearGradient%20id=%22g%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%232a2f3d%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%23111521%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width=%22400%22%20height=%22500%22%20fill=%22url%28%23g%29%22/%3E%3Ccircle%20cx=%22200%22%20cy=%22205%22%20r=%2266%22%20fill=%22%23828da0%22/%3E%3Cpath%20d=%22M72%20500c0-70%2057-127%20128-127s128%2057%20128%20127z%22%20fill=%22%23828da0%22/%3E%3C/svg%3E';
+
+    var MODES = {
+        offline: { label: 'Offline',            detail: 'Runs sessions inside your school',     dot: '#34d399' },
+        online:  { label: 'Online',             detail: 'Live remote sessions',                 dot: '#38bdf8' },
+        both:    { label: 'Online and offline', detail: 'In-school weeks plus remote sessions', dot: '#a78bfa' }
+    };
+
+    var PEOPLE = [
+        {
+            avatar: 'amaan_shaikh_bw.jpg', photo: 'amaan_shaikh_inst.jpg', focus: '50% 40%',
+            name: 'Amaan Shaikh', tip: 'Program lead',
+            heading: "I don't just teach AI — I build with it every day.",
+            bio: 'As a Software Development Engineer developing AI systems for companies in Germany, I work with large language models professionally. This program brings that experience directly into Indian classrooms — in simple language, for regular classrooms, with no fancy labs required.',
+            creds: [
+                ['M.Sc. Computer Science', 'University of Konstanz, Germany'],
+                ['B.Tech Computer Science', 'MIT ADT University, Pune'],
+                ['5+ years experience', 'LLMs, RAG systems, agentic AI']
+            ],
+            quote: '“Students don’t need motivation. They need clarity — at the right age.”',
+            mode: 'offline'
+        },
+        {
+            avatar: DUMMY_2, photo: DUMMY_2, focus: '50% 30%',
+            name: 'Kevin Patel', tip: 'Online instructor',
+            heading: 'Online should not mean unsupervised.',
+            bio: 'I build machine learning systems for product teams, and I run the online cohorts for this program. Students join live over video with their own teacher in the room, working through exactly the same material as the in-school batches.',
+            creds: [
+                ['Data science', 'ML pipelines, NLP, analytics'],
+                ['Teaching format', 'Live online cohorts'],
+                ['4+ years experience', 'Industry AI systems']
+            ],
+            quote: '“The screen changes the room, not the standards.”',
+            mode: 'online'
+        },
+        {
+            avatar: DUMMY_3, photo: DUMMY_3, focus: '50% 30%',
+            name: 'Rohan Bhosale', tip: 'Online and offline',
+            heading: 'Students learn faster when the tools stop feeling like magic.',
+            bio: 'I work on computer vision and LLM applications, and I teach in both formats. I travel for the in-school weeks and pick the same batches up remotely in between, so a school can start offline and carry on online without changing instructor.',
+            creds: [
+                ['Applied AI', 'Computer vision, LLM apps'],
+                ['Teaching format', 'In-school and remote'],
+                ['6+ years experience', 'Production AI systems']
+            ],
+            quote: '“Once a student can predict what the model will do, the fear goes.”',
+            mode: 'both'
+        }
+    ];
+
+    var el = {
+        heading: document.getElementById('leadHeading'),
+        bio:     document.getElementById('leadBio'),
+        creds:   document.getElementById('leadCreds'),
+        quote:   document.getElementById('leadQuote'),
+        figure:  document.getElementById('pinFigure'),
+        name:    document.getElementById('pinName'),
+        mLabel:  document.getElementById('pinModeLabel'),
+        mDetail: document.getElementById('pinModeDetail')
+    };
+    var modeBox = document.getElementById('pinMode');
+    var dot = modeBox ? modeBox.querySelector('.pin-mode-dot') : null;
+
+    var pinned = 0, shown = -1;
+
+    PEOPLE.forEach(function (p, i) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'tt-item';
+        btn.setAttribute('aria-label', p.name + ', ' + p.tip);
+        btn.innerHTML =
+            '<span class="tt-tip"><span class="tt-name">' + p.name + '</span>' +
+            '<span class="tt-role">' + p.tip + '</span></span>' +
+            '<img class="tt-av" src="' + p.avatar + '" alt="" loading="lazy">';
+
+        // the original tilts the name card by where the pointer sits across the avatar
+        var av = btn.querySelector('.tt-av');
+        btn.addEventListener('mousemove', function (e) {
+            var r = av.getBoundingClientRect();
+            var off = (e.clientX - r.left) / r.width - 0.5;       // -0.5 .. 0.5
+            btn.style.setProperty('--tt-rot', (off * 90).toFixed(1) + 'deg');
+            btn.style.setProperty('--tt-tx', (off * 100).toFixed(1) + 'px');
+        });
+        btn.addEventListener('mouseenter', function () { render(i); });
+        btn.addEventListener('focus', function () { render(i); });
+        btn.addEventListener('click', function () { pinned = i; render(i); });
+        row.appendChild(btn);
+    });
+
+    row.addEventListener('mouseleave', function () { render(pinned); });
+    row.addEventListener('focusout', function (e) {
+        if (!row.contains(e.relatedTarget)) render(pinned);
+    });
+
+    function render(i) {
+        if (i === shown) { markActive(); return; }
+        shown = i;
+        var p = PEOPLE[i], m = MODES[p.mode];
+
+        el.heading.textContent = p.heading;
+        el.bio.textContent = p.bio;
+        el.quote.textContent = p.quote;
+        el.creds.innerHTML = p.creds.map(function (c) {
+            return '<div class="border border-white/10 rounded-[14px] px-[18px] py-4">' +
+                   '<div class="text-[15px] font-bold">' + c[0] + '</div>' +
+                   '<div class="text-[13px] text-slate-400 mt-1">' + c[1] + '</div></div>';
+        }).join('');
+
+        el.name.textContent = p.name;
+        el.mLabel.textContent = m.label;
+        el.mDetail.textContent = m.detail;
+        if (dot) dot.style.background = m.dot;
+
+        // swap the portrait, keeping the badge mounted inside the figure
+        var old = el.figure.querySelector('img');
+        if (old) old.remove();
+        var img = document.createElement('img');
+        img.src = p.photo;
+        img.alt = p.name;
+        img.loading = 'lazy';
+        img.style.objectPosition = p.focus;
+        if (p.photo.indexOf('data:') !== 0) img.style.filter = 'brightness(1.15)';
+        el.figure.insertBefore(img, modeBox);
+
+        markActive();
+    }
+
+    function markActive() {
+        var items = row.querySelectorAll('.tt-item');
+        for (var k = 0; k < items.length; k++) {
+            items[k].classList.toggle('is-active', k === pinned);
+        }
+    }
+
+    render(0);
 });
 </script>
 
@@ -2505,17 +2675,8 @@ window.addEventListener('DOMContentLoaded', function () {
                 { text: 'Dimaag aur Machine', cls: 'rot-dam' }
             ]
         },
-        {
-            id: 'rot-ask', interval: 3200,
-            words: [
-                { text: '“What will my child actually learn?”', cls: 'rot-ask' },
-                { text: '“Is this safe for my child?”', cls: 'rot-ask' },
-                { text: '“How much does it cost?”', cls: 'rot-ask' },
-                { text: '“Who is teaching this?”', cls: 'rot-ask' }
-            ]
-        }
     ];
-    var ALL_CLASSES = ['rot-students', 'rot-teachers', 'rot-alt', 'rot-dam', 'rot-ask'];
+    var ALL_CLASSES = ['rot-students', 'rot-teachers', 'rot-alt', 'rot-dam'];
     var tries = 0;
     (function wait() {
         if (window.gsap) ROTATORS.forEach(initRotator);
@@ -3324,8 +3485,11 @@ window.addEventListener('DOMContentLoaded', function () {
         var n = parseInt(h.slice(1), 16);
         return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
     }
-    var IDLE_PAL = ['#6366f1', '#8b5cf6', '#06b6d4'].map(hex2rgb);
-    var TALK_PAL = ['#34d399', '#22d3ee', '#818cf8'].map(hex2rgb);
+    // Three hues only, per the brief: orange, blue, purple. Idle runs them deep
+    // and dim; speaking pushes the same three to full brightness, so the colour
+    // still reacts without introducing a fourth hue.
+    var IDLE_PAL = ['#c2410c', '#1d4ed8', '#7e22ce'].map(hex2rgb);
+    var TALK_PAL = ['#fb923c', '#60a5fa', '#c084fc'].map(hex2rgb);
     var COLOR_COUNT = 3;
     var palArr = new Float32Array(MAX_COLORS * 3);
 
@@ -3484,7 +3648,7 @@ window.addEventListener('DOMContentLoaded', function () {
     var timerEl = $('agentTimer');
     var modeEl = $('agentMode'), transcript = $('agentTranscript');
     var muteBtn = $('agentMute'), dialogBtn = $('agentDialogBtn');
-    var form = $('agentForm'), input = $('agentInput'), sendBtn = $('agentSend');
+    var island = $('ai-agent-card'), endBtn = $('agentEnd');
     var dialog = $('agentDialog'), dialogBody = $('agentDialogBody');
     var dialogClose = $('agentDialogClose'), dialogClose2 = $('agentDialogClose2'), dialogCopy = $('agentDialogCopy');
     if (!pulseBtn || !transcript) return;
@@ -3502,6 +3666,8 @@ window.addEventListener('DOMContentLoaded', function () {
     // fill morphs in while the agent speaks and out while it listens.
     function setCircle(state, label, sub) {
         pulseWrap.className = 'pulse-wrap' + (state ? ' ' + state : '');
+        // drives the island's expansion: any live state opens the controls
+        if (island) island.setAttribute('data-live', state ? '1' : '0');
         fillTarget = state === 'speaking' ? 1 : 0;
         if (window.DAMGlow) window.DAMGlow.setState(state || 'idle');
         // The rotating question makes way while a conversation is live.
@@ -3694,7 +3860,6 @@ window.addEventListener('DOMContentLoaded', function () {
         setMode('', msg || 'Could not connect. Please try again.');
         timerEl.hidden = true;
         muteBtn.disabled = true;
-        sendBtn.disabled = true; input.disabled = false;
         pendingText = null;
     }
 
@@ -3751,11 +3916,10 @@ window.addEventListener('DOMContentLoaded', function () {
                     if (uf) inRate = parseInt(uf[1], 10);
                     connecting = false; connected = true; muted = false;
                     setCircle('listening', 'Tap to end', '');
-                    setMode('listening', micAvailable ? 'Listening…' : 'Text mode — type below');
+                    setMode('listening', micAvailable ? 'Listening…' : 'Microphone unavailable');
                     muteBtn.disabled = !micAvailable;
                     muteBtn.classList.remove('danger');
                     muteBtn.innerHTML = ICO.mic;
-                    sendBtn.disabled = false; input.disabled = false;
                     timerSec = 0; timerEl.textContent = '00:00'; timerEl.hidden = false;
                     if (timerIv) clearInterval(timerIv);
                     timerIv = setInterval(tickTimer, 1000);
@@ -3834,10 +3998,9 @@ window.addEventListener('DOMContentLoaded', function () {
         flushAudio(); micOff(); stopVisual();
         if (timerIv) { clearInterval(timerIv); timerIv = null; }
         setCircle('', 'Tap to start', 'voice chat');
-        setMode('', wasConnected ? 'Conversation ended — tap to start again' : '');
+        setMode('', wasConnected ? 'Conversation ended. Tap to start again.' : '');
         timerEl.hidden = true;
         muteBtn.disabled = true; muteBtn.classList.remove('danger'); muteBtn.innerHTML = ICO.mic;
-        sendBtn.disabled = true;
         dialogBtn.disabled = transcriptLog.length === 0;
     }
 
@@ -3847,19 +4010,16 @@ window.addEventListener('DOMContentLoaded', function () {
         try { ws.send(JSON.stringify({ type: 'user_message', text: t })); } catch (_) { return; }
         addMsg('user', t);
     }
-    form.addEventListener('submit', function (e) {
-        e.preventDefault();
-        var t = input.value.trim();
-        if (!t) return;
-        if (connected) { sendUserText(t); input.value = ''; }
-        else if (!connecting) { pendingText = t; input.value = ''; connect(); }
-        else { pendingText = t; input.value = ''; }
-    });
-
     // ---------- controls ----------
     pulseBtn.addEventListener('click', function () {
         if (connected || connecting) disconnect();
         else connect();
+    });
+
+    // explicit hang-up, so ending a call is never a hidden gesture
+    if (endBtn) endBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (connected || connecting) disconnect();
     });
 
     muteBtn.addEventListener('click', function () {
@@ -3932,7 +4092,7 @@ window.addEventListener('DOMContentLoaded', function () {
     }
     dialogCopy.addEventListener('click', copyPlainTranscript);
 
-    // "Talk to the AI assistant" buttons scroll to the embedded agent and pulse the orb.
+    // "Talk to North" buttons scroll to the embedded agent and pulse the orb.
     document.querySelectorAll('[data-open-assistant]').forEach(function (btn) {
         btn.addEventListener('click', function () {
             var sec = document.getElementById('ai-agent');
