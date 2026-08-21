@@ -100,9 +100,6 @@
     <!-- Three.js for the hero particle ring -->
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
-    <!-- vanilla-tilt (~4KB): hover tilt + glare on the hero card -->
-    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
-
     <script>
         tailwind.config = {
             theme: {
@@ -139,12 +136,6 @@
             100% { background-position: -100% 0; }
         }
 
-        /* Headline word-mask reveal (spans injected by JS when GSAP is available).
-           The clip needs generous padding (offset by negative margins) or the
-           descenders of g/y get chopped by overflow:hidden at this line-height. */
-        .h1-clip { display: inline-block; overflow: hidden; vertical-align: bottom; padding: 0.06em 0.03em 0.24em; margin: -0.06em -0.03em -0.24em; }
-        .h1-word { display: inline-block; will-change: transform; }
-
         /* Hero particle canvas sits behind the content */
         #particle-canvas {
             position: absolute;
@@ -154,9 +145,6 @@
             z-index: 0;
             pointer-events: none;
         }
-
-        /* vanilla-tilt glare (hero card): clip to the rounded corners */
-        .js-tilt-glare { border-radius: inherit; }
 
         /* BorderGlow (ported from React Bits, JS-CSS variant) on the workshop
            cards: a cone of colored border, a soft mesh wash and an outer halo
@@ -611,6 +599,321 @@
         .agent-dialog-foot .btn-primary:hover { background: #334155; }
         .agent-dialog-foot svg { width: 14px; height: 14px; stroke-width: 2; }
 
+        /* ======================================================================
+           FloatingDock (Aceternity port, vanilla JS/CSS)
+           The canonical component sits at the bottom of the viewport with its
+           tooltips above. Docked into a top bar it has to invert: tooltips open
+           downward, and the magnified bubble grows symmetrically from the bar's
+           vertical centre so it never spills off the top of the screen.
+           JS writes --s per item each frame (spring-integrated); every size in
+           here is derived from it, so the whole magnify is one variable.
+           ====================================================================== */
+        .dock-slot { position: relative; display: none; flex: 0 0 auto; width: 268px; height: 52px; }
+        .dam-dock {
+            position: absolute; left: 50%; top: 50%;
+            transform: translate(-50%, -50%);
+            display: flex; align-items: center; gap: 10px;
+            height: 52px; padding: 0 14px;
+            border-radius: 16px;
+            background: rgba(248, 250, 252, 0.9);
+            border: 1px solid #eef1f5;
+            backdrop-filter: blur(8px);
+        }
+        .dock-item {
+            position: relative; flex: 0 0 auto;
+            height: 52px; width: var(--s, 40px);
+            display: flex; align-items: center; justify-content: center;
+            text-decoration: none;
+        }
+        /* The bubble overflows its 52px track on hover — that break-out is the
+           dock look. Width on the track (not the bubble) is what shoves neighbours. */
+        .dock-bubble {
+            position: absolute; left: 50%; top: 50%;
+            transform: translate(-50%, -50%);
+            width: var(--s, 40px); height: var(--s, 40px);
+            border-radius: 9999px;
+            background: #eef1f5; color: #64748b;
+            display: flex; align-items: center; justify-content: center;
+            transition: background-color .2s ease, color .2s ease;
+        }
+        .dock-item:hover .dock-bubble { background: #e2e8f0; color: #0f172a; }
+        .dock-item.is-active .dock-bubble { color: #0f172a; }
+        .dock-item:focus-visible { outline: none; }
+        .dock-item:focus-visible .dock-bubble { box-shadow: 0 0 0 2px #0f172a; }
+        .dock-ico {
+            width: calc(var(--s, 40px) * 0.5); height: calc(var(--s, 40px) * 0.5);
+            display: block; stroke-width: 1.75;
+        }
+        /* current-section dot: anchored to the fixed track, so it holds still
+           while the bubble above it grows */
+        .dock-item.is-active::after {
+            content: ""; position: absolute; left: 50%; bottom: 1px;
+            width: 4px; height: 4px; margin-left: -2px;
+            border-radius: 50%; background: #0f172a;
+        }
+        .dock-tip {
+            position: absolute; left: 50%; top: calc(50% + 36px);
+            transform: translateX(-50%) translateY(4px);
+            background: #0f172a; color: #fff;
+            border-radius: 8px; padding: 4px 9px;
+            font-size: 11.5px; font-weight: 600; letter-spacing: -0.01em;
+            white-space: pre; pointer-events: none; opacity: 0;
+            transition: opacity .18s ease, transform .18s ease;
+        }
+        .dock-item:hover .dock-tip,
+        .dock-item:focus-visible .dock-tip { opacity: 1; transform: translateX(-50%) translateY(0); }
+        @media (min-width: 768px) { .dock-slot { display: block; } }
+
+        /* ======================================================================
+           CometCard (Aceternity port). Nesting matters: GSAP owns the outer
+           [data-hero-parallax] translate, .comet-card owns the perspective, and
+           #hero-tilt owns the rotate/translate/scale — three transforms, three
+           elements, so nothing overwrites anything.
+           ====================================================================== */
+        .comet-card { perspective: 1200px; transform-style: preserve-3d; }
+        #hero-tilt {
+            will-change: transform;
+            box-shadow:
+                rgba(0, 0, 0, 0.01) 0px 520px 146px 0px,
+                rgba(0, 0, 0, 0.04) 0px 333px 133px 0px,
+                rgba(0, 0, 0, 0.26) 0px 83px 83px 0px,
+                rgba(0, 0, 0, 0.29) 0px 21px 46px 0px;
+        }
+        .comet-glare {
+            position: absolute; inset: 0; z-index: 50;
+            border-radius: inherit; pointer-events: none;
+            mix-blend-mode: overlay; opacity: .6;
+        }
+
+        /* ======================================================================
+           FollowerPointerCard (Aceternity port). The cursor is a SIBLING of the
+           3D card, never a child — inside it, the pill would tilt with the card.
+           Position rides on --fx/--fy so the enter/exit scale can own transform.
+           ====================================================================== */
+        .fp-host { position: relative; }
+        @media (hover: hover) and (pointer: fine) {
+            .fp-host.fp-on { cursor: none; }
+        }
+        .fp-cursor {
+            position: absolute; top: 0; left: 0; z-index: 60;
+            pointer-events: none; will-change: transform;
+            transform: translate3d(var(--fx, 0px), var(--fy, 0px), 0);
+        }
+        .fp-cursor-in {
+            display: block; transform-origin: 0 0;
+            opacity: 0; transform: scale(.4);
+            transition: opacity .16s ease, transform .16s ease;
+        }
+        .fp-host.fp-in .fp-cursor-in { opacity: 1; transform: scale(1); }
+        /* White-on-dark rather than the slate-on-slate this started as: the
+           card underneath is #0b1220, so a slate-900 pill was invisible. */
+        .fp-arrow {
+            width: 24px; height: 24px; display: block;
+            transform: translate(-12px, -10px) rotate(-70deg);
+            fill: #ffffff; stroke: #0f172a; stroke-width: 0.75;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .45));
+        }
+        .fp-pill {
+            display: block; width: max-content; border-radius: 9999px;
+            background: #ffffff; color: #0f172a;
+            padding: 6px 12px; font-size: 11.5px; font-weight: 700;
+            white-space: nowrap; box-shadow: 0 10px 30px rgba(0, 0, 0, .45);
+        }
+
+        /* ======================================================================
+           Animated modal (Aceternity port): trigger label swap + 3D panel entry
+           ====================================================================== */
+        /* The upstream demo hard-codes a 10rem slide, which is wider than its
+           own button. These buttons are wider than that, so the offsets are
+           percentage-based instead — always exactly one button-width, whatever
+           the label length. */
+        .dam-mtrigger { position: relative; overflow: hidden; }
+        .dam-mtrigger .mt-rest {
+            display: block; text-align: center;
+            transition: transform .5s cubic-bezier(.4, 0, .2, 1);
+        }
+        .dam-mtrigger .mt-hover {
+            position: absolute; inset: 0; z-index: 20;
+            display: flex; align-items: center; justify-content: center; gap: 7px;
+            transform: translateX(-101%);
+            transition: transform .5s cubic-bezier(.4, 0, .2, 1);
+        }
+        .dam-mtrigger:hover .mt-rest,
+        .dam-mtrigger:focus-visible .mt-rest { transform: translateX(calc(100% + 4rem)); }
+        .dam-mtrigger:hover .mt-hover,
+        .dam-mtrigger:focus-visible .mt-hover { transform: translateX(0); }
+
+        .dam-modal-overlay {
+            position: fixed; inset: 0; z-index: 100;
+            display: none; align-items: center; justify-content: center; padding: 20px;
+            perspective: 800px; transform-style: preserve-3d;
+            background: rgba(15, 23, 42, .5);
+            backdrop-filter: blur(10px);
+            opacity: 0; transition: opacity .22s ease;
+        }
+        .dam-modal-overlay.mounted { display: flex; }
+        .dam-modal-overlay.open { opacity: 1; }
+        .dam-modal {
+            position: relative; width: min(520px, 100%);
+            background: #fff; border-radius: 20px; overflow: hidden;
+            box-shadow: 0 40px 90px rgba(15, 23, 42, .42);
+            opacity: 0; transform: scale(.5) rotateX(40deg) translateY(40px);
+            transition: opacity .3s ease, transform .45s cubic-bezier(.16, 1.3, .42, 1);
+        }
+        .dam-modal-overlay.open .dam-modal { opacity: 1; transform: scale(1) rotateX(0deg) translateY(0); }
+        .dam-modal-overlay.closing .dam-modal {
+            opacity: 0; transform: scale(.8) rotateX(10deg);
+            transition: opacity .18s ease, transform .18s ease;
+        }
+        .dam-modal-close {
+            position: absolute; top: 14px; right: 14px;
+            width: 30px; height: 30px; border: none; background: transparent;
+            color: #94a3b8; border-radius: 8px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: background-color .2s ease, color .2s ease;
+        }
+        .dam-modal-close:hover { background: #f1f5f9; color: #0f172a; }
+        .dam-modal-close svg { width: 17px; height: 17px; stroke-width: 2; }
+        .dam-modal-body { padding: 34px 30px 24px; }
+        .dam-modal-body h3 {
+            margin: 0 0 6px; font-size: 22px; font-weight: 800;
+            letter-spacing: -0.03em; color: #0f172a;
+        }
+        .dam-modal-body .dm-sub { margin: 0 0 18px; font-size: 14px; color: #64748b; line-height: 1.55; }
+        .dam-check { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; font-size: 14.5px; color: #334155; }
+        .dam-check svg { width: 17px; height: 17px; flex: 0 0 auto; margin-top: 2px; color: #16a34a; stroke-width: 2.2; }
+        .dam-modal-body .dm-alt { margin: 18px 0 0; font-size: 13px; color: #94a3b8; line-height: 1.6; }
+        .dam-modal-body .dm-alt button {
+            background: none; border: none; padding: 0; font: inherit; cursor: pointer;
+            color: #0f172a; font-weight: 600; text-decoration: underline; text-underline-offset: 3px;
+        }
+        .dam-modal-foot {
+            display: flex; justify-content: flex-end; gap: 10px;
+            padding: 14px 20px; background: #f8fafc; border-top: 1px solid #eef1f5;
+        }
+        .dam-modal-foot button {
+            padding: 10px 18px; border-radius: 10px; font-size: 13.5px; font-weight: 600;
+            font-family: inherit; cursor: pointer; display: flex; align-items: center; gap: 6px;
+            transition: background-color .18s ease, color .18s ease;
+        }
+        .dam-modal-foot .dm-cancel { background: transparent; border: 1px solid #e2e8f0; color: #64748b; }
+        .dam-modal-foot .dm-cancel:hover { background: #fff; color: #0f172a; }
+        .dam-modal-foot .dm-go { background: #0f172a; border: 1px solid transparent; color: #fff; }
+        .dam-modal-foot .dm-go:hover { background: #334155; }
+
+        /* ======================================================================
+           DynamicIsland (cult-ui port, vanilla JS/CSS)
+           Five of the component's shape presets are actually used here, ordered
+           so no two consecutive states share an outline: tall, board, note,
+           long, compact. The React version springs width/height/radius from a
+           preset table; here the presets are data-size attributes and the spring
+           is an overshoot curve. Content swaps behind a blur/scale fade, as
+           DynamicContainer does, and a hairline bar tracks each state's dwell.
+           ====================================================================== */
+
+        /* Fixed-height stage: the island ranges from 50px to 172px tall, so
+           without this the whole page below would jump on every state change. */
+        .di-stage { display: flex; align-items: center; min-height: 184px; }
+
+        .di-shell {
+            position: relative; overflow: hidden;
+            width: var(--di-w); height: var(--di-h); max-width: 100%;
+            border-radius: var(--di-r);
+            background: #0b1220; color: #fff;
+            box-shadow: 0 24px 50px -22px rgba(15, 23, 42, .55);
+            transition: width .55s cubic-bezier(.32, 1.3, .4, 1),
+                        height .55s cubic-bezier(.32, 1.3, .4, 1),
+                        border-radius .5s ease;
+        }
+        .di-shell[data-size="compact"] { --di-w: 196px; --di-h: 50px;  --di-r: 25px; }
+        .di-shell[data-size="board"]   { --di-w: 452px; --di-h: 92px;  --di-r: 24px; }
+        .di-shell[data-size="note"]    { --di-w: 512px; --di-h: 64px;  --di-r: 32px; }
+        .di-shell[data-size="long"]    { --di-w: 576px; --di-h: 56px;  --di-r: 28px; }
+        .di-shell[data-size="tall"]    { --di-w: 380px; --di-h: 172px; --di-r: 28px; }
+
+        .di-view {
+            position: absolute; inset: 0;
+            display: flex; align-items: center;
+            opacity: 1; transform: scale(1); filter: blur(0px);
+            transition: opacity .16s ease, transform .16s ease, filter .16s ease;
+        }
+        .di-shell.di-swap .di-view { opacity: 0; transform: scale(.94); filter: blur(4px); }
+
+        /* dwell indicator: fills across the state's lifetime, resets on change */
+        .di-prog {
+            position: absolute; left: 0; bottom: 0; height: 2px; width: 0;
+            background: linear-gradient(90deg, rgba(148, 163, 184, .25), rgba(226, 232, 240, .8));
+            pointer-events: none;
+        }
+
+        /* every leading mark springs in as its state lands */
+        .di-logo-tile, .di-chip { animation: di-pop .34s cubic-bezier(.34, 1.5, .5, 1) both; }
+        @keyframes di-pop {
+            from { transform: scale(.72) rotate(-6deg); opacity: 0; }
+            to   { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        .di-logo-tile {
+            width: 52px; height: 52px; border-radius: 14px; flex: 0 0 auto;
+            background: #f1f5f9;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .di-logo { height: var(--lh, 38px); width: auto; display: block; filter: grayscale(1); }
+
+        .di-chip {
+            width: 34px; height: 34px; border-radius: 11px; flex: 0 0 auto;
+            display: flex; align-items: center; justify-content: center;
+            background: var(--di-chip, rgba(148, 163, 184, .16));
+        }
+        .di-chip svg { width: 18px; height: 18px; stroke-width: 1.8; color: var(--di-ico, #cbd5e1); }
+
+        /* --- compact: just the mark and a short label, centred --- */
+        .di-compact { gap: 11px; padding: 0 16px; justify-content: center; }
+        .di-compact .di-logo-tile { width: 36px; height: 36px; border-radius: 10px; }
+        .di-compact-name { font-size: 14px; font-weight: 700; letter-spacing: -0.01em; color: #f1f5f9; }
+
+        /* --- board: mark, name, and how the program fits it --- */
+        .di-board { gap: 16px; padding: 0 22px; }
+        .di-board-text { display: block; min-width: 0; }
+        .di-board-name { display: block; font-size: 13.5px; font-weight: 700; letter-spacing: -0.01em; color: #f1f5f9; }
+        .di-board-copy { display: block; font-size: 12.5px; line-height: 1.45; color: #94a3b8; margin-top: 3px; }
+
+        /* --- note / long: one promise on a single line --- */
+        .di-note { gap: 14px; padding: 0 20px; }
+        .di-long { gap: 14px; padding: 0 22px; }
+        .di-note-copy { font-size: 13.5px; line-height: 1.4; color: #e2e8f0; letter-spacing: -0.01em; }
+
+        /* --- tall: all four marks at once, then the summary line --- */
+        .di-tall { flex-direction: column; align-items: flex-start; justify-content: center; gap: 16px; padding: 0 24px; }
+        .di-tall-row { display: flex; gap: 12px; }
+        .di-tall-row .di-logo-tile { width: 48px; height: 48px; border-radius: 13px; }
+        .di-tall-row .di-logo-tile:nth-child(2) { animation-delay: .06s; }
+        .di-tall-row .di-logo-tile:nth-child(3) { animation-delay: .12s; }
+        .di-tall-row .di-logo-tile:nth-child(4) { animation-delay: .18s; }
+        .di-tall-line { font-size: 15.5px; font-weight: 700; letter-spacing: -0.02em; color: #f1f5f9; }
+        .di-tall-sub { display: block; font-size: 12.5px; font-weight: 500; color: #94a3b8; margin-top: 3px; }
+
+        @media (max-width: 620px) {
+            .di-stage { min-height: 210px; }
+            .di-shell[data-size="board"] { --di-h: 118px; }
+            .di-shell[data-size="note"]  { --di-h: 88px; --di-r: 24px; }
+            .di-shell[data-size="long"]  { --di-h: 88px; --di-r: 24px; }
+            .di-shell[data-size="tall"]  { --di-h: 186px; }
+            .di-board { gap: 13px; padding: 0 16px; }
+            .di-note, .di-long { gap: 12px; padding: 0 16px; }
+            .di-tall { padding: 0 18px; gap: 14px; }
+            .di-tall-row { gap: 9px; }
+            .di-logo { height: calc(var(--lh, 38px) - 5px); }
+        }
+
+        /* Reduced motion: the dock stops magnifying and the comet stops tilting
+           (their scripts also bail out early) */
+        @media (prefers-reduced-motion: reduce) {
+            .dock-item, .dock-bubble { width: 40px !important; }
+            .dock-bubble { height: 40px !important; }
+            .dock-ico { width: 20px !important; height: 20px !important; }
+        }
+
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after {
                 animation-duration: .01ms !important;
@@ -621,7 +924,7 @@
         }
 
         @media print {
-            header, #particle-canvas, .agent-stage, .agent-dialog-overlay, .pulse-wrap, .agent-ask, .strands-bg, .strands-veil { display: none !important; }
+            header, #particle-canvas, .agent-stage, .agent-dialog-overlay, .dam-modal-overlay, .fp-cursor, .pulse-wrap, .agent-ask, .strands-bg, .strands-veil { display: none !important; }
             body { background: #fff !important; }
             section { page-break-inside: avoid; }
         }
@@ -633,21 +936,77 @@
 
 <!-- ============================= HEADER ============================= -->
 <header class="sticky top-0 z-50 bg-white border-b border-slate-100" role="banner">
-    <div class="max-w-[1180px] mx-auto px-6 py-3.5 flex items-center gap-6">
+    <div class="max-w-[1180px] mx-auto px-6 py-3.5 flex items-center gap-6 relative">
         <a href="#top" class="flex items-center gap-2.5 hover:opacity-80 transition-opacity" aria-label="Dimaag aur Machine — home">
             <img src="workshoplogo.png" alt="" class="h-8 w-auto" style="mix-blend-mode: multiply;">
             <span class="font-extrabold text-base tracking-tight">Dimaag aur Machine</span>
         </a>
         <div class="flex-1"></div>
 
-        <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600" aria-label="Main navigation">
-            <a href="#workshops"  class="hover:text-slate-900 transition-colors">Workshops</a>
-            <a href="#process"    class="hover:text-slate-900 transition-colors">How it runs</a>
-            <a href="#parents"    class="hover:text-slate-900 transition-colors">For parents</a>
-            <a href="#compare"    class="hover:text-slate-900 transition-colors">Compare</a>
-            <a href="#lead"       class="hover:text-slate-900 transition-colors">Instructor</a>
-            <a href="#book"       class="bg-slate-900 text-white px-4.5 py-2.5 rounded-[10px] text-sm font-semibold whitespace-nowrap hover:bg-slate-700 transition-colors" style="padding: 11px 18px;">Book a discussion</a>
+        <!-- FloatingDock: the five section links, magnifying on cursor proximity.
+             Sits just left of the CTA. The slot keeps a fixed footprint so the
+             pill can widen on hover without pushing the Book button around. -->
+        <div class="dock-slot">
+        <nav class="dam-dock" id="nav-dock" aria-label="Main navigation">
+            <a href="#workshops" class="dock-item" aria-label="Workshops">
+                <span class="dock-bubble">
+                    <svg class="dock-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M3 4h18"/><path d="M4 4v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V4"/>
+                        <path d="M12 16v4"/><path d="M9 20h6"/><path d="M8 12l3-3 2 2 3-3"/>
+                    </svg>
+                </span>
+                <span class="dock-tip" aria-hidden="true">Workshops</span>
+            </a>
+            <a href="#process" class="dock-item" aria-label="How it runs">
+                <span class="dock-bubble">
+                    <svg class="dock-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="m3 17 2 2 4-4"/><path d="m3 7 2 2 4-4"/>
+                        <path d="M13 6h8"/><path d="M13 12h8"/><path d="M13 18h8"/>
+                    </svg>
+                </span>
+                <span class="dock-tip" aria-hidden="true">How it runs</span>
+            </a>
+            <a href="#parents" class="dock-item" aria-label="For parents">
+                <span class="dock-bubble">
+                    <svg class="dock-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/><path d="M21 21v-2a4 4 0 0 0-3-3.85"/>
+                    </svg>
+                </span>
+                <span class="dock-tip" aria-hidden="true">For parents</span>
+            </a>
+            <a href="#compare" class="dock-item" aria-label="Compare">
+                <span class="dock-bubble">
+                    <svg class="dock-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M7 20h10"/><path d="M6 6l6-1 6 1"/><path d="M12 3v17"/>
+                        <path d="M9 12l-3-6-3 6a3 3 0 0 0 6 0"/><path d="M21 12l-3-6-3 6a3 3 0 0 0 6 0"/>
+                    </svg>
+                </span>
+                <span class="dock-tip" aria-hidden="true">Compare</span>
+            </a>
+            <a href="#lead" class="dock-item" aria-label="Instructor">
+                <span class="dock-bubble">
+                    <svg class="dock-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="5" cy="9" r="2.4"/>
+                        <path d="M1.2 17.6a3.8 3.8 0 0 1 7.6 0"/>
+                        <rect x="10.5" y="3" width="11.5" height="9.5" rx="1.5"/>
+                        <path d="M16.25 12.5V17"/>
+                    </svg>
+                </span>
+                <span class="dock-tip" aria-hidden="true">Instructor</span>
+            </a>
         </nav>
+        </div>
+
+        <!-- Animated-modal trigger: label swaps on hover, click opens the dialog.
+             Stays an anchor so it still reaches #book with JS disabled. -->
+        <a href="#book" data-modal-open
+           class="dam-mtrigger hidden md:flex items-center justify-center bg-slate-900 text-white rounded-[10px] text-sm font-semibold whitespace-nowrap hover:bg-slate-700 transition-colors"
+           style="padding: 11px 18px; min-width: 168px;" aria-haspopup="dialog">
+            <span class="mt-rest">Book a discussion</span>
+            <span class="mt-hover">Right decision <span aria-hidden="true">&rarr;</span></span>
+        </a>
 
         <button id="menu-btn" class="md:hidden w-[46px] h-[46px] rounded-xl border border-slate-200 bg-white text-lg leading-none flex items-center justify-center hover:bg-slate-50 transition-colors" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">&#9776;</button>
     </div>
@@ -658,14 +1017,14 @@
         <a href="#parents"   class="menu-link block text-slate-700 py-3 border-b border-slate-50">For parents</a>
         <a href="#compare"   class="menu-link block text-slate-700 py-3 border-b border-slate-50">Compare</a>
         <a href="#lead"      class="menu-link block text-slate-700 py-3 border-b border-slate-50">Instructor</a>
-        <a href="#book"      class="menu-link block bg-slate-900 text-white text-center py-3.5 rounded-xl font-semibold mt-3">Book a discussion</a>
+        <a href="#book" data-modal-open aria-haspopup="dialog" class="menu-link block bg-slate-900 text-white text-center py-3.5 rounded-xl font-semibold mt-3">Book a discussion</a>
     </nav>
 </header>
 
 <main id="main-content" role="main">
 
 <!-- ============================= 1. HERO ============================= -->
-<section id="top" class="relative overflow-hidden bg-white">
+<section id="top" class="relative bg-white">
     <canvas id="particle-canvas" aria-hidden="true"></canvas>
 
     <div class="max-w-[1180px] mx-auto px-6 pt-20 pb-16 relative z-10">
@@ -683,89 +1042,101 @@
                 </h1>
 
                 <p class="text-[19px] leading-[1.55] text-slate-600 mb-4 max-w-[32em]">
-                    A structured AI program for Class 9&ndash;12 students and their teachers &mdash; taught inside
+                    A structured AI program for Class 9&ndash;12 students and their teachers. Taught inside
                     school hours, with a school teacher present in every session.
                 </p>
                 <p class="text-base text-slate-500 mb-8 max-w-[32em]">No syllabus disruption. No homework. No unsupervised AI.</p>
 
-                <div class="flex flex-wrap gap-3 mb-5">
-                    <a href="#book" data-ring-hover
+                <div class="inline-grid gap-3 mb-5 max-w-full">
+                    <a href="#book" data-ring-hover data-modal-open aria-haspopup="dialog"
                        aria-label="Book a 30-minute discussion about the Dimaag aur Machine program"
-                       class="bg-slate-900 text-white px-6 py-[15px] rounded-xl font-semibold text-[15px] hover:bg-slate-700 transition-colors shadow-xl shadow-slate-200">
-                        Book a 30-min school discussion
+                       class="dam-mtrigger bg-slate-900 text-white px-6 py-[15px] rounded-xl font-semibold text-[15px] hover:bg-slate-700 transition-colors shadow-xl shadow-slate-200">
+                        <span class="mt-rest">Book a 30-min school discussion</span>
+                        <span class="mt-hover">You&rsquo;re on the right path <span aria-hidden="true">&rarr;</span></span>
                     </a>
                     <a href="#parents"
-                       class="border border-slate-200 bg-white text-slate-900 px-5 py-[14px] rounded-xl font-semibold text-[15px] hover:bg-slate-50 transition-colors">
-                        I'm a parent &mdash; safety &amp; outcomes
+                       class="border border-slate-200 bg-white text-slate-900 px-6 py-[14px] rounded-xl font-semibold text-[15px] text-center hover:bg-slate-50 transition-colors">
+                        I'm a parent: safety &amp; outcomes
                     </a>
                 </div>
 
                 <p class="text-[13px] text-slate-400">Most schools finalize their decision within the first discussion.</p>
             </div>
 
-            <!-- Right: the person behind it. Outer div takes the GSAP entrance/parallax
-                 (translate), inner card takes the vanilla-tilt hover (rotate) — two
-                 separate transforms so the libraries never fight over one element. -->
+            <!-- Right: the person behind it. Four nested elements, one transform
+                 each, so no two animation systems ever write the same property:
+                 [data-hero-parallax] = GSAP entrance + scroll parallax,
+                 .fp-host            = following-pointer origin (untransformed),
+                 .comet-card         = perspective owner,
+                 #hero-tilt          = CometCard rotate/translate/scale. -->
             <div data-hero-parallax>
-            <div class="relative bg-[#0b1220] rounded-[26px] overflow-hidden min-h-[540px] flex items-end shadow-[0_30px_60px_-30px_rgba(15,23,42,0.45)]" id="hero-tilt">
-                <img src="amaan_shaikh_inst.jpg" alt="Amaan Shaikh, program lead"
-                     width="1224" height="1951"
-                     class="absolute inset-0 w-full h-full object-cover block"
-                     style="object-position: 50% 55%; filter: brightness(1.25) contrast(1.05);">
-                <div class="absolute inset-0 pointer-events-none" style="background: linear-gradient(to bottom, rgba(11,18,32,0) 40%, rgba(11,18,32,0.72) 72%, rgba(11,18,32,0.94) 100%);"></div>
-                <div class="relative p-8 w-full flex flex-col gap-[18px]">
-                    <div>
-                        <div class="text-[11px] font-bold tracking-[0.14em] uppercase text-slate-400 mb-2">Program lead</div>
-                        <div class="text-[26px] font-extrabold tracking-[-0.03em] text-white">Amaan Shaikh</div>
-                        <div class="text-sm text-slate-300 mt-2 max-w-[30em]">Builds AI systems for companies in Germany &mdash; and teaches the same craft inside Indian classrooms.</div>
+            <div class="fp-host" id="hero-fp">
+              <div class="comet-card">
+                <div class="relative bg-[#0b1220] rounded-[26px] overflow-hidden min-h-[540px] flex items-end" id="hero-tilt">
+                    <img src="amaan_shaikh_inst.jpg" alt="Amaan Shaikh, program instructor"
+                         width="1224" height="1951"
+                         class="absolute inset-0 w-full h-full object-cover block"
+                         style="object-position: 50% 55%; filter: brightness(1.25) contrast(1.05);">
+                    <div class="absolute inset-0 pointer-events-none" style="background: linear-gradient(to bottom, rgba(11,18,32,0) 40%, rgba(11,18,32,0.72) 72%, rgba(11,18,32,0.94) 100%);"></div>
+                    <div class="relative p-8 w-full flex flex-col gap-[18px]">
+                        <div>
+                            <div class="text-[26px] font-extrabold tracking-[-0.03em] text-white">Amaan Shaikh</div>
+                            <div class="text-sm text-slate-300 mt-2 max-w-[30em]">Builds AI systems for companies in Germany. Teaches the same craft inside Indian classrooms.</div>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="border border-slate-400/30 text-slate-200 rounded-full px-[13px] py-[7px] text-xs font-semibold bg-slate-900/40">SDE in Germany</span>
+                            <span class="border border-slate-400/30 text-slate-200 rounded-full px-[13px] py-[7px] text-xs font-semibold bg-slate-900/40">M.Sc. CS, Konstanz</span>
+                        </div>
                     </div>
-                    <div class="flex flex-wrap gap-2">
-                        <span class="border border-slate-400/30 text-slate-200 rounded-full px-[13px] py-[7px] text-xs font-semibold bg-slate-900/40">SDE in Germany</span>
-                        <span class="border border-slate-400/30 text-slate-200 rounded-full px-[13px] py-[7px] text-xs font-semibold bg-slate-900/40">M.Sc. CS, Konstanz</span>
-                    </div>
+                    <div class="comet-glare" aria-hidden="true"></div>
                 </div>
+              </div>
+              <div class="fp-cursor" aria-hidden="true">
+                <span class="fp-cursor-in">
+                    <svg class="fp-arrow" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M14.082 2.182a.5.5 0 0 1 .103.557L8.528 15.467a.5.5 0 0 1-.917-.007L5.57 10.694.803 8.652a.5.5 0 0 1-.006-.916l12.728-5.657a.5.5 0 0 1 .556.103z"/>
+                    </svg>
+                    <span class="fp-pill">Program Instructor</span>
+                </span>
+              </div>
             </div>
             </div>
         </div>
+
     </div>
 </section>
 
-<!-- ============================= 2. BOARD STRIP ============================= -->
-<section class="border-y border-slate-100 bg-slate-50" aria-label="Education boards">
-    <div class="max-w-[1180px] mx-auto px-6 py-[22px] flex items-center gap-8 flex-wrap">
-        <div class="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-400">Designed for all major boards</div>
-        <div class="flex items-center gap-[30px] flex-wrap opacity-70">
-            <img src="Board Logos/CBSE_new_logo.svg" alt="CBSE"                    class="h-9 w-auto block">
-            <img src="Board Logos/CISCE_logo.png"    alt="CISCE / ICSE"            class="h-[34px] w-auto block">
-            <img src="Board Logos/IB.png"            alt="IB"                      class="h-7 w-auto block">
-            <img src="Board Logos/SSC.webp"          alt="Maharashtra State Board" class="h-8 w-auto block">
+<!-- ============================= 2. BOARDS + PROMISES =============================
+     A DynamicIsland (cult-ui port) morphing through five of the component's
+     shape presets: tall, board, note, long and compact. The stage around it is
+     a fixed height on purpose, so a 50px compact state growing into a 172px
+     tall state can never shove the rest of the page up and down.
+     The island is decorative for assistive tech; every fact it shows is also
+     in the sr-only list beside it. -->
+<section id="boards" class="bg-white" aria-label="Boards and in-school guarantees">
+    <div class="max-w-[1180px] mx-auto px-6 pt-10 pb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-6 md:gap-12">
+        <div class="di-stage">
+            <div class="di-shell" id="boardIsland" data-size="tall" aria-hidden="true">
+                <div class="di-view di-tall" id="boardIslandView"></div>
+                <span class="di-prog" id="boardIslandProg"></span>
+            </div>
         </div>
-    </div>
-</section>
 
-<!-- ============================= 3. TRUST BADGES ============================= -->
-<section class="max-w-[1180px] mx-auto px-6 pt-14 pb-2" aria-label="Program guarantees">
-    <div class="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3.5">
-        <div class="gs-item border border-slate-200 rounded-[14px] p-5">
-            <div class="text-[15px] font-bold mb-1">Runs inside school</div>
-            <div class="text-sm text-slate-500">Within the existing timetable.</div>
-        </div>
-        <div class="gs-item border border-slate-200 rounded-[14px] p-5">
-            <div class="text-[15px] font-bold mb-1">Teacher always present</div>
-            <div class="text-sm text-slate-500">Full school oversight, every class.</div>
-        </div>
-        <div class="gs-item border border-slate-200 rounded-[14px] p-5">
-            <div class="text-[15px] font-bold mb-1">No syllabus disruption</div>
-            <div class="text-sm text-slate-500">Nothing replaced or postponed.</div>
-        </div>
-        <div class="gs-item border border-slate-200 rounded-[14px] p-5">
-            <div class="text-[15px] font-bold mb-1">No homework</div>
-            <div class="text-sm text-slate-500">Nothing added to the evening load.</div>
-        </div>
-        <div class="gs-item border border-slate-200 rounded-[14px] p-5">
-            <div class="text-[15px] font-bold mb-1">No unsupervised AI</div>
-            <div class="text-sm text-slate-500">All tool use happens in class.</div>
-        </div>
+        <ul class="sr-only">
+            <li>CBSE. Runs alongside the CBSE timetable, inside school hours.</li>
+            <li>CISCE and ICSE. Maps to ICSE computer applications and project work.</li>
+            <li>IB. Supports inquiry-led learning and independent research.</li>
+            <li>Maharashtra State Board. Taught in simple language for State Board classrooms.</li>
+            <li>Every session runs inside school hours, in your existing timetable.</li>
+            <li>A school teacher stays in the room for every class.</li>
+            <li>Nothing in the syllabus is replaced or postponed.</li>
+            <li>Nothing goes home. No homework and no evening screen time.</li>
+            <li>AI tools are used in class only, always supervised.</li>
+        </ul>
+
+        <h2 class="text-[clamp(26px,3vw,40px)] leading-[1.08] tracking-[-0.03em] font-extrabold md:text-right">
+            Every board.<br><span class="text-slate-400">Every classroom.</span>
+        </h2>
     </div>
 </section>
 
@@ -1305,6 +1676,43 @@
 </footer>
 
 <!-- Full transcript dialog for the AI assistant -->
+<!-- ================= ANIMATED MODAL (booking CTA dialog) =================
+     Opened by every [data-modal-open] trigger. "Pick a time" closes and hands
+     off to the existing Cal.com embed in #book — no second Cal namespace. -->
+<div class="dam-modal-overlay" id="bookModal" role="dialog" aria-modal="true" aria-labelledby="bookModalTitle">
+    <div class="dam-modal" id="bookModalPanel">
+        <button class="dam-modal-close" type="button" data-modal-close aria-label="Close">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M18 6l-12 12"/><path d="M6 6l12 12"/>
+            </svg>
+        </button>
+        <div class="dam-modal-body">
+            <h3 id="bookModalTitle">30 minutes. No obligation.</h3>
+            <p class="dm-sub">A short conversation with the program lead, not a salesperson, to see whether this fits your school.</p>
+            <div class="dam-check">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>
+                <span>Zero cost to the school</span>
+            </div>
+            <div class="dam-check">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>
+                <span>Runs inside school hours with no syllabus disruption</span>
+            </div>
+            <div class="dam-check">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>
+                <span>A school teacher present in every session</span>
+            </div>
+            <p class="dm-alt">Rather ask privately first?
+                <button type="button" id="bookModalAssistant">Talk to the AI assistant</button>.
+                No salesperson, just answers.
+            </p>
+        </div>
+        <div class="dam-modal-foot">
+            <button type="button" class="dm-cancel" data-modal-close>Cancel</button>
+            <button type="button" class="dm-go" id="bookModalGo">Pick a time <span aria-hidden="true">&rarr;</span></button>
+        </div>
+    </div>
+</div>
+
 <div class="agent-dialog-overlay" id="agentDialog" role="dialog" aria-modal="true" aria-label="Conversation transcript">
     <div class="agent-dialog">
         <div class="agent-dialog-head">
@@ -1343,6 +1751,326 @@
         a.addEventListener('click', function () { setOpen(false); });
     });
 })();
+</script>
+
+<!-- FloatingDock (Aceternity port): cursor-proximity magnify.
+     Same maths as the original — distance from each icon's centre mapped over
+     [-150, 0, 150] — driven through a spring (mass .1 / stiffness 150 /
+     damping 12, the component's own config) instead of motion's useSpring. -->
+<script>
+window.addEventListener('DOMContentLoaded', function () {
+    var dock = document.getElementById('nav-dock');
+    if (!dock) return;
+    var items = Array.prototype.slice.call(dock.querySelectorAll('.dock-item'));
+    if (!items.length) return;
+
+    // ---------- current-section dot ----------
+    var marks = items.map(function (it) {
+        var id = (it.getAttribute('href') || '').slice(1);
+        return { item: it, el: id ? document.getElementById(id) : null };
+    }).filter(function (m) { return m.el; });
+
+    var markQueued = false;
+    function markActive() {
+        markQueued = false;
+        var line = window.scrollY + 140, best = null;
+        marks.forEach(function (m) {
+            var top = m.el.getBoundingClientRect().top + window.scrollY;
+            if (top <= line && (!best || top > best.top)) best = { top: top, item: m.item };
+        });
+        items.forEach(function (it) { it.classList.toggle('is-active', !!best && it === best.item); });
+    }
+    window.addEventListener('scroll', function () {
+        if (!markQueued) { markQueued = true; requestAnimationFrame(markActive); }
+    }, { passive: true });
+    window.addEventListener('resize', markActive);
+    markActive();
+
+    // ---------- magnify ----------
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+
+    var REST = 40, PEAK = 62, REACH = 150;
+    var STIFF = 150, DAMP = 12, MASS = 0.1;
+    var mouseX = Infinity;
+    var state = items.map(function () { return { s: REST, v: 0 }; });
+    var running = false, last = 0;
+
+    function targetFor(item) {
+        if (mouseX === Infinity) return REST;
+        var b = item.getBoundingClientRect();
+        var d = mouseX - (b.left + b.width / 2);
+        if (d < -REACH || d > REACH) return REST;
+        // linear interpolation over [-REACH, 0, REACH] -> [REST, PEAK, REST]
+        return REST + (PEAK - REST) * (1 - Math.abs(d) / REACH);
+    }
+
+    function frame(now) {
+        var dt = last ? Math.min((now - last) / 1000, 1 / 30) : 1 / 60;
+        last = now;
+        var moving = false;
+        for (var i = 0; i < items.length; i++) {
+            var st = state[i], t = targetFor(items[i]);
+            var a = (-STIFF * (st.s - t) - DAMP * st.v) / MASS;
+            st.v += a * dt;
+            st.s += st.v * dt;
+            items[i].style.setProperty('--s', st.s.toFixed(2) + 'px');
+            if (Math.abs(st.s - t) > 0.05 || Math.abs(st.v) > 0.5) moving = true;
+        }
+        if (moving || mouseX !== Infinity) { requestAnimationFrame(frame); }
+        else { running = false; last = 0; }
+    }
+    function kick() { if (!running) { running = true; last = 0; requestAnimationFrame(frame); } }
+
+    dock.addEventListener('mousemove', function (e) { mouseX = e.clientX; kick(); });
+    dock.addEventListener('mouseleave', function () { mouseX = Infinity; kick(); });
+    items.forEach(function (it) { it.style.setProperty('--s', REST + 'px'); });
+});
+</script>
+
+<!-- DynamicIsland (cult-ui port): the boards + promises strip.
+     Five shape presets, ordered so consecutive states never share an outline,
+     each with its own dwell. The hairline bar tracks that dwell; hovering
+     freezes both the bar and the cycle so a line can be finished. -->
+<script>
+window.addEventListener('DOMContentLoaded', function () {
+    var shell = document.getElementById('boardIsland');
+    var view  = document.getElementById('boardIslandView');
+    var prog  = document.getElementById('boardIslandProg');
+    if (!shell || !view) return;
+
+    var LOGOS = {
+        cbse:  { src: 'Board Logos/CBSE_new_logo.svg', h: 38 },
+        cisce: { src: 'Board Logos/CISCE_logo.png',    h: 38 },
+        ib:    { src: 'Board Logos/IB.png',            h: 34 },
+        ssc:   { src: 'Board Logos/SSC.webp',          h: 38 }
+    };
+
+    // One named colour per promise, at 400-weight so it carries on the near
+    // black shell without going neon. Chip backgrounds are the same hue at low
+    // alpha. Board logos stay greyscale.
+    var C = {
+        sky:     ['#38bdf8', 'rgba(56,189,248,.15)'],
+        emerald: ['#34d399', 'rgba(52,211,153,.15)'],
+        amber:   ['#fbbf24', 'rgba(251,191,36,.15)'],
+        violet:  ['#a78bfa', 'rgba(167,139,250,.15)'],
+        rose:    ['#fb7185', 'rgba(251,113,133,.15)']
+    };
+
+    var I = {
+        clock:   '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+        teacher: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m16 11 2 2 4-4"/>',
+        book:    '<path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/>',
+        house:   '<path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .7-1.5l7-5.9a2 2 0 0 1 2.6 0l7 5.9A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+        shield:  '<path d="M20 13c0 5-3.5 7.5-7.7 9a2 2 0 0 1-.6 0C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.2-2.7a1 1 0 0 1 1.5 0C14.5 3.8 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>'
+    };
+
+    function tile(logo) {
+        return '<span class="di-logo-tile"><img class="di-logo" src="' + logo.src +
+               '" alt="" style="--lh:' + logo.h + 'px"></span>';
+    }
+    function chip(icon, colour) {
+        return '<span class="di-chip" style="--di-chip:' + colour[1] + ';--di-ico:' + colour[0] + '">' +
+               '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" ' +
+               'stroke-linejoin="round">' + icon + '</svg></span>';
+    }
+
+    // Ten states. Shapes cycle tall -> note -> board -> long -> compact so the
+    // outline changes every single time, which is the whole point of the island.
+    var STATES = [
+        { size: 'tall', dwell: 3400, html:
+            '<span class="di-tall-row">' + tile(LOGOS.cbse) + tile(LOGOS.cisce) + tile(LOGOS.ib) + tile(LOGOS.ssc) + '</span>' +
+            '<span class="di-tall-line">Four boards. One program.' +
+            '<span class="di-tall-sub">CBSE, ICSE, IB and State Board.</span></span>' },
+
+        { size: 'note', dwell: 2800, html:
+            chip(I.clock, C.sky) +
+            '<span class="di-note-copy">Every session runs inside school hours, in your timetable.</span>' },
+
+        { size: 'board', dwell: 3000, html:
+            tile(LOGOS.cbse) +
+            '<span class="di-board-text"><span class="di-board-name">CBSE</span>' +
+            '<span class="di-board-copy">Runs alongside the CBSE timetable, inside school hours.</span></span>' },
+
+        { size: 'long', dwell: 2800, html:
+            chip(I.house, C.violet) +
+            '<span class="di-note-copy">Nothing goes home. No homework, no evening screen time.</span>' },
+
+        { size: 'compact', dwell: 2000, html:
+            tile(LOGOS.ib) + '<span class="di-compact-name">IB</span>' },
+
+        { size: 'note', dwell: 2800, html:
+            chip(I.teacher, C.emerald) +
+            '<span class="di-note-copy">A school teacher stays in the room for every class.</span>' },
+
+        { size: 'board', dwell: 3000, html:
+            tile(LOGOS.cisce) +
+            '<span class="di-board-text"><span class="di-board-name">CISCE / ICSE</span>' +
+            '<span class="di-board-copy">Maps to ICSE computer applications and project work.</span></span>' },
+
+        { size: 'long', dwell: 2800, html:
+            chip(I.shield, C.rose) +
+            '<span class="di-note-copy">AI tools are used in class only, always supervised.</span>' },
+
+        { size: 'compact', dwell: 2000, html:
+            tile(LOGOS.ssc) + '<span class="di-compact-name">State Board</span>' },
+
+        { size: 'note', dwell: 2800, html:
+            chip(I.book, C.amber) +
+            '<span class="di-note-copy">Nothing in the syllabus is replaced or postponed.</span>' }
+    ];
+
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var idx = -1, swapTimer = null, nextTimer = null, paused = false;
+
+    function runProgress(ms) {
+        if (!prog) return;
+        prog.style.transition = 'none';
+        prog.style.width = '0%';
+        void prog.offsetWidth;                       // commit the reset
+        if (reduced) return;
+        prog.style.transition = 'width ' + ms + 'ms linear';
+        prog.style.width = '100%';
+    }
+    function freezeProgress() {
+        if (!prog) return;
+        var w = prog.getBoundingClientRect().width;
+        prog.style.transition = 'none';
+        prog.style.width = w + 'px';
+    }
+
+    function apply(st) {
+        shell.setAttribute('data-size', st.size);
+        view.className = 'di-view di-' + st.size;
+        view.innerHTML = st.html;
+        runProgress(st.dwell);
+    }
+
+    function schedule(ms) {
+        clearTimeout(nextTimer);
+        nextTimer = setTimeout(step, ms);
+    }
+
+    function paint(next) {
+        var first = idx === -1;
+        idx = next;
+        var st = STATES[idx];
+        if (first) { apply(st); return st; }
+        shell.classList.add('di-swap');              // blur the outgoing view away
+        clearTimeout(swapTimer);
+        swapTimer = setTimeout(function () {
+            apply(st);
+            shell.classList.remove('di-swap');
+        }, 150);
+        return st;
+    }
+
+    function step() {
+        var st = paint((idx + 1) % STATES.length);
+        if (!paused && !reduced) schedule(st.dwell);
+    }
+
+    // Hovering holds the state (and the bar) so a slow reader can finish.
+    shell.addEventListener('mouseenter', function () {
+        paused = true;
+        clearTimeout(nextTimer);
+        freezeProgress();
+    });
+    shell.addEventListener('mouseleave', function () {
+        if (!paused) return;
+        paused = false;
+        if (reduced) return;
+        var st = STATES[idx];
+        runProgress(st.dwell);                       // restart this state's dwell
+        schedule(st.dwell);
+    });
+
+    var first = paint(0);
+    if (!reduced) schedule(first.dwell);
+});
+</script>
+
+<!-- Animated modal (Aceternity port): the booking dialog behind every
+     [data-modal-open] trigger. "Pick a time" hands off to the Cal.com embed
+     already mounted in #book, so there is only ever one Cal instance. -->
+<script>
+window.addEventListener('DOMContentLoaded', function () {
+    var overlay = document.getElementById('bookModal');
+    var panel   = document.getElementById('bookModalPanel');
+    if (!overlay || !panel) return;
+
+    var lastTrigger = null, closeTimer = null, isOpen = false;
+    var FOCUSABLE = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+
+    function open(trigger) {
+        if (isOpen) return;
+        isOpen = true;
+        lastTrigger = trigger || null;
+        clearTimeout(closeTimer);
+        overlay.classList.remove('closing');
+        overlay.classList.add('mounted');
+        // force a reflow so the .open transition actually runs from the
+        // scale(.5) rotateX(40deg) start state instead of snapping
+        void overlay.offsetWidth;
+        overlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+        var first = panel.querySelector('#bookModalGo') || panel.querySelector(FOCUSABLE);
+        if (first) first.focus();
+    }
+
+    function close() {
+        if (!isOpen) return;
+        isOpen = false;
+        overlay.classList.remove('open');
+        overlay.classList.add('closing');
+        document.body.style.overflow = '';
+        closeTimer = setTimeout(function () {
+            overlay.classList.remove('mounted', 'closing');
+        }, 200);
+        if (lastTrigger && typeof lastTrigger.focus === 'function') lastTrigger.focus();
+    }
+
+    document.querySelectorAll('[data-modal-open]').forEach(function (t) {
+        t.addEventListener('click', function (e) {
+            e.preventDefault();          // anchors keep #book as the no-JS fallback
+            open(t);
+        });
+    });
+    panel.querySelectorAll('[data-modal-close]').forEach(function (b) {
+        b.addEventListener('click', close);
+    });
+
+    // mirrors the component's useOutsideClick
+    overlay.addEventListener('mousedown', function (e) {
+        if (!panel.contains(e.target)) close();
+    });
+    document.addEventListener('keydown', function (e) {
+        if (!isOpen) return;
+        if (e.key === 'Escape') { close(); return; }
+        if (e.key !== 'Tab') return;
+        var f = Array.prototype.slice.call(panel.querySelectorAll(FOCUSABLE))
+            .filter(function (el) { return el.offsetParent !== null; });
+        if (!f.length) return;
+        var first = f[0], last = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    });
+
+    var go = document.getElementById('bookModalGo');
+    if (go) go.addEventListener('click', function () {
+        close();
+        var sec = document.getElementById('book');
+        if (sec) setTimeout(function () { sec.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 160);
+    });
+
+    // reuse the existing assistant hook (scroll + pulse) rather than duplicating it
+    var ask = document.getElementById('bookModalAssistant');
+    if (ask) ask.addEventListener('click', function () {
+        close();
+        var existing = document.querySelector('#book [data-open-assistant]');
+        if (existing) setTimeout(function () { existing.click(); }, 160);
+    });
+});
 </script>
 
 <!-- Compare table (8 rows, rendered for desktop + mobile from one source) -->
@@ -1413,25 +2141,8 @@ window.addEventListener('DOMContentLoaded', function () {
         var gsap = window.gsap;
         gsap.registerPlugin(window.ScrollTrigger);
 
-        // 1) Headline: split into words, mask-reveal them line by line
-        var h1s = document.getElementById('hero-h1');
-        if (h1s) {
-            var lines = h1s.innerHTML.split(/<br\s*\/?>/i);
-            h1s.classList.remove('shimmer-text');
-            h1s.innerHTML = lines.map(function (line) {
-                return line.trim().split(/\s+/).map(function (w) {
-                    return '<span class="h1-clip"><span class="h1-word shimmer-text">' + w + '</span></span>';
-                }).join(' ');
-            }).join('<br>');
-            gsap.from('.h1-word', {
-                yPercent: 135, duration: 0.9, ease: 'power4.out', stagger: 0.09,
-                onComplete: function () {
-                    // The mask has done its job — unclip so no font metric can
-                    // ever shave a descender afterwards.
-                    document.querySelectorAll('.h1-clip').forEach(function (c) { c.style.overflow = 'visible'; });
-                }
-            });
-        }
+        // 1) Headline: intentionally NOT animated. It paints immediately with
+        //    the CSS shimmer only — the old word-mask reveal clipped descenders.
 
         // 2) The 500+ badge counts up once
         var cnt = document.getElementById('hero-count');
@@ -1449,7 +2160,7 @@ window.addEventListener('DOMContentLoaded', function () {
         });
 
         // 4) Portrait: soft entrance + slow parallax against the scroll
-        //    (targets the wrapper — the inner card belongs to vanilla-tilt)
+        //    (targets the outer wrapper — the inner card belongs to CometCard)
         var portrait = document.querySelector('[data-hero-parallax]');
         if (portrait) {
             gsap.from(portrait, { opacity: 0, scale: 0.96, duration: 1.1, ease: 'power2.out', delay: 0.15 });
@@ -1494,25 +2205,119 @@ window.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
-<!-- Hero card: hover tilt + glare (desktop pointers only). The workshop
-     cards use BorderGlow instead — no tilt there. -->
+<!-- Hero portrait: CometCard + FollowerPointerCard (Aceternity ports).
+     Both are desktop-pointer only. CometCard runs a real spring integrator in
+     place of motion's useSpring (stiffness 100 / damping 10 / mass 1, the
+     library default) so the tilt keeps its characteristic slight overshoot. -->
 <script>
 window.addEventListener('DOMContentLoaded', function () {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    if (!window.matchMedia('(pointer: fine)').matches) return;
-    var card = document.getElementById('hero-tilt');
-    if (!card) return;
-    var tries = 0;
-    (function wait() {
-        if (window.VanillaTilt) {
-            window.VanillaTilt.init(card, {
-                max: 8, speed: 400, perspective: 1000, scale: 1.02,
-                glare: true, 'max-glare': 0.28, gyroscope: false
-            });
-        } else if (tries++ < 25) {
-            setTimeout(wait, 200);
+    var finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    if (!finePointer) return;
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // ---------------------------------------------------------- CometCard ----
+    var card  = document.getElementById('hero-tilt');
+    var glare = card && card.querySelector('.comet-glare');
+
+    if (card && !reduced) {
+        var ROTATE_DEPTH = 17.5;   // Aceternity defaults
+        var TRANSLATE_DEPTH = 20;
+        var HOVER_SCALE = 1.05;
+        var HOVER_Z = 50;
+
+        // spring state for the normalised cursor offsets (-0.5 … 0.5)
+        var sx = 0, sy = 0, vx = 0, vy = 0;
+        var tx = 0, ty = 0;              // spring targets
+        var scale = 1, zLift = 0;        // whileHover, eased over ~0.2s
+        var scaleTarget = 1, zTarget = 0;
+        var hovering = false, running = false, last = 0;
+
+        var STIFF = 100, DAMP = 10, MASS = 1;
+
+        function clampHalf(v) { return v < -0.5 ? -0.5 : (v > 0.5 ? 0.5 : v); }
+        function map(v, a, b) { return a + (clampHalf(v) + 0.5) * (b - a); }
+
+        function frame(now) {
+            var dt = last ? Math.min((now - last) / 1000, 1 / 30) : 1 / 60;
+            last = now;
+
+            // critically-under-damped spring, matching motion's useSpring default
+            var ax = (-STIFF * (sx - tx) - DAMP * vx) / MASS;
+            var ay = (-STIFF * (sy - ty) - DAMP * vy) / MASS;
+            vx += ax * dt; vy += ay * dt;
+            sx += vx * dt; sy += vy * dt;
+
+            // scale / z lift ease (whileHover transition: { duration: 0.2 })
+            var k = 1 - Math.exp(-dt / 0.07);
+            scale += (scaleTarget - scale) * k;
+            zLift += (zTarget - zLift) * k;
+
+            var rotateX = map(sy, -ROTATE_DEPTH, ROTATE_DEPTH);
+            var rotateY = map(sx, ROTATE_DEPTH, -ROTATE_DEPTH);
+            var trX = map(sx, -TRANSLATE_DEPTH, TRANSLATE_DEPTH);
+            var trY = map(sy, TRANSLATE_DEPTH, -TRANSLATE_DEPTH);
+
+            card.style.transform =
+                'translate3d(' + trX.toFixed(2) + 'px,' + trY.toFixed(2) + 'px,' + zLift.toFixed(2) + 'px)' +
+                ' scale(' + scale.toFixed(4) + ')' +
+                ' rotateX(' + rotateX.toFixed(2) + 'deg)' +
+                ' rotateY(' + rotateY.toFixed(2) + 'deg)';
+
+            if (glare) {
+                var gx = map(sx, 0, 100), gy = map(sy, 0, 100);
+                glare.style.background =
+                    'radial-gradient(circle at ' + gx.toFixed(1) + '% ' + gy.toFixed(1) + '%,' +
+                    ' rgba(255,255,255,0.9) 10%, rgba(255,255,255,0.75) 20%, rgba(255,255,255,0) 80%)';
+            }
+
+            // park the loop once everything has settled and the cursor is away
+            var settled = !hovering &&
+                Math.abs(sx) < 0.0004 && Math.abs(sy) < 0.0004 &&
+                Math.abs(vx) < 0.0015 && Math.abs(vy) < 0.0015 &&
+                Math.abs(scale - 1) < 0.0004 && Math.abs(zLift) < 0.05;
+            if (settled) {
+                running = false; last = 0;
+                sx = sy = vx = vy = 0; scale = 1; zLift = 0;
+                card.style.transform = '';
+                if (glare) glare.style.background = '';
+                return;
+            }
+            requestAnimationFrame(frame);
         }
-    })();
+
+        function kick() { if (!running) { running = true; last = 0; requestAnimationFrame(frame); } }
+
+        card.addEventListener('mousemove', function (e) {
+            var r = card.getBoundingClientRect();
+            tx = (e.clientX - r.left) / r.width - 0.5;
+            ty = (e.clientY - r.top) / r.height - 0.5;
+            kick();
+        });
+        card.addEventListener('mouseenter', function () {
+            hovering = true; scaleTarget = HOVER_SCALE; zTarget = HOVER_Z; kick();
+        });
+        card.addEventListener('mouseleave', function () {
+            hovering = false; tx = 0; ty = 0; scaleTarget = 1; zTarget = 0; kick();
+        });
+    }
+
+    // ------------------------------------------------ FollowerPointerCard ----
+    var host = document.getElementById('hero-fp');
+    if (host) {
+        var cursor = host.querySelector('.fp-cursor');
+        host.classList.add('fp-on');
+
+        // The upstream component measures the host rect once on mount, then adds
+        // window scroll to compensate. Re-measuring per move is simpler and, on
+        // a page that both scrolls and parallaxes this card, actually correct.
+        host.addEventListener('mousemove', function (e) {
+            var r = host.getBoundingClientRect();
+            cursor.style.setProperty('--fx', (e.clientX - r.left) + 'px');
+            cursor.style.setProperty('--fy', (e.clientY - r.top) + 'px');
+        });
+        host.addEventListener('mouseenter', function () { host.classList.add('fp-in'); });
+        host.addEventListener('mouseleave', function () { host.classList.remove('fp-in'); });
+    }
 });
 </script>
 
@@ -1969,29 +2774,51 @@ window.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // Why this used to be hit-or-miss: browsers only let an AudioContext leave
+    // 'suspended' after a genuine user gesture, and mouseenter is not one. The
+    // old code called resume() (async) and scheduled the chord immediately from
+    // ctx.currentTime, which is frozen while suspended, so the notes landed in
+    // the past and were dropped. Once you happened to click something the page
+    // gained activation and it started working, which is what made it look
+    // random. Now: warm the context on the first real gesture, and never
+    // schedule a note until the context actually reports 'running'.
+    function ensureRunning() {
+        try {
+            if (!ctx) init();
+        } catch (e) {
+            return Promise.resolve(false);   // no Web Audio at all
+        }
+        if (ctx.state === 'running') return Promise.resolve(true);
+        return ctx.resume().then(
+            function () { return ctx.state === 'running'; },
+            function () { return false; }    // still no activation; stay silent
+        );
+    }
+
     function playChord() {
+        if (!ctx || ctx.state !== 'running') return;
         var now = ctx.currentTime;
         if (now - lastPlay < 0.3) return;
         lastPlay = now;
         var chord = CHORDS[chordIdx++ % CHORDS.length];
         chord.forEach(function (f, i) {
             // Bass lands first and softest; upper voices roll in after it.
+            // The 20ms lookahead keeps every note strictly in the future.
             var vel = i === 0 ? 0.10 : 0.15 - i * 0.012;
-            note(f, now + i * 0.055, vel);
+            note(f, now + 0.02 + i * 0.055, vel);
         });
     }
 
     function startProgression() {
-        try {
-            if (!ctx) init();
-            if (ctx.state === 'suspended') ctx.resume();
-            hovering = true;
+        hovering = true;
+        ensureRunning().then(function (ok) {
+            if (!ok || !hovering) return;   // pointer may have left already
             playChord();
             if (hoverIv) clearInterval(hoverIv);
             hoverIv = setInterval(function () {
                 if (hovering) playChord();
             }, CHORD_EVERY_MS);
-        } catch (e) { /* audio unavailable — stay silent */ }
+        });
     }
 
     function stopProgression() {
@@ -2004,6 +2831,12 @@ window.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('a[aria-label*="30-minute"]').forEach(function (btn) {
             btn.addEventListener('mouseenter', startProgression);
             btn.addEventListener('mouseleave', stopProgression);
+        });
+        // Unlock on the first genuine gesture anywhere on the page, so the very
+        // next hover already has a running context instead of losing its chord.
+        function unlock() { ensureRunning(); }
+        ['pointerdown', 'keydown', 'touchstart'].forEach(function (evt) {
+            window.addEventListener(evt, unlock, { capture: true, once: true, passive: true });
         });
     });
 })();
