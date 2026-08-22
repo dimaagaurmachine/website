@@ -72,7 +72,7 @@
             "name": "Dimaag aur Machine"
         },
         "educationalLevel": "Secondary School",
-        "teaches": ["How AI models work", "Prompt engineering", "Judging AI output critically", "AI ethics and online safety", "AI career landscape"],
+        "teaches": ["Building an AI chatbot or automation", "How language models work", "Limits, bias and failure cases of AI", "Chaining AI tools into a system", "AI workflows for school subjects", "AI ethics and online safety"],
         "occupationalCredentialAwarded": "School-endorsed participation certificate"
     }
     </script>
@@ -82,6 +82,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
     <link rel="dns-prefetch" href="https://api.elevenlabs.io">
     <link rel="preconnect" href="https://api.elevenlabs.io" crossorigin>
 
@@ -96,6 +97,10 @@
     <!-- GSAP + ScrollTrigger: section reveals, hero choreography, accordion gallery -->
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+    <!-- rough-notation (~11KB): hand-drawn marker annotations, the engine behind
+         Magic UI's Highlighter. IIFE build exposes window.RoughNotation. -->
+    <script defer src="https://cdn.jsdelivr.net/npm/rough-notation@0.5.1/lib/rough-notation.iife.js"></script>
 
     <!-- Three.js for the hero particle ring -->
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -305,18 +310,11 @@
             overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
         }
 
-        /* Parents question chips: wraps statically, becomes a marquee when GSAP runs */
-        .chip {
-            display: inline-flex; flex: none; white-space: nowrap;
-        }
-        .chip-track { display: flex; flex-wrap: wrap; gap: 10px; }
-        .chip-dup { display: none; }
-        .chip-marquee.marquee-on { overflow: hidden;
-            -webkit-mask-image: linear-gradient(90deg, transparent, black 7%, black 93%, transparent);
-            mask-image: linear-gradient(90deg, transparent, black 7%, black 93%, transparent);
-        }
-        .marquee-on .chip-track { flex-wrap: nowrap; width: max-content; will-change: transform; }
-        .marquee-on .chip-dup { display: inline-flex; }
+        /* TextLoop (React Bits port): questions flowing along a ribbon path */
+        .tl-wrap { position: relative; width: 100%; overflow: hidden; }
+        .tl-svg { display: block; width: 100%; height: auto; }
+        .tl-text { user-select: none; font-size: 32px; font-weight: 700; letter-spacing: .3px; }
+        .tl-measure { visibility: hidden; pointer-events: none; }
 
         /* Horizontal session gallery: swipeable row by default, pinned scrub when GSAP runs */
         /* AccordionGallery (ported from React Bits, JS-CSS variant): the session
@@ -398,12 +396,16 @@
 
         /* ======================= Embedded AI assistant: North =======================
            Rebuilt as a DynamicIsland-style widget (cult-ui): one dark pill with a
-           circular strands orb and the invitation beside it. Clicking it connects
-           and the island expands downward to the live controls. The glow card,
-           tap-to-start button, pulse rings, rotating question and text bar are all
-           gone. #ai-agent-card keeps its id because DAMGlow writes
-           --glow-angle/--voice-amp there and the strands shader reads --voice-amp
-           off it every frame. */
+           orb and the invitation beside it. Clicking it connects and the island
+           expands downward to the live controls. The glow card, tap-to-start
+           button, pulse rings, rotating question and text bar are all gone.
+           #ai-agent-card keeps its id because DAMGlow writes the ring variables
+           there and they inherit down to the orb. */
+        /* Highlighter (Magic UI port): rough-notation paints an absolutely
+           positioned SVG inside the annotated element, so it has to be a
+           positioned inline-block with no background of its own. */
+        [data-hl] { position: relative; display: inline-block; background: transparent; }
+
         .ni-stage { display: flex; justify-content: center; }
         @media (min-width: 768px) { .ni-stage { justify-content: flex-end; } }
 
@@ -432,21 +434,93 @@
         .ni-head:focus-visible { outline: 2px solid #ffffff; outline-offset: 3px; }
 
         /* The orb. setCircle() rewrites this element's className to
-           'pulse-wrap <state>', so every orb style has to hang off .pulse-wrap. */
+           'pulse-wrap <state>', so every orb style has to hang off .pulse-wrap.
+           The WebGL strands are gone: the edge itself is now the living thing.
+           Three conic-gradient arcs (orange, purple, blue) sit on the rim, each
+           rotating at its own rate and breathing on its own waveform, so the rim
+           is bright in some places and dim in others rather than pulsing as one
+           even ring. DAMGlow writes --ra/--rb/--rc (angles) and --oa/--ob/--oc
+           (per-arc intensity) every frame; --voice-amp rides on top. */
         .pulse-wrap {
             position: relative; flex: 0 0 auto;
-            width: 74px; height: 74px; border-radius: 50%;
-            overflow: hidden; background: #060a14;
-            border: 1.5px solid #ffffff;
-            transition: box-shadow .4s ease, transform .4s ease;
+            width: 96px; height: 96px; border-radius: 50%;
+            transition: transform .4s ease;
+        }
+
+        /* the interior: three heavily blurred colour blobs drifting on their own
+           paths inside a clipped sphere, so the orb has weather rather than being
+           an empty disc. Positions come from DAMGlow as --b*x/--b*y percentages. */
+        .ni-core {
+            position: absolute; inset: 0; border-radius: 50%; overflow: hidden;
+            background: radial-gradient(circle at 50% 38%, #16223c 0%, #070c16 76%);
+            box-shadow: inset 0 -7px 16px rgba(0, 0, 0, .6),
+                        inset 0 4px 10px rgba(255, 255, 255, .05);
+        }
+        .ni-blob {
+            position: absolute; width: 60%; height: 60%; border-radius: 50%;
+            transform: translate(-50%, -50%) scale(var(--bs, 1));
+            filter: blur(7px); mix-blend-mode: screen;
+        }
+        .blob-a { left: calc(var(--b1x, 50) * 1%); top: calc(var(--b1y, 46) * 1%);
+                  width: 72%; height: 72%;
+                  background: radial-gradient(circle, #fdba74 0%, #f97316 36%, rgba(249,115,22,0) 66%); }
+        .blob-b { left: calc(var(--b2x, 42) * 1%); top: calc(var(--b2y, 58) * 1%);
+                  background: radial-gradient(circle, #d8b4fe 0%, #9333ea 36%, rgba(147,51,234,0) 66%); }
+        .blob-c { left: calc(var(--b3x, 60) * 1%); top: calc(var(--b3y, 54) * 1%);
+                  background: radial-gradient(circle, #7dd3fc 0%, #2563eb 36%, rgba(37,99,235,0) 66%); }
+
+        /* glass: a specular hit up-left and a faint terminator, so it reads as a
+           sphere with the plasma lit underneath rather than a flat circle */
+        .ni-gloss {
+            position: absolute; inset: 0; border-radius: 50%; pointer-events: none;
+            background:
+                radial-gradient(circle at 31% 22%, rgba(255,255,255,.30) 0%, rgba(255,255,255,.07) 11%, rgba(255,255,255,0) 27%),
+                radial-gradient(circle at 68% 86%, rgba(255,255,255,.05) 0%, rgba(255,255,255,0) 30%);
         }
         .ni-head:hover .pulse-wrap { transform: scale(1.04); }
-        .pulse-wrap.connecting { box-shadow: 0 0 0 4px rgba(251, 146, 60, .3); }
-        .pulse-wrap.listening  { box-shadow: 0 0 0 4px rgba(96, 165, 250, .32); }
-        .pulse-wrap.speaking   { box-shadow: 0 0 0 5px rgba(192, 132, 252, .36); }
 
-        .strands-bg { position: absolute; inset: 0; }
-        .strands-bg canvas { display: block; width: 100%; height: 100%; }
+        .ni-ring {
+            position: absolute; inset: -2px; border-radius: 50%;
+            padding: 4.5px; pointer-events: none;
+            filter: blur(2.4px);         /* widens the arc into a soft glow band */
+            mix-blend-mode: screen;      /* arcs add light where they overlap */
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: exclude;
+        }
+        /* each arc is a sweep that fades out at both ends, so it reads as a
+           strand lying on the rim rather than a full outline */
+        .ring-a {
+            background: conic-gradient(from calc(var(--ra, 0) * 1deg),
+                        rgba(251,146,60,0) 0deg, #fdba74 34deg, #fb923c 62deg, rgba(251,146,60,0) 104deg);
+            opacity: var(--oa, .5);
+        }
+        .ring-b {
+            background: conic-gradient(from calc(var(--rb, 120) * 1deg),
+                        rgba(192,132,252,0) 0deg, #d8b4fe 30deg, #c084fc 58deg, rgba(192,132,252,0) 96deg);
+            opacity: var(--ob, .5);
+        }
+        .ring-c {
+            background: conic-gradient(from calc(var(--rc, 240) * 1deg),
+                        rgba(96,165,250,0) 0deg, #93c5fd 26deg, #60a5fa 54deg, rgba(96,165,250,0) 92deg);
+            opacity: var(--oc, .5);
+        }
+        /* outer halo: the whole palette, blurred, intensifying with the voice */
+        .ni-bloom {
+            position: absolute; inset: -9px; border-radius: 50%; z-index: -1;
+            pointer-events: none; filter: blur(13px); mix-blend-mode: screen;
+            background: conic-gradient(from calc(var(--rg, 0) * 1deg),
+                        #fb923c, #c084fc, #60a5fa, #c084fc, #fb923c);
+            opacity: calc(.32 + var(--voice-amp, 0) * .55);
+        }
+
+        /* reduced motion: hold a steady rim and park the plasma */
+        @media (prefers-reduced-motion: reduce) {
+            .ni-ring { opacity: .55 !important; }
+            .ni-bloom { opacity: .24 !important; }
+            .ni-blob { filter: blur(13px); }
+        }
 
         .ni-copy { min-width: 0; }
         .ni-title { display: block; font-size: 17px; font-weight: 700; letter-spacing: -0.02em; color: #f1f5f9; }
@@ -483,7 +557,8 @@
 
         @media (max-width: 520px) {
             .ni-title { font-size: 15.5px; }
-            .pulse-wrap { width: 62px; height: 62px; }
+            .pulse-wrap { width: 78px; height: 78px; }
+            .ni-blob { filter: blur(6px); }
             .ni-head { gap: 13px; }
         }
 
@@ -538,7 +613,7 @@
            JS writes --s per item each frame (spring-integrated); every size in
            here is derived from it, so the whole magnify is one variable.
            ====================================================================== */
-        .dock-slot { position: relative; display: none; flex: 0 0 auto; width: 268px; height: 52px; }
+        .dock-slot { position: relative; display: none; flex: 0 0 auto; width: 320px; height: 52px; }
         .dam-dock {
             position: absolute; left: 50%; top: 50%;
             transform: translate(-50%, -50%);
@@ -1007,7 +1082,7 @@
         }
 
         @media print {
-            header, #particle-canvas, .ni-island, .agent-dialog-overlay, .dam-modal-overlay, .fp-cursor, .strands-bg { display: none !important; }
+            header, #particle-canvas, .ni-island, .agent-dialog-overlay, .dam-modal-overlay, .fp-cursor { display: none !important; }
             body { background: #fff !important; }
             section { page-break-inside: avoid; }
         }
@@ -1079,6 +1154,15 @@
                 </span>
                 <span class="dock-tip" aria-hidden="true">Instructor</span>
             </a>
+            <a href="#ai-agent" class="dock-item" aria-label="Talk to North">
+                <span class="dock-bubble">
+                    <svg class="dock-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M2 10v3"/><path d="M6 6v11"/><path d="M10 3v18"/>
+                        <path d="M14 8v7"/><path d="M18 5v13"/><path d="M22 10v3"/>
+                    </svg>
+                </span>
+                <span class="dock-tip" aria-hidden="true">Talk to North</span>
+            </a>
         </nav>
         </div>
 
@@ -1100,6 +1184,7 @@
         <a href="#parents"   class="menu-link block text-slate-700 py-3 border-b border-slate-50">For parents</a>
         <a href="#compare"   class="menu-link block text-slate-700 py-3 border-b border-slate-50">Compare</a>
         <a href="#lead"      class="menu-link block text-slate-700 py-3 border-b border-slate-50">Instructor</a>
+        <a href="#ai-agent"  class="menu-link block text-slate-700 py-3 border-b border-slate-50">Talk to North</a>
         <a href="#book" data-modal-open aria-haspopup="dialog" class="menu-link block bg-slate-900 text-white text-center py-3.5 rounded-xl font-semibold mt-3">Book a discussion</a>
     </nav>
 </header>
@@ -1396,46 +1481,140 @@
         <p class="text-slate-500 mb-9 max-w-[34em]">Your child studies hard and scores well. Still, the uncertainty remains. Here are the four answers most parents want first.</p>
     </div>
 
-    <div class="gs-item chip-marquee mb-10" data-marquee>
-        <div class="chip-track">
-            <span class="chip border border-slate-200 bg-slate-50 text-slate-600 rounded-full px-4 py-[9px] text-sm">&ldquo;Mera bachcha tech duniya mein survive kar payega?&rdquo;</span>
-            <span class="chip border border-slate-200 bg-slate-50 text-slate-600 rounded-full px-4 py-[9px] text-sm">&ldquo;AI se cheating toh nahi seekhega?&rdquo;</span>
-            <span class="chip border border-slate-200 bg-slate-50 text-slate-600 rounded-full px-4 py-[9px] text-sm">&ldquo;Coding aati nahi, AI kaise seekhega?&rdquo;</span>
-            <span class="chip border border-slate-200 bg-slate-50 text-slate-600 rounded-full px-4 py-[9px] text-sm">&ldquo;Screen time aur badh jayega kya?&rdquo;</span>
-            <span class="chip border border-slate-200 bg-slate-50 text-slate-600 rounded-full px-4 py-[9px] text-sm">&ldquo;Board exams pe effect toh nahi padega?&rdquo;</span>
-            <span class="chip border border-slate-200 bg-slate-50 text-slate-600 rounded-full px-4 py-[9px] text-sm">&ldquo;Yeh sab sikhne ke baad karega kya?&rdquo;</span>
-            <span class="chip chip-dup border border-slate-200 bg-slate-50 text-slate-600 rounded-full px-4 py-[9px] text-sm" aria-hidden="true">&ldquo;Mera bachcha tech duniya mein survive kar payega?&rdquo;</span>
-            <span class="chip chip-dup border border-slate-200 bg-slate-50 text-slate-600 rounded-full px-4 py-[9px] text-sm" aria-hidden="true">&ldquo;AI se cheating toh nahi seekhega?&rdquo;</span>
-            <span class="chip chip-dup border border-slate-200 bg-slate-50 text-slate-600 rounded-full px-4 py-[9px] text-sm" aria-hidden="true">&ldquo;Coding aati nahi, AI kaise seekhega?&rdquo;</span>
-            <span class="chip chip-dup border border-slate-200 bg-slate-50 text-slate-600 rounded-full px-4 py-[9px] text-sm" aria-hidden="true">&ldquo;Screen time aur badh jayega kya?&rdquo;</span>
-            <span class="chip chip-dup border border-slate-200 bg-slate-50 text-slate-600 rounded-full px-4 py-[9px] text-sm" aria-hidden="true">&ldquo;Board exams pe effect toh nahi padega?&rdquo;</span>
-            <span class="chip chip-dup border border-slate-200 bg-slate-50 text-slate-600 rounded-full px-4 py-[9px] text-sm" aria-hidden="true">&ldquo;Yeh sab sikhne ke baad karega kya?&rdquo;</span>
+    <!-- TextLoop (React Bits port): the parent questions run along a wave with a
+         ribbon behind them. Two adaptations from the original: the viewBox is
+         1200x260 rather than 1200x520, and the path begins and ends inside it so
+         its round caps are visible instead of running off-screen; and the loop is
+         period-based
+         rather than the component's twin-textPath + textLength trick. That trick
+         forces the phrase to exactly span the path, which is fine for a short
+         phrase but would crush 240 characters of questions into it. Instead the
+         text repeats and slides by exactly one repetition, which is seamless by
+         construction and leaves the letter spacing untouched. -->
+    <div class="gs-item mb-10">
+        <div class="tl-wrap" id="parentLoop">
+            <svg class="tl-svg" viewBox="0 0 1200 260" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+                <path id="tlPath" d="M 44 130 C 137 45 231 45 324 130 C 417 215 511 215 604 130 C 697 45 791 45 884 130 C 977 215 1071 215 1164 130"
+                      fill="none" stroke="#0f172a" stroke-width="76" stroke-linecap="round" stroke-linejoin="round"></path>
+                <text class="tl-measure" id="tlMeasure" x="0" y="0"></text>
+                <text class="tl-text" fill="#ffffff" dominant-baseline="central">
+                    <textPath id="tlHead" href="#tlPath" startOffset="0"></textPath>
+                </text>
+            </svg>
         </div>
+        <ul class="sr-only">
+            <li>&ldquo;Sab AI use kar rahe hain. Mera bachcha bas user hi rahega?&rdquo;</li>
+            <li>&ldquo;YouTube pe sab free hai. Isme naya kya hai?&rdquo;</li>
+            <li>&ldquo;Coding nahi aati. Phir AI kaise banayega?&rdquo;</li>
+            <li>&ldquo;Certificate milega, ya kuch actually banega?&rdquo;</li>
+            <li>&ldquo;Board exams ka time waste toh nahi hoga?&rdquo;</li>
+            <li>&ldquo;Doctor banna hai, engineer nahi. Tab bhi kaam aayega?&rdquo;</li>
+        </ul>
     </div>
 
     <div class="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-5">
         <div class="gs-item border border-slate-200 rounded-2xl p-6">
-            <div class="text-[17px] font-bold mb-2">AI is taught as a thinking assistant, not a cheating tool</div>
-            <p class="text-[15px] text-slate-500 m-0">Students learn when to use it and when not to. Ethics and misuse are addressed explicitly.</p>
+            <div class="text-[17px] font-bold mb-2">They build. They don't just prompt.</div>
+            <p class="text-[15px] text-slate-500 m-0">Anyone can type into ChatGPT. Here a student builds something that runs, then finds out where it breaks and why.</p>
         </div>
         <div class="gs-item border border-slate-200 rounded-2xl p-6">
-            <div class="text-[17px] font-bold mb-2">Parents don't have to manage anything</div>
-            <p class="text-[15px] text-slate-500 m-0">No homework supervision, no tech setup, no follow-up. Everything happens inside school.</p>
+            <div class="text-[17px] font-bold mb-2">No coding background needed.</div>
+            <p class="text-[15px] text-slate-500 m-0">Class 9 to 12, any stream. We start from where the student is, not from a programming syllabus.</p>
         </div>
         <div class="gs-item border border-slate-200 rounded-2xl p-6">
-            <div class="text-[17px] font-bold mb-2">Your child is never alone with AI tools</div>
-            <p class="text-[15px] text-slate-500 m-0">Every session is supervised by a school teacher. No unsupervised internet access.</p>
+            <div class="text-[17px] font-bold mb-2">Never alone with the tools.</div>
+            <p class="text-[15px] text-slate-500 m-0">A school teacher is in the room for every session and all AI use happens in class. Nothing to install or supervise at home.</p>
         </div>
         <div class="gs-item border border-slate-200 rounded-2xl p-6">
-            <div class="text-[17px] font-bold mb-2">This does not replace exams or board prep</div>
-            <p class="text-[15px] text-slate-500 m-0">It is a supplementary skill &mdash; not a substitute for academics, tuition or teachers.</p>
+            <div class="text-[17px] font-bold mb-2">Useful whichever way they go.</div>
+            <p class="text-[15px] text-slate-500 m-0">Medicine, law, design, commerce or engineering. It sits beside board prep, never against it.</p>
         </div>
+    </div>
     </div>
 
     <div class="gs-item mt-5 bg-slate-900 text-white rounded-[20px] px-8 py-[34px] grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-6 items-center">
-        <div class="text-[22px] font-bold tracking-[-0.02em] leading-[1.3]">Ignoring the gap doesn't remove it. It only widens.</div>
-        <p class="m-0 text-slate-300 text-[15px]">This program exists to close it inside the school itself &mdash; with full supervision and accountability. Safe hai. Control mein hai.</p>
+        <div class="text-[22px] font-bold tracking-[-0.02em] leading-[1.3]">Access is not the gap. Ability is.</div>
+        <p class="m-0 text-slate-300 text-[15px]">Every student can already open ChatGPT. Very few can make three tools work together. That gap closes inside the school itself, with the teacher in the room. Safe hai, control mein hai.</p>
     </div>
+</section>
+
+<!-- ============================= 7. POSITIONING =============================
+     Principal-first. Positions by category rather than by naming competitors:
+     using AI / studying AI / building with AI, with the third highlighted. The
+     curriculum mandate is a supporting line, not the headline, because it is a
+     national/CBSE rollout and this page also targets ICSE, IB and State Board.
+     Closes with one parent-addressed line, since a parent's route to buying is
+     to push their school. -->
+<section id="approach" class="max-w-[1180px] mx-auto px-6 py-[76px]">
+    <div class="gs-item">
+        <div class="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-400 mb-3.5">Why this is different</div>
+        <h2 class="text-[clamp(28px,3.4vw,40px)] leading-[1.12] tracking-[-0.03em] font-extrabold mb-3">Most AI classes stop at the tool.</h2>
+        <p class="text-slate-500 mb-10 max-w-[36em]">There are three ways to teach AI inside a school. Only one of them sends a student home with something that actually runs.</p>
+    </div>
+
+    <div class="gs-item grid grid-cols-[repeat(auto-fit,minmax(255px,1fr))] gap-5 mb-14">
+        <div class="border border-slate-200 rounded-[18px] p-[26px]">
+            <div class="text-[11px] font-bold tracking-[0.1em] uppercase text-slate-400 mb-3">Most providers</div>
+            <div class="text-[19px] font-bold tracking-[-0.02em] mb-2.5">Using AI</div>
+            <p class="text-[14.5px] leading-[1.6] text-slate-500 m-0">Prompts, ChatGPT, an image generator. Genuinely useful, and learnable from one good video. This is where most courses stop.</p>
+        </div>
+        <div class="border border-slate-200 rounded-[18px] p-[26px]">
+            <div class="text-[11px] font-bold tracking-[0.1em] uppercase text-slate-400 mb-3">A few providers</div>
+            <div class="text-[19px] font-bold tracking-[-0.02em] mb-2.5">Studying AI</div>
+            <p class="text-[14.5px] leading-[1.6] text-slate-500 m-0">How the models work, the research, the mathematics. Real depth, aimed at an exam or a degree. Almost none of it ever gets built.</p>
+        </div>
+        <div class="bg-slate-900 text-white rounded-[18px] p-[26px]">
+            <div class="text-[11px] font-bold tracking-[0.1em] uppercase text-slate-400 mb-3">What we do</div>
+            <div class="text-[19px] font-bold tracking-[-0.02em] mb-2.5">Building with AI</div>
+            <p class="text-[14.5px] leading-[1.6] text-slate-300 m-0">Chaining tools into something that runs on its own. Anyone can learn a tool in an afternoon. A student who can build a system holds something that lasts.</p>
+        </div>
+    </div>
+
+    <div class="gs-item grid md:grid-cols-2 gap-10 md:gap-14 items-start">
+        <div>
+            <div class="text-[20px] font-bold tracking-[-0.02em] mb-3">Short teach, then build. All day.</div>
+            <p class="text-slate-500 mb-6 max-w-[30em]">Ten minutes of teaching, then they build the thing they just heard about. Again, and again, for two or three days. Nobody sits through a lecture and goes home with notes.</p>
+            <div class="border border-slate-200 bg-slate-50 rounded-[14px] px-5 py-[18px] text-[15px] leading-[1.6] text-slate-700 max-w-[30em]">
+                Every student leaves with two things: one working AI build, a chatbot or a small automation they can demonstrate, and a written workflow for their own subjects.
+            </div>
+        </div>
+
+        <div class="flex flex-col gap-[22px]">
+                <div class="flex gap-3.5">
+                    <span class="mt-[7px] w-[7px] h-[7px] rounded-full bg-slate-900 flex-none" aria-hidden="true"></span>
+                    <div>
+                        <div class="text-[15.5px] font-bold tracking-[-0.01em] mb-1">Compulsory sooner than most schools expect</div>
+                        <p class="text-[14.5px] leading-[1.6] text-slate-500 m-0">The national rollout puts AI in the school curriculum from 2026&ndash;27, reaching Classes 9 and 10 by 2027&ndash;28. Schools that start now are ready. Schools that wait will be catching up.</p>
+                    </div>
+                </div>
+                <div class="flex gap-3.5">
+                    <span class="mt-[7px] w-[7px] h-[7px] rounded-full bg-slate-900 flex-none" aria-hidden="true"></span>
+                    <div>
+                        <div class="text-[15.5px] font-bold tracking-[-0.01em] mb-1">Not only for the future engineers</div>
+                        <p class="text-[14.5px] leading-[1.6] text-slate-500 m-0">One session maps where AI agents are already changing medicine, law, design and commerce, so a student who is not heading into computer science still knows what this means for them.</p>
+                    </div>
+                </div>
+                <div class="flex gap-3.5">
+                    <span class="mt-[7px] w-[7px] h-[7px] rounded-full bg-slate-900 flex-none" aria-hidden="true"></span>
+                    <div>
+                        <div class="text-[15.5px] font-bold tracking-[-0.01em] mb-1">In your school, or live online</div>
+                        <p class="text-[14.5px] leading-[1.6] text-slate-500 m-0">Runs inside school hours with your teacher in the room, or live online for the same batch when travel or the timetable gets in the way. An adult is present either way, so no student is ever alone with the tools.</p>
+                    </div>
+                </div>
+                <div class="flex gap-3.5">
+                    <span class="mt-[7px] w-[7px] h-[7px] rounded-full bg-slate-900 flex-none" aria-hidden="true"></span>
+                    <div>
+                        <div class="text-[15.5px] font-bold tracking-[-0.01em] mb-1">The instructor builds alongside them</div>
+                        <p class="text-[14.5px] leading-[1.6] text-slate-500 m-0">For all two or three days. Not a recorded lecture and a worksheet.</p>
+                    </div>
+                </div>
+        </div>
+    </div>
+
+    <p class="gs-item mt-12 mb-0 text-sm text-slate-400 max-w-[44em]">
+        Parent reading this? Ask your school one question: are we doing this before it becomes compulsory?
+        <a href="program-brief.html" class="font-semibold text-slate-900 underline underline-offset-4 hover:text-slate-600">Forward them the program brief</a>.
+    </p>
 </section>
 
 <!-- ============================= 7. OUTCOMES ============================= -->
@@ -1444,38 +1623,38 @@
         <div class="gs-item">
             <div class="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-400 mb-3.5">Program outcomes</div>
             <h2 class="text-[clamp(28px,3.4vw,40px)] leading-[1.12] tracking-[-0.03em] font-extrabold mb-3">What students walk away with</h2>
-            <p class="text-slate-500 mb-10 max-w-[34em]">Not vague promises &mdash; concrete skills they can demonstrate the next day. Every outcome is practised in session, not just watched.</p>
+            <p class="text-slate-500 mb-10 max-w-[34em]">Not a certificate and a folder of notes. Every item here is something they built or tested in the room.</p>
         </div>
         <div class="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-5">
             <div class="gs-item bg-white border border-slate-200 rounded-2xl p-[26px]">
                 <div class="text-[13px] font-bold text-slate-400 mb-3">01</div>
-                <div class="text-[17px] font-bold mb-2">Prompt engineering basics</div>
-                <p class="text-[15px] text-slate-500 m-0">Communicate clearly with ChatGPT, Claude and Gemini &mdash; and judge their answers critically.</p>
+                <div class="text-[17px] font-bold mb-2">One AI build that runs</div>
+                <p class="text-[15px] text-slate-500 m-0">A chatbot or a small automation they built themselves, not a template they filled in. They can open it and walk you through it.</p>
             </div>
             <div class="gs-item bg-white border border-slate-200 rounded-2xl p-[26px]">
                 <div class="text-[13px] font-bold text-slate-400 mb-3">02</div>
-                <div class="text-[17px] font-bold mb-2">AI-assisted study techniques</div>
-                <p class="text-[15px] text-slate-500 m-0">Turn any chapter into flashcards, quizzes and summaries, and get hard concepts explained simply.</p>
+                <div class="text-[17px] font-bold mb-2">How it works underneath</div>
+                <p class="text-[15px] text-slate-500 m-0">Why a model answers the way it does, and what it is actually doing. Enough to reason about it, not just operate it.</p>
             </div>
             <div class="gs-item bg-white border border-slate-200 rounded-2xl p-[26px]">
                 <div class="text-[13px] font-bold text-slate-400 mb-3">03</div>
-                <div class="text-[17px] font-bold mb-2">One working AI project</div>
-                <p class="text-[15px] text-slate-500 m-0">A functional chatbot, image generator or automation they can show parents and talk about later.</p>
+                <div class="text-[17px] font-bold mb-2">Where it breaks</div>
+                <p class="text-[15px] text-slate-500 m-0">The limits, the bias, the confidently wrong answers. They learn to test output instead of trusting it.</p>
             </div>
             <div class="gs-item bg-white border border-slate-200 rounded-2xl p-[26px]">
                 <div class="text-[13px] font-bold text-slate-400 mb-3">04</div>
-                <div class="text-[17px] font-bold mb-2">AI career landscape map</div>
-                <p class="text-[15px] text-slate-500 m-0">10+ career paths &mdash; prompt engineering to AI ethics to robotics &mdash; mapped to the subjects that matter.</p>
+                <div class="text-[17px] font-bold mb-2">Tools chained into a system</div>
+                <p class="text-[15px] text-slate-500 m-0">Making several tools work together is the part that does not come from watching a video. This is the core of the workshop.</p>
             </div>
             <div class="gs-item bg-white border border-slate-200 rounded-2xl p-[26px]">
                 <div class="text-[13px] font-bold text-slate-400 mb-3">05</div>
-                <div class="text-[17px] font-bold mb-2">Critical thinking about AI</div>
-                <p class="text-[15px] text-slate-500 m-0">Spot AI-generated misinformation and understand limits, bias, and when not to trust output.</p>
+                <div class="text-[17px] font-bold mb-2">A workflow for their own subjects</div>
+                <p class="text-[15px] text-slate-500 m-0">Written down during the workshop, for their actual chapters, so it still works the week after.</p>
             </div>
             <div class="gs-item bg-white border border-slate-200 rounded-2xl p-[26px]">
                 <div class="text-[13px] font-bold text-slate-400 mb-3">06</div>
                 <div class="text-[17px] font-bold mb-2">School-endorsed certificate</div>
-                <p class="text-[15px] text-slate-500 m-0">Participation certificate co-signed by the school &mdash; recognised proof of AI literacy.</p>
+                <p class="text-[15px] text-slate-500 m-0">A participation certificate co-signed by the school.</p>
             </div>
         </div>
     </div>
@@ -1563,21 +1742,30 @@
 
 <!-- ============================= 10. AI ASSISTANT (embedded, below the instructor) ============================= -->
 <!-- ============================= 10. NORTH (embedded AI assistant) =============================
-     A DynamicIsland-style widget: strands orb plus the invitation, expanding to
+     A DynamicIsland-style widget: a glowing orb plus the invitation, expanding to
      the live controls once connected. Voice only by design, so there is no text
      bar and no on-card transcript; the transcript lives behind the dialog. -->
 <section id="ai-agent" class="max-w-[1180px] mx-auto px-6 py-[76px]">
     <div class="grid md:grid-cols-2 gap-10 md:gap-14 items-center">
         <div class="gs-item">
-            <h2 class="text-[clamp(26px,3vw,36px)] leading-[1.12] tracking-[-0.03em] font-extrabold mb-4">Students build this in class.</h2>
-            <p class="text-[17px] leading-[1.55] text-slate-600 max-w-[28em]">North is a live AI voice agent. Classes 9 to 12 learn to build one like it.</p>
+            <h2 class="text-[clamp(26px,3vw,36px)] leading-[1.12] tracking-[-0.03em] font-extrabold mb-4"><span data-hl="underline" data-hl-color="#fb923c" data-hl-stroke="3" data-hl-pad="5">Students build this in class.</span></h2>
+            <p class="text-[17px] leading-[1.55] text-slate-600 max-w-[28em]">North is a live AI voice agent. Classes 9 to 12 learn to <span data-hl="highlight" data-hl-color="#bfdbfe" data-hl-pad="3">build one like it</span>.</p>
         </div>
 
         <div class="ni-stage">
         <div class="ni-island gs-item" id="ai-agent-card" data-live="0">
             <button type="button" class="ni-head" id="pulseBtn" aria-label="Start a voice conversation with North">
                 <span class="pulse-wrap" id="pulseWrap">
-                    <span class="strands-bg" id="agentStrands" aria-hidden="true"></span>
+                    <span class="ni-bloom" aria-hidden="true"></span>
+                    <span class="ni-core" aria-hidden="true">
+                        <span class="ni-blob blob-a"></span>
+                        <span class="ni-blob blob-b"></span>
+                        <span class="ni-blob blob-c"></span>
+                    </span>
+                    <span class="ni-ring ring-a" aria-hidden="true"></span>
+                    <span class="ni-ring ring-b" aria-hidden="true"></span>
+                    <span class="ni-ring ring-c" aria-hidden="true"></span>
+                    <span class="ni-gloss" aria-hidden="true"></span>
                 </span>
                 <span class="ni-copy">
                     <span class="ni-title">Hesitant to ask? Talk to North.</span>
@@ -2318,6 +2506,196 @@ window.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
+<!-- TextLoop (React Bits port): the parent-questions ribbon.
+     Measures one repetition of the phrase, repeats it enough times to cover the
+     path, then slides by exactly one repetition. Because the text is periodic
+     with that exact period, the wrap is seamless without forcing textLength, so
+     no letter spacing gets squeezed. The component's pauseOnHover is dropped on
+     purpose: the ribbon runs continuously. GSAP is already on the page. -->
+<script>
+window.addEventListener('DOMContentLoaded', function () {
+    var wrap = document.getElementById('parentLoop');
+    var pathEl = document.getElementById('tlPath');
+    var measureEl = document.getElementById('tlMeasure');
+    var head = document.getElementById('tlHead');
+    if (!wrap || !pathEl || !measureEl || !head) return;
+
+    var QUESTIONS = [
+        'Sab AI use kar rahe hain. Mera bachcha bas user hi rahega?',
+        'YouTube pe sab free hai. Isme naya kya hai?',
+        'Coding nahi aati. Phir AI kaise banayega?',
+        'Certificate milega, ya kuch actually banega?',
+        'Board exams ka time waste toh nahi hoga?',
+        'Doctor banna hai, engineer nahi. Tab bhi kaam aayega?'
+    ];
+    // nbsp, not plain spaces: SVG collapses ordinary whitespace runs, so a
+    // run of " " would render as one space
+    var SEP = '         ';
+    var unit = QUESTIONS.join(SEP) + SEP;            // one full repetition
+
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var tween = null, unitWidth = 0, pathLen = 0, shape = null;
+
+    // A 1200-wide viewBox scaled into a phone renders this text at ~11px, so the
+    // narrow layout gets its own shorter path in a smaller box: fewer wave
+    // cycles, thicker ribbon, and the same font in user units ends up legible.
+    var WIDE = {
+        vb: '0 0 1200 260', stroke: 76,
+        d: 'M 44 130 C 137 45 231 45 324 130 C 417 215 511 215 604 130 C 697 45 791 45 884 130 C 977 215 1071 215 1164 130'
+    };
+    var NARROW = {
+        vb: '0 0 560 300', stroke: 84,
+        d: 'M 30 150 C 113 57 197 57 280 150 C 363 243 447 243 530 150'
+    };
+
+    function fit() {
+        var want = window.innerWidth < 768 ? NARROW : WIDE;
+        if (want === shape) return false;
+        shape = want;
+        var svg = wrap.querySelector('.tl-svg');
+        svg.setAttribute('viewBox', want.vb);
+        pathEl.setAttribute('d', want.d);
+        pathEl.setAttribute('stroke-width', String(want.stroke));
+        return true;
+    }
+
+    function build() {
+        fit();
+        measureEl.textContent = unit;
+        try {
+            pathLen = pathEl.getTotalLength();
+            unitWidth = measureEl.getComputedTextLength();
+        } catch (e) { return false; }
+        if (!pathLen || !unitWidth) return false;
+
+        // cover the path plus one spare repetition, so sliding a whole period
+        // never exposes an uncovered stretch at either end
+        var reps = Math.ceil((pathLen + unitWidth) / unitWidth) + 1;
+        head.textContent = new Array(reps + 1).join(unit);
+        head.setAttribute('startOffset', '0');
+        return true;
+    }
+
+    function animate() {
+        if (tween) { tween.kill(); tween = null; }
+        if (reduced || !window.gsap) return;
+        var state = { off: 0 };
+        tween = window.gsap.to(state, {
+            off: -unitWidth,                          // exactly one period
+            duration: unitWidth / 46,                 // ~46 units/sec
+            ease: 'none',
+            repeat: -1,
+            onUpdate: function () { head.setAttribute('startOffset', state.off.toFixed(1)); }
+        });
+    }
+
+    function setup() {
+        if (!build()) return false;
+        animate();
+        return true;
+    }
+
+    var tries = 0;
+    (function wait() {
+        if (setup()) return;
+        if (tries++ < 25) setTimeout(wait, 200);
+    })();
+
+    // fonts land late and change the measured width, so rebuild once ready
+    if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(function () { if (build()) animate(); }).catch(function () {});
+    }
+    var rz;
+    window.addEventListener('resize', function () {
+        clearTimeout(rz);
+        // build() calls fit(), so crossing the breakpoint swaps the path too
+        rz = setTimeout(function () { if (build()) animate(); }, 200);
+    });
+
+});
+</script>
+
+<!-- Highlighter (Magic UI component, ported to vanilla).
+     rough-notation does the drawing; this is the wiring the React component
+     gets from hooks: draw once the element scrolls into view (its isView
+     mode), and redraw when the box changes (its ResizeObserver). Targets are
+     declared in the markup with data-hl. -->
+<script>
+window.addEventListener('DOMContentLoaded', function () {
+    var nodes = Array.prototype.slice.call(document.querySelectorAll('[data-hl]'));
+    if (!nodes.length) return;
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function draw(el) {
+        var type = el.getAttribute('data-hl') || 'highlight';
+        var ann = window.RoughNotation.annotate(el, {
+            type: type,
+            color: el.getAttribute('data-hl-color') || '#ffd1dc',
+            strokeWidth: parseFloat(el.getAttribute('data-hl-stroke') || '1.5'),
+            padding: parseFloat(el.getAttribute('data-hl-pad') || '2'),
+            animationDuration: reduced ? 0 : 900,
+            iterations: 2,
+            multiline: false
+        });
+        ann.show();
+
+        // Redraw if the line box moves (font swap, viewport resize). The first
+        // ResizeObserver callback fires on observe, so it is skipped — otherwise
+        // the stroke would draw twice on load.
+        if (!window.ResizeObserver) return;
+        var first = true, t = null;
+        var ro = new ResizeObserver(function () {
+            if (first) { first = false; return; }
+            clearTimeout(t);
+            t = setTimeout(function () { ann.hide(); ann.show(); }, 140);
+        });
+        ro.observe(el);
+    }
+
+    // In-view gate. The React component uses motion's useInView; here a short
+    // poll does the same job. It is deliberately not IntersectionObserver or a
+    // scroll listener: a one-shot measurement can land before the font swap or
+    // an image above has settled, and a zero-height rect reads as out of view,
+    // leaving the stroke undrawn until something else happens to fire. Polling
+    // re-measures until every target is drawn, then stops.
+    var pending = nodes.slice();
+    var poll = null;
+
+    function inView(el) {
+        var r = el.getBoundingClientRect();
+        if (!r.height) return false;                 // not laid out yet
+        var vh = window.innerHeight || document.documentElement.clientHeight;
+        var m = vh * 0.1;                            // the component's -10% margin
+        return r.top < vh - m && r.bottom > m;
+    }
+
+    function check() {
+        for (var i = pending.length - 1; i >= 0; i--) {
+            if (!inView(pending[i])) continue;
+            var el = pending.splice(i, 1)[0];
+            // let the section's GSAP reveal settle, or the stroke gets measured
+            // against a mid-animation position
+            (function (target) { setTimeout(function () { draw(target); }, 320); })(el);
+        }
+        if (!pending.length && poll) { clearInterval(poll); poll = null; }
+    }
+
+    function arm() {
+        if (!window.RoughNotation || !window.RoughNotation.annotate) return false;
+        check();
+        if (pending.length) poll = setInterval(check, 250);
+        return true;
+    }
+
+    // the CDN script is deferred, so it is normally ready by now; poll if not
+    var tries = 0;
+    (function wait() {
+        if (arm()) return;
+        if (tries++ < 25) setTimeout(wait, 200);
+    })();
+});
+</script>
+
 <!-- Animated modal (Aceternity port): the booking dialog behind every
      [data-modal-open] trigger. "Pick a time" hands off to the Cal.com embed
      already mounted in #book, so there is only ever one Cal instance. -->
@@ -2507,18 +2885,6 @@ window.addEventListener('DOMContentLoaded', function () {
                 y: 26, opacity: 0, duration: 0.7, ease: 'power2.out', stagger: 0.06
             });
         });
-
-        // 6) Parents question chips: endless marquee, slows on hover
-        var mq = document.querySelector('[data-marquee]');
-        if (mq) {
-            mq.classList.add('marquee-on');
-            var track = mq.querySelector('.chip-track');
-            if (track) {
-                var tween = gsap.to(track, { xPercent: -50, ease: 'none', duration: 38, repeat: -1 });
-                mq.addEventListener('mouseenter', function () { gsap.to(tween, { timeScale: 0.15, duration: 0.5 }); });
-                mq.addEventListener('mouseleave', function () { gsap.to(tween, { timeScale: 1, duration: 0.5 }); });
-            }
-        }
 
         // 7) Session wall: now an accordion gallery, wired up by its own
         //    script further down (it also runs without GSAP).
@@ -3295,10 +3661,42 @@ window.addEventListener('DOMContentLoaded', function () {
     var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var state = 'idle', level = 0;
     var angle = 120, amp = 0, rafId = null, lastT = 0, inView = true;
+    // the three rim arcs: independent angles, and a phase clock for breathing
+    var ra = 0, rb = 130, rc = 245, clock = 0;
+
+    // Two summed sines at a non-integer ratio, so the wave never repeats on a
+    // simple beat and the arc brightens and dims unevenly instead of pulsing
+    // like a metronome. Each arc gets its own frequency and phase, chosen so
+    // the three never peak together.
+    function breathe(f, ph) {
+        var v = 0.5 + 0.34 * Math.sin(clock * f + ph) + 0.16 * Math.sin(clock * f * 2.37 + ph * 1.7);
+        return v < 0 ? 0 : (v > 1 ? 1 : v);
+    }
 
     function apply() {
         card.style.setProperty('--glow-angle', (angle % 360).toFixed(2) + 'deg');
         card.style.setProperty('--voice-amp', amp.toFixed(3));
+        card.style.setProperty('--ra', (ra % 360).toFixed(1));
+        card.style.setProperty('--rb', (rb % 360).toFixed(1));
+        card.style.setProperty('--rc', (rc % 360).toFixed(1));
+        card.style.setProperty('--rg', (angle % 360).toFixed(1));
+        // floor keeps the rim visible when idle; amp lifts the ceiling on voice
+        var lift = 0.68 + amp * 0.32;
+        card.style.setProperty('--oa', (0.26 + breathe(0.83, 0.0) * lift).toFixed(3));
+        card.style.setProperty('--ob', (0.26 + breathe(1.29, 2.2) * lift).toFixed(3));
+        card.style.setProperty('--oc', (0.26 + breathe(0.57, 4.4) * lift).toFixed(3));
+
+        // Interior plasma: each blob rides its own Lissajous path, x and y on
+        // unrelated frequencies so the three never orbit in formation. Voice
+        // amplitude swells them, which is what makes the orb look like it is
+        // reacting rather than looping.
+        card.style.setProperty('--bs', (1 + amp * 0.30).toFixed(3));
+        card.style.setProperty('--b1x', (48 + 15 * Math.sin(clock * 0.53)).toFixed(2));
+        card.style.setProperty('--b1y', (44 + 13 * Math.cos(clock * 0.71)).toFixed(2));
+        card.style.setProperty('--b2x', (54 + 14 * Math.sin(clock * 0.41 + 2.1)).toFixed(2));
+        card.style.setProperty('--b2y', (57 + 15 * Math.cos(clock * 0.62 + 1.3)).toFixed(2));
+        card.style.setProperty('--b3x', (46 + 16 * Math.sin(clock * 0.67 + 4.2)).toFixed(2));
+        card.style.setProperty('--b3y', (54 + 12 * Math.cos(clock * 0.48 + 3.4)).toFixed(2));
     }
 
     window.DAMGlow = {
@@ -3315,6 +3713,12 @@ window.addEventListener('DOMContentLoaded', function () {
         lastT = now;
         var st = STATES[state];
         angle += st.speed * dt;
+        // arcs drift at unrelated rates, one of them backwards, so the bright
+        // spots keep sliding past each other rather than holding formation
+        clock += dt * (1 + level * 1.6);
+        ra += (16 + level * 95) * dt;
+        rb -= (10 + level * 62) * dt;
+        rc += (6.5 + level * 44) * dt;
         var target = st.base + level * st.gain;
         if (state === 'connecting') target += 0.08 * (1 + Math.sin(now / 180));
         amp += (Math.min(target, 1) - amp) * 0.12;
@@ -3343,275 +3747,6 @@ window.addEventListener('DOMContentLoaded', function () {
 })();
 </script>
 
-<!-- ============================================================
-     STRANDS — ported from React Bits <Strands/> (ogl replaced
-     with raw WebGL2, same shader). Luminous indigo/violet/cyan
-     waves span the complete dark card and react to the conversation:
-     calm drift when idle, quick ripple while connecting, and a
-     surge with the live audio level while listening and speaking
-     (the palette leans emerald while the agent talks). State is
-     read from the pulse button's classes and the card's
-     --voice-amp variable, so no extra agent wiring is needed.
-     Renders one static frame under reduced motion; disappears
-     gracefully when WebGL2 is unavailable.
-     ============================================================ -->
-<script>
-(function () {
-    'use strict';
-    var host = document.getElementById('agentStrands');
-    var card = document.getElementById('ai-agent-card');
-    var stateEl = document.getElementById('pulseWrap');
-    if (!host) return;
-
-    var canvas = document.createElement('canvas');
-    var gl = canvas.getContext('webgl2', { alpha: true, premultipliedAlpha: true, antialias: true });
-    if (!gl) return; // no WebGL2: the column simply stays clean
-
-    var MAX_STRANDS = 12, MAX_COLORS = 8;
-
-    var VERT = [
-        '#version 300 es',
-        'in vec2 position;',
-        'void main() { gl_Position = vec4(position, 0.0, 1.0); }'
-    ].join('\n');
-
-    var FRAG = [
-        '#version 300 es',
-        'precision highp float;',
-        'uniform float uTime;',
-        'uniform vec2 uResolution;',
-        'uniform vec3 uColors[' + MAX_COLORS + '];',
-        'uniform int uColorCount;',
-        'uniform int uStrandCount;',
-        'uniform float uSpeed;',
-        'uniform float uAmplitude;',
-        'uniform float uWaviness;',
-        'uniform float uThickness;',
-        'uniform float uGlow;',
-        'uniform float uTaper;',
-        'uniform float uSpread;',
-        'uniform float uHueShift;',
-        'uniform float uIntensity;',
-        'uniform float uOpacity;',
-        'uniform float uScale;',
-        'uniform float uSaturation;',
-        'out vec4 fragColor;',
-        'const float PI = 3.14159265;',
-        'vec3 spectrum(float t) {',
-        '  return 0.5 + 0.5 * cos(2.0 * PI * (t + vec3(0.00, 0.33, 0.67)));',
-        '}',
-        'vec3 samplePalette(float t) {',
-        '  t = fract(t);',
-        '  float scaled = t * float(uColorCount);',
-        '  int idx = int(floor(scaled));',
-        '  float blend = fract(scaled);',
-        '  int nextIdx = idx + 1;',
-        '  if (nextIdx >= uColorCount) nextIdx = 0;',
-        '  return mix(uColors[idx], uColors[nextIdx], blend);',
-        '}',
-        'vec3 strandColor(float t) {',
-        '  if (uColorCount > 0) return samplePalette(t);',
-        '  return spectrum(t);',
-        '}',
-        'void main() {',
-        '  vec2 uv = (gl_FragCoord.xy - 0.5 * uResolution) / uResolution.y;',
-        '  uv /= max(uScale, 0.0001);',
-        '  float e = 0.06 + uIntensity * 0.94;',
-        '  float env = pow(max(cos(uv.x * PI * 1.3), 0.0), uTaper);',
-        '  vec3 col = vec3(0.0);',
-        '  for (int i = 0; i < ' + MAX_STRANDS + '; i++) {',
-        '    if (i >= uStrandCount) break;',
-        '    float fi = float(i);',
-        '    float ph = fi * 1.7 * uSpread;',
-        '    float freq = (2.0 + fi * 0.35) * uWaviness;',
-        '    float spd = 1.4 + fi * 1.2;',
-        '    float tt = uTime * uSpeed;',
-        '    float w = sin(uv.x * freq + tt * spd + ph) * 0.60',
-        '            + sin(uv.x * freq * 1.1 - tt * spd * 0.7 + ph * 1.7) * 0.40;',
-        '    float amp = (0.1 + 0.02 * e) * env * uAmplitude;',
-        '    float y = w * amp;',
-        '    float d = abs(uv.y - y);',
-        '    float thick = (0.001 + 0.05 * e) * (0.35 + env) * uThickness;',
-        '    float g = thick / (d + thick * 0.45);',
-        '    g = g * g;',
-        '    float h = fi / float(uStrandCount) + uv.x * 0.30 + uTime * 0.04 + uHueShift;',
-        '    col += strandColor(h) * g * env;',
-        '  }',
-        '  col *= 0.45 + 0.7 * e;',
-        '  col = 1.0 - exp(-col * uGlow);',
-        '  float gray = dot(col, vec3(0.2126, 0.7152, 0.0722));',
-        '  col = max(mix(vec3(gray), col, uSaturation), 0.0);',
-        '  float lum = max(max(col.r, col.g), col.b);',
-        '  float alpha = clamp(lum, 0.0, 1.0) * uOpacity;',
-        '  fragColor = vec4(col * uOpacity, alpha);',
-        '}'
-    ].join('\n');
-
-    function makeShader(type, src) {
-        var s = gl.createShader(type);
-        gl.shaderSource(s, src);
-        gl.compileShader(s);
-        if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) return null;
-        return s;
-    }
-    var vs = makeShader(gl.VERTEX_SHADER, VERT);
-    var fs = makeShader(gl.FRAGMENT_SHADER, FRAG);
-    if (!vs || !fs) return;
-    var prog = gl.createProgram();
-    gl.attachShader(prog, vs);
-    gl.attachShader(prog, fs);
-    gl.linkProgram(prog);
-    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return;
-    gl.useProgram(prog);
-
-    var buf = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
-    var posLoc = gl.getAttribLocation(prog, 'position');
-    gl.enableVertexAttribArray(posLoc);
-    gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
-
-    var U = {};
-    ['uTime', 'uResolution', 'uColors', 'uColorCount', 'uStrandCount', 'uSpeed', 'uAmplitude',
-     'uWaviness', 'uThickness', 'uGlow', 'uTaper', 'uSpread', 'uHueShift', 'uIntensity',
-     'uOpacity', 'uScale', 'uSaturation'].forEach(function (n) { U[n] = gl.getUniformLocation(prog, n); });
-
-    gl.clearColor(0, 0, 0, 0);
-    gl.enable(gl.BLEND);
-    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-
-    // ---------- palettes: idle indigo/violet/cyan, emerald-forward while speaking ----------
-    function hex2rgb(h) {
-        var n = parseInt(h.slice(1), 16);
-        return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
-    }
-    // Three hues only, per the brief: orange, blue, purple. Idle runs them deep
-    // and dim; speaking pushes the same three to full brightness, so the colour
-    // still reacts without introducing a fourth hue.
-    var IDLE_PAL = ['#c2410c', '#1d4ed8', '#7e22ce'].map(hex2rgb);
-    var TALK_PAL = ['#fb923c', '#60a5fa', '#c084fc'].map(hex2rgb);
-    var COLOR_COUNT = 3;
-    var palArr = new Float32Array(MAX_COLORS * 3);
-
-    // Baselines per state; the card's live --voice-amp rides on top.
-    var STATES = {
-        idle:       { intensity: 0.42, amplitude: 0.85, speed: 0.40, glow: 2.3, thickness: 0.62, mix: 0 },
-        connecting: { intensity: 0.50, amplitude: 0.75, speed: 2.10, glow: 2.6, thickness: 0.55, mix: 0 },
-        listening:  { intensity: 0.50, amplitude: 0.95, speed: 0.55, glow: 2.4, thickness: 0.62, mix: 0 },
-        speaking:   { intensity: 0.55, amplitude: 1.05, speed: 1.05, glow: 2.7, thickness: 0.68, mix: 1 }
-    };
-    var cur = { intensity: 0.42, amplitude: 0.85, speed: 0.40, glow: 2.3, thickness: 0.62, mix: 0 };
-
-    function readState() {
-        if (!stateEl) return 'idle';
-        var c = stateEl.classList;
-        if (c.contains('speaking')) return 'speaking';
-        if (c.contains('connecting')) return 'connecting';
-        if (c.contains('listening')) return 'listening';
-        return 'idle';
-    }
-    function readAmp() {
-        return card ? parseFloat(card.style.getPropertyValue('--voice-amp')) || 0 : 0;
-    }
-
-    var dpr = Math.min(window.devicePixelRatio || 1, 2);
-    var scaleU = 1.5;
-    function resize() {
-        var w = host.clientWidth, h = host.clientHeight;
-        if (!w || !h) return;
-        canvas.width = Math.round(w * dpr);
-        canvas.height = Math.round(h * dpr);
-        gl.viewport(0, 0, canvas.width, canvas.height);
-        gl.uniform2f(U.uResolution, canvas.width, canvas.height);
-        // Widen the taper envelope so the strands span the container's full
-        // width whatever its aspect ratio.
-        scaleU = Math.max(1.15, (w / h) / 0.72);
-        if (reduced) render(0.016);
-    }
-
-    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var inView = true, rafId = null, lastT = 0, phase = 8;
-
-    function render(dt) {
-        var state = readState();
-        var vamp = readAmp();
-        var tgt = STATES[state];
-        var k = 0.06;
-        cur.intensity += (tgt.intensity - cur.intensity) * k;
-        cur.amplitude += (tgt.amplitude - cur.amplitude) * k;
-        cur.speed     += (tgt.speed     - cur.speed)     * k;
-        cur.glow      += (tgt.glow      - cur.glow)      * k;
-        cur.thickness += (tgt.thickness - cur.thickness) * k;
-        cur.mix       += (tgt.mix       - cur.mix)       * 0.05;
-
-        phase += dt * cur.speed;
-
-        var intensity = cur.intensity + vamp * 0.7;
-        var amplitude = cur.amplitude + vamp * 1.1;
-        var glow = cur.glow + vamp * 1.2;
-        var thickness = cur.thickness + vamp * 0.35;
-
-        for (var i = 0; i < MAX_COLORS; i++) {
-            var src = i < COLOR_COUNT ? i : COLOR_COUNT - 1;
-            palArr[i * 3]     = IDLE_PAL[src][0] + (TALK_PAL[src][0] - IDLE_PAL[src][0]) * cur.mix;
-            palArr[i * 3 + 1] = IDLE_PAL[src][1] + (TALK_PAL[src][1] - IDLE_PAL[src][1]) * cur.mix;
-            palArr[i * 3 + 2] = IDLE_PAL[src][2] + (TALK_PAL[src][2] - IDLE_PAL[src][2]) * cur.mix;
-        }
-
-        gl.uniform1f(U.uTime, phase);
-        gl.uniform3fv(U.uColors, palArr);
-        gl.uniform1i(U.uColorCount, COLOR_COUNT);
-        gl.uniform1i(U.uStrandCount, 5);
-        gl.uniform1f(U.uSpeed, 1.0); // speed is integrated into `phase` for seamless state changes
-        gl.uniform1f(U.uAmplitude, amplitude);
-        gl.uniform1f(U.uWaviness, 1.0);
-        gl.uniform1f(U.uThickness, thickness);
-        gl.uniform1f(U.uGlow, glow);
-        gl.uniform1f(U.uTaper, 2.0);
-        gl.uniform1f(U.uSpread, 1.0);
-        gl.uniform1f(U.uHueShift, 0.0);
-        gl.uniform1f(U.uIntensity, intensity);
-        gl.uniform1f(U.uOpacity, 0.95);
-        gl.uniform1f(U.uScale, scaleU);
-        gl.uniform1f(U.uSaturation, 1.5);
-
-        gl.clear(gl.COLOR_BUFFER_BIT);
-        gl.drawArrays(gl.TRIANGLES, 0, 3);
-    }
-
-    function loop(now) {
-        rafId = requestAnimationFrame(loop);
-        var dt = lastT ? Math.min((now - lastT) / 1000, 0.1) : 0.016;
-        lastT = now;
-        render(dt);
-    }
-    function startLoop() {
-        if (reduced || rafId != null || !inView || document.hidden) return;
-        lastT = 0;
-        rafId = requestAnimationFrame(loop);
-    }
-    function stopLoop() {
-        if (rafId != null) { cancelAnimationFrame(rafId); rafId = null; }
-    }
-
-    host.appendChild(canvas);
-    resize();
-    if (window.ResizeObserver) new ResizeObserver(resize).observe(host);
-    else window.addEventListener('resize', resize);
-
-    if ('IntersectionObserver' in window) {
-        new IntersectionObserver(function (entries) {
-            inView = entries[0].isIntersecting;
-            if (inView) startLoop(); else stopLoop();
-        }, { rootMargin: '80px' }).observe(host);
-    }
-    document.addEventListener('visibilitychange', function () {
-        if (document.hidden) stopLoop(); else startLoop();
-    });
-
-    if (reduced) render(0.016); else startLoop();
-})();
-</script>
 
 <!-- ============================================================
      DAM AI ASSISTANT — embedded agent (CTA button + glow-border card).
@@ -3626,7 +3761,7 @@ window.addEventListener('DOMContentLoaded', function () {
 (function () {
     'use strict';
 
-    var AGENT_ID = 'agent_0401kg1se2h2f968eyratmvn98df';
+    var AGENT_ID = 'agent_2301m0mkkzhdfqk9kfewq1h24hyg';
     var WS_URL = 'wss://api.elevenlabs.io/v1/convai/conversation?agent_id=' + AGENT_ID;
     var CONNECT_TIMEOUT_MS = 12000;
 
