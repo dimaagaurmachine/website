@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dimaag aur Machine | AI Literacy Workshops for Schools in Nashik</title>
-    <meta name="description" content="A 2 or 3 day AI literacy workshop for Classes 9-12, run inside your school during school hours with your teacher in the room. No syllabus disruption, no cost to the school. Led by Amaan Shaikh, a working AI engineer in Germany.">
-    <meta name="keywords" content="Dimaag aur Machine, AI workshop schools Nashik, AI literacy students, AI education CBSE ICSE SSC IB, teacher AI training">
+    <meta name="description" content="A 2 or 3 day in-school AI builder workshop for Classes 8-12. Working in teams in the school's computer lab, students build a working AI study assistant without writing code. Zero cost to the school. Led by Amaan Shaikh, an AI engineer in Germany.">
+    <meta name="keywords" content="Dimaag aur Machine, AI workshop schools Nashik, AI builder program students, AI education CBSE ICSE SSC IB, teacher AI training">
     <meta name="author" content="Amaan Shaikh">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://dimaagaurmachine.github.io/website/">
@@ -14,7 +14,7 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://dimaagaurmachine.github.io/website/">
     <meta property="og:title" content="Dimaag aur Machine | AI Literacy Workshops for Schools in Nashik">
-    <meta property="og:description" content="A 2 or 3 day AI literacy workshop for Classes 9-12, run inside your school during school hours. No syllabus disruption, no cost to the school.">
+    <meta property="og:description" content="A 2 or 3 day in-school workshop for Classes 8-12. Students build a working AI study assistant, without code. Zero cost to the school.">
     <meta property="og:image" content="https://dimaagaurmachine.github.io/website/amaan_shaikh_bw.jpg">
     <meta property="og:locale" content="en_IN">
     <meta property="og:site_name" content="Dimaag aur Machine">
@@ -23,7 +23,7 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://dimaagaurmachine.github.io/website/">
     <meta name="twitter:title" content="Dimaag aur Machine | AI Literacy Workshops for Schools in Nashik">
-    <meta name="twitter:description" content="A 2 or 3 day AI literacy workshop for Classes 9-12, run inside your school during school hours.">
+    <meta name="twitter:description" content="A 2 or 3 day in-school workshop for Classes 8-12. Students build a working AI study assistant, without code.">
     <meta name="twitter:image" content="https://dimaagaurmachine.github.io/website/amaan_shaikh_bw.jpg">
 
     <!-- Additional SEO -->
@@ -37,7 +37,7 @@
         "@context": "https://schema.org",
         "@type": "EducationalOrganization",
         "name": "Dimaag aur Machine",
-        "description": "AI literacy workshop program for school students and teachers in Nashik, Maharashtra",
+        "description": "In-school AI builder workshops for school students and teachers in Nashik, Maharashtra",
         "url": "https://dimaagaurmachine.github.io/website/",
         "logo": "https://dimaagaurmachine.github.io/website/workshoplogo.png",
         "address": {
@@ -49,7 +49,7 @@
         "founder": {
             "@type": "Person",
             "name": "Amaan Shaikh",
-            "jobTitle": "Software Development Engineer",
+            "jobTitle": "Founder & Program Director",
             "alumniOf": [
                 { "@type": "CollegeOrUniversity", "name": "University of Konstanz", "address": "Germany" },
                 { "@type": "CollegeOrUniversity", "name": "MIT ADT University", "address": "Pune, India" }
@@ -66,13 +66,13 @@
         "@context": "https://schema.org",
         "@type": "Course",
         "name": "Soch aur System - Dimaag aur Machine",
-        "description": "A 2 or 3 day practical AI literacy workshop for students in Classes 9 to 12, conducted inside school premises under teacher supervision",
+        "description": "A 2 or 3 day in-school AI builder workshop for students in Classes 8 to 12. Working in teams, students build a working AI study assistant without writing code, under teacher supervision.",
         "provider": {
             "@type": "EducationalOrganization",
             "name": "Dimaag aur Machine"
         },
         "educationalLevel": "Secondary School",
-        "teaches": ["Building an AI chatbot or automation", "How language models work", "Limits, bias and failure cases of AI", "Chaining AI tools into a system", "AI workflows for school subjects", "AI ethics and online safety"],
+        "teaches": ["Building a voice AI study assistant without code", "How AI learns from examples and why it can be confidently wrong", "Giving AI clear instructions and a source to answer from", "Chaining several AIs into one system", "Testing AI and protecting it from misuse", "AI in professions and responsible use"],
         "occupationalCredentialAwarded": "School-endorsed participation certificate"
     }
     </script>
@@ -80,7 +80,6 @@
     <!-- Preconnect / prefetch -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
     <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
     <link rel="dns-prefetch" href="https://api.elevenlabs.io">
@@ -91,8 +90,21 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
     <noscript><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
 
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind, compiled ahead of time (see tailwind.config.js). The Play CDN
+         used to build these styles in the browser after load, which flashed
+         unstyled content on every visit. -->
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Section reveals: hide .gs-item before first paint so GSAP never has to
+         hide content that is already on screen (that was the flash). The GSAP
+         script removes the class the moment its tweens exist; the timeout is
+         the safety net if the CDN never arrives. -->
+    <script>
+        if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            document.documentElement.classList.add('gs-pending');
+            setTimeout(function () { document.documentElement.classList.remove('gs-pending'); }, 3500);
+        }
+    </script>
 
     <!-- GSAP + ScrollTrigger: section reveals, hero choreography, accordion gallery -->
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
@@ -105,17 +117,12 @@
     <!-- Three.js for the hero particle ring -->
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
-                }
-            }
-        }
-    </script>
-
     <style>
+        .gs-pending .gs-item { opacity: 0; }
+        /* the sticky header is ~80px tall; anchor jumps land below it */
+        section[id] { scroll-margin-top: 88px; }
+        /* keeps the page from shifting sideways when a modal hides the scrollbar */
+        html { scrollbar-gutter: stable; }
         ::selection { background: #e2e8f0; }
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #fff; }
@@ -293,7 +300,7 @@
            static "students & teachers" until JS upgrades it to a rotating
            badge whose colors track the two workshop cards. */
         .rot-badge.rot-on {
-            display: inline-flex; overflow: hidden; vertical-align: bottom;
+            display: inline-flex; justify-content: center; overflow: hidden; vertical-align: bottom;
             padding: 0.02em 0.24em 0.1em; border-radius: 0.3em;
             transition: background-color .5s ease, color .5s ease;
         }
@@ -380,10 +387,21 @@
         .accordion-gallery.no-gsap .ag-panel__media { transition: transform .6s cubic-bezier(.22,1,.36,1), filter .6s ease; }
         .accordion-gallery.no-gsap .ag-panel__bar,
         .accordion-gallery.no-gsap .ag-panel__text { transition: opacity .4s ease, transform .4s ease; }
-        @media (max-width: 520px) {
-            .accordion-gallery { flex-direction: column; perspective: none; height: auto !important; }
-            .ag-panel { min-height: 84px; transform: none !important; }
-            .accordion-gallery .ag-panel__media { width: 100%; height: var(--ag-media-size); }
+        /* Phones: a swipeable row of full-colour photos. A column of panels
+           cannot expand (flex-grow needs a fixed height), so every photo used
+           to sit as an 84px grey strip. The script skips the accordion here. */
+        @media (max-width: 640px) {
+            .accordion-gallery {
+                perspective: none; height: auto;
+                overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain;
+                margin: 0 -24px; padding: 0 24px 6px; width: auto; max-width: none;
+                scrollbar-width: none;
+            }
+            .accordion-gallery::-webkit-scrollbar { display: none; }
+            .ag-panel { flex: 0 0 82%; height: 280px; scroll-snap-align: center; transform: none !important; }
+            .accordion-gallery .ag-panel__media { width: 100%; height: 100%; transform: translate(-50%, -50%) !important; filter: none !important; }
+            .accordion-gallery .ag-panel__bar,
+            .accordion-gallery .ag-panel__text { opacity: 1 !important; transform: none !important; }
         }
         @media (prefers-reduced-motion: reduce) {
             .ag-panel, .ag-panel__media { will-change: auto; }
@@ -407,7 +425,7 @@
         [data-hl] { position: relative; display: inline-block; background: transparent; }
 
         .ni-stage { display: flex; justify-content: center; }
-        @media (min-width: 768px) { .ni-stage { justify-content: flex-end; } }
+        @media (min-width: 1024px) { .ni-stage { justify-content: flex-end; } }
 
         .ni-island {
             --voice-amp: 0;
@@ -528,7 +546,7 @@
         .agent-mode { display: block; font-size: 13px; color: #94a3b8; margin-top: 3px; min-height: 1.25em; }
         .agent-mode.listening { color: #60a5fa; }
         .agent-mode.speaking  { color: #c084fc; }
-        .agent-mode:empty::before { content: "Tap to talk. No booking, no salesperson."; color: #64748b; }
+        .agent-mode:empty::before { content: "Tap and speak. Hindi or English."; color: #64748b; }
 
         /* live controls, revealed as the island expands */
         .ni-live {
@@ -667,7 +685,9 @@
         }
         .dock-item:hover .dock-tip,
         .dock-item:focus-visible .dock-tip { opacity: 1; transform: translateX(-50%) translateY(0); }
-        @media (min-width: 768px) { .dock-slot { display: block; } }
+        /* below 1024px the dock, logo and CTA do not fit on one line (the logo
+           wrapped on iPad portrait), so the menu button covers that range */
+        @media (min-width: 1024px) { .dock-slot { display: block; } }
 
         /* ======================================================================
            CometCard (Aceternity port). Nesting matters: GSAP owns the outer
@@ -959,7 +979,12 @@
         .nl-title { display: block; font-size: 14.5px; font-weight: 700; letter-spacing: -0.01em; color: #0f172a; }
         .nl-desc  { display: block; font-size: 13px; line-height: 1.45; color: #64748b; margin-top: 3px; }
 
-        .nl-foot { display: flex; align-items: center; gap: 9px; padding: 11px 4px 2px; }
+        .nl-foot {
+            display: flex; align-items: center; gap: 9px; padding: 11px 4px 2px;
+            width: 100%; background: none; border: 0; margin: 0; font: inherit;
+            text-align: left; cursor: pointer; color: inherit; border-radius: 10px;
+        }
+        .nl-foot:focus-visible { outline: 2px solid #0f172a; outline-offset: 2px; }
         .nl-count {
             width: 21px; height: 21px; border-radius: 50%; flex: 0 0 auto;
             background: #0f172a; color: #fff;
@@ -1124,6 +1149,17 @@
                 </span>
                 <span class="dock-tip" aria-hidden="true">How it runs</span>
             </a>
+            <a href="#lead" class="dock-item" aria-label="Instructor">
+                <span class="dock-bubble">
+                    <svg class="dock-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="5" cy="9" r="2.4"/>
+                        <path d="M1.2 17.6a3.8 3.8 0 0 1 7.6 0"/>
+                        <rect x="10.5" y="3" width="11.5" height="9.5" rx="1.5"/>
+                        <path d="M16.25 12.5V17"/>
+                    </svg>
+                </span>
+                <span class="dock-tip" aria-hidden="true">Instructor</span>
+            </a>
             <a href="#parents" class="dock-item" aria-label="For parents">
                 <span class="dock-bubble">
                     <svg class="dock-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -1143,17 +1179,6 @@
                 </span>
                 <span class="dock-tip" aria-hidden="true">Compare</span>
             </a>
-            <a href="#lead" class="dock-item" aria-label="Instructor">
-                <span class="dock-bubble">
-                    <svg class="dock-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <circle cx="5" cy="9" r="2.4"/>
-                        <path d="M1.2 17.6a3.8 3.8 0 0 1 7.6 0"/>
-                        <rect x="10.5" y="3" width="11.5" height="9.5" rx="1.5"/>
-                        <path d="M16.25 12.5V17"/>
-                    </svg>
-                </span>
-                <span class="dock-tip" aria-hidden="true">Instructor</span>
-            </a>
             <a href="#ai-agent" class="dock-item" aria-label="Talk to North">
                 <span class="dock-bubble">
                     <svg class="dock-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -1171,21 +1196,21 @@
         <a href="#book" data-modal-open
            class="dam-mtrigger hidden md:flex items-center justify-center bg-slate-900 text-white rounded-[10px] text-sm font-semibold whitespace-nowrap hover:bg-slate-700 transition-colors"
            style="padding: 11px 18px; min-width: 168px;" aria-haspopup="dialog">
-            <span class="mt-rest">Book a discussion</span>
-            <span class="mt-hover">Right decision <span aria-hidden="true">&rarr;</span></span>
+            <span class="mt-rest">Book a 30-min call</span>
+            <span class="mt-hover">Pick a time <span aria-hidden="true">&rarr;</span></span>
         </a>
 
-        <button id="menu-btn" class="md:hidden w-[46px] h-[46px] rounded-xl border border-slate-200 bg-white text-lg leading-none flex items-center justify-center hover:bg-slate-50 transition-colors" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">&#9776;</button>
+        <button id="menu-btn" class="lg:hidden w-[46px] h-[46px] rounded-xl border border-slate-200 bg-white text-lg leading-none flex items-center justify-center hover:bg-slate-50 transition-colors" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">&#9776;</button>
     </div>
 
-    <nav id="mobile-menu" class="hidden md:!hidden border-t border-slate-100 px-6 pt-3 pb-5 flex-col gap-1 text-base font-medium" aria-label="Mobile navigation">
+    <nav id="mobile-menu" class="hidden lg:!hidden border-t border-slate-100 px-6 pt-3 pb-5 flex-col gap-1 text-base font-medium" aria-label="Mobile navigation">
         <a href="#workshops" class="menu-link block text-slate-700 py-3 border-b border-slate-50">Workshops</a>
         <a href="#process"   class="menu-link block text-slate-700 py-3 border-b border-slate-50">How it runs</a>
+        <a href="#lead"      class="menu-link block text-slate-700 py-3 border-b border-slate-50">Instructor</a>
         <a href="#parents"   class="menu-link block text-slate-700 py-3 border-b border-slate-50">For parents</a>
         <a href="#compare"   class="menu-link block text-slate-700 py-3 border-b border-slate-50">Compare</a>
-        <a href="#lead"      class="menu-link block text-slate-700 py-3 border-b border-slate-50">Instructor</a>
         <a href="#ai-agent"  class="menu-link block text-slate-700 py-3 border-b border-slate-50">Talk to North</a>
-        <a href="#book" data-modal-open aria-haspopup="dialog" class="menu-link block bg-slate-900 text-white text-center py-3.5 rounded-xl font-semibold mt-3">Book a discussion</a>
+        <a href="#book" data-modal-open aria-haspopup="dialog" class="menu-link block bg-slate-900 text-white text-center py-3.5 rounded-xl font-semibold mt-3">Book a 30-min call</a>
     </nav>
 </header>
 
@@ -1198,37 +1223,40 @@
     <div class="max-w-[1180px] mx-auto px-6 pt-20 pb-16 relative z-10">
         <div class="grid md:grid-cols-2 gap-14 items-center">
 
-            <!-- Left: the pitch -->
+            <!-- Left: the pitch. Written for a principal: what students do, where,
+                 and what it asks of the school. Nothing here animates in, so it
+                 paints once and never flashes. -->
             <div data-hero="1">
                 <div class="inline-flex items-center gap-2 border border-slate-200 bg-slate-50 text-slate-600 rounded-full px-3.5 py-1.5 text-[13px] font-semibold mb-6">
                     <span class="w-1.5 h-1.5 rounded-full bg-green-600"></span>
-                    <span><span id="hero-count">500</span>+ students taught over the past 2 years</span>
+                    <span>In-school AI workshop &middot; Classes 8&ndash;12</span>
                 </div>
 
                 <h1 class="text-[clamp(38px,5vw,60px)] leading-[1.05] tracking-[-0.035em] font-extrabold mb-5" style="text-wrap: balance;">
-                    <span class="shimmer-text" id="hero-h1">Degree nahi.<br>Direction chahiye.</span>
+                    <span class="shimmer-text" id="hero-h1">From AI users<br>to AI builders.</span>
                 </h1>
 
                 <p class="text-[19px] leading-[1.55] text-slate-600 mb-4 max-w-[32em]">
-                    A structured AI program for Class 9&ndash;12 students and their teachers. Taught inside
-                    school hours, with a school teacher present in every session.
+                    In two or three days, students work in teams to build a working AI study assistant
+                    for a chapter of their own syllabus. No coding. In your computer lab, during school
+                    hours, with your teacher in the room.
                 </p>
-                <p class="text-base text-slate-500 mb-8 max-w-[32em]">No syllabus disruption. No homework. No unsupervised AI.</p>
+                <p class="text-base text-slate-500 mb-8 max-w-[32em]">Zero cost to the school. No syllabus disruption. Nothing goes home.</p>
 
                 <div class="inline-grid gap-3 mb-5 max-w-full">
                     <a href="#book" data-ring-hover data-modal-open aria-haspopup="dialog"
-                       aria-label="Book a 30-minute discussion about the Dimaag aur Machine program"
+                       aria-label="Book a 30-minute call about the Dimaag aur Machine program"
                        class="dam-mtrigger bg-slate-900 text-white px-6 py-[15px] rounded-xl font-semibold text-[15px] hover:bg-slate-700 transition-colors shadow-xl shadow-slate-200">
-                        <span class="mt-rest">Book a 30-min school discussion</span>
-                        <span class="mt-hover">You&rsquo;re on the right path <span aria-hidden="true">&rarr;</span></span>
+                        <span class="mt-rest">Book a 30-min call with Amaan</span>
+                        <span class="mt-hover">Pick a time <span aria-hidden="true">&rarr;</span></span>
                     </a>
-                    <a href="#parents"
+                    <a href="#workshops"
                        class="border border-slate-200 bg-white text-slate-900 px-6 py-[14px] rounded-xl font-semibold text-[15px] text-center hover:bg-slate-50 transition-colors">
-                        I'm a parent: safety &amp; outcomes
+                        See what students build
                     </a>
                 </div>
 
-                <p class="text-[13px] text-slate-400">Most schools finalize their decision within the first discussion.</p>
+                <p class="text-[13px] text-slate-400">Prefer it on paper? <a href="program-brief.html" class="font-semibold text-slate-600 underline underline-offset-4 hover:text-slate-900">Read the one-page program brief</a>.</p>
             </div>
 
             <!-- Right: the person behind it. Four nested elements, one transform
@@ -1254,6 +1282,7 @@
                         <div class="flex flex-wrap gap-2">
                             <span class="border border-slate-400/30 text-slate-200 rounded-full px-[13px] py-[7px] text-xs font-semibold bg-slate-900/40">SDE in Germany</span>
                             <span class="border border-slate-400/30 text-slate-200 rounded-full px-[13px] py-[7px] text-xs font-semibold bg-slate-900/40">M.Sc. CS, Konstanz</span>
+                            <span class="border border-slate-400/30 text-slate-200 rounded-full px-[13px] py-[7px] text-xs font-semibold bg-slate-900/40">500+ students taught</span>
                         </div>
                     </div>
                     <div class="comet-glare" aria-hidden="true"></div>
@@ -1290,15 +1319,15 @@
         </div>
 
         <ul class="sr-only">
-            <li>CBSE. Runs alongside the CBSE timetable, inside school hours.</li>
-            <li>CISCE and ICSE. Maps to ICSE computer applications and project work.</li>
-            <li>IB. Supports inquiry-led learning and independent research.</li>
-            <li>Maharashtra State Board. Taught in simple language for State Board classrooms.</li>
-            <li>Every session runs inside school hours, in your existing timetable.</li>
+            <li>CBSE. Runs alongside CBSE's new AI and Computational Thinking curriculum.</li>
+            <li>CISCE and ICSE. Complements the ICSE Robotics and AI subject in Classes 9 and 10.</li>
+            <li>IB. Fits IB's inquiry-led, project-based way of learning.</li>
+            <li>Maharashtra State Board. Taught in English and Hindi, for State Board classrooms.</li>
+            <li>Every session runs inside school hours, in your timetable.</li>
             <li>A school teacher stays in the room for every class.</li>
-            <li>Nothing in the syllabus is replaced or postponed.</li>
+            <li>Built on a chapter from the students' own textbook.</li>
             <li>Nothing goes home. No homework and no evening screen time.</li>
-            <li>AI tools are used in class only, always supervised.</li>
+            <li>No student accounts. No personal data goes into any AI tool.</li>
         </ul>
 
         <h2 class="text-[clamp(26px,3vw,40px)] leading-[1.08] tracking-[-0.03em] font-extrabold md:text-right">
@@ -1307,134 +1336,52 @@
     </div>
 </section>
 
-<!-- ============================= 4. PROCESS ============================= -->
-<section id="process" class="max-w-[1180px] mx-auto px-6 pt-[52px] pb-[76px]">
-    <div class="grid md:grid-cols-2 gap-14">
-        <div class="gs-item">
-            <div class="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-400 mb-3.5">How it works</div>
-            <h2 class="text-[clamp(28px,3.4vw,40px)] leading-[1.12] tracking-[-0.03em] font-extrabold mb-4">How Dimaag aur Machine runs in your school</h2>
-            <p class="text-slate-500 mb-6 max-w-[26em]">A simple, predictable process. This is exactly how the program runs. There are no variations.</p>
-            <div class="border border-slate-200 bg-slate-50 rounded-[14px] px-5 py-[18px] text-[15px] text-slate-700 max-w-[26em]">
-                The entire process is managed by us. The school only provides a venue and a time slot, at zero cost.
-            </div>
-        </div>
-        <!-- NotificationList (Animate UI community component, ported to vanilla).
-             Collapsed it is a stack of seven cards each peeking 10px; hovering
-             anywhere (tapping, on touch) expands it and the footer label
-             crossfades to "View all". Every card stays in the DOM in both
-             states, so the collapse is purely visual and assistive tech always
-             reads all seven steps in order. -->
-        <div class="gs-item nl-stage" id="procStage">
-            <div class="nl-wrap" id="procList">
-                <ol class="nl-stack" id="procStack">
-                    <li class="nl-card">
-                        <span class="nl-num">1</span>
-                        <span>
-                            <span class="nl-title">School approves the batch.</span>
-                            <span class="nl-desc">Management reviews the program. No cost to the school.</span>
-                        </span>
-                    </li>
-                    <li class="nl-card">
-                        <span class="nl-num">2</span>
-                        <span>
-                            <span class="nl-title">Parents are informed by the school.</span>
-                            <span class="nl-desc">Enrolment stays optional and parent-funded.</span>
-                        </span>
-                    </li>
-                    <li class="nl-card">
-                        <span class="nl-num">3</span>
-                        <span>
-                            <span class="nl-title">Sessions run during school hours.</span>
-                            <span class="nl-desc">Fits the timetable without touching syllabus time.</span>
-                        </span>
-                    </li>
-                    <li class="nl-card">
-                        <span class="nl-num">4</span>
-                        <span>
-                            <span class="nl-title">A school teacher is present in every class.</span>
-                            <span class="nl-desc">Supervision is never handed over to us.</span>
-                        </span>
-                    </li>
-                    <li class="nl-card">
-                        <span class="nl-num">5</span>
-                        <span>
-                            <span class="nl-title">Students practise under supervision.</span>
-                            <span class="nl-desc">All AI use happens in class. No unsupervised internet access.</span>
-                        </span>
-                    </li>
-                    <li class="nl-card">
-                        <span class="nl-num">6</span>
-                        <span>
-                            <span class="nl-title">Certificate issued.</span>
-                            <span class="nl-desc">School-endorsed participation certificate for each student.</span>
-                        </span>
-                    </li>
-                    <li class="nl-card">
-                        <span class="nl-num">7</span>
-                        <span>
-                            <span class="nl-title">Program ends.</span>
-                            <span class="nl-desc">One-time program. No subscriptions, no follow-ups, no upsells.</span>
-                        </span>
-                    </li>
-                </ol>
-                <div class="nl-foot">
-                    <span class="nl-count">7</span>
-                    <span class="nl-labels">
-                        <span class="nl-label nl-label-idle" id="procIdleLabel">Hover to view the process steps</span>
-                        <span class="nl-label nl-label-open">View all
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <path d="M7 7h10v10"/><path d="M7 17 17 7"/>
-                            </svg>
-                        </span>
-                    </span>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
 <!-- ============================= 5. WORKSHOPS ============================= -->
 <section id="workshops" class="bg-slate-50 border-y border-slate-100">
     <div class="max-w-[1180px] mx-auto px-6 py-[76px]">
         <div class="gs-item">
-            <div class="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-400 mb-3.5">Our workshops</div>
+            <div class="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-400 mb-3.5">The programs</div>
             <h2 class="text-[clamp(28px,3.4vw,40px)] leading-[1.12] tracking-[-0.03em] font-extrabold mb-3">One program for <span id="rot-host" class="rot-badge">students &amp; teachers</span>.</h2>
-            <p class="text-slate-500 mb-10 max-w-[36em]">Not generic AI courses. Structured, practical and supervised &mdash; both running under the same in-school safety standards.</p>
+            <p class="text-slate-500 mb-10 max-w-[38em]">Students build a working AI system in teams. Teachers learn to turn their own chapters into AI-made teaching material. Both run inside school hours, under the same safety rules.</p>
         </div>
 
         <div class="grid md:grid-cols-2 gap-5">
             <!-- Students -->
             <article id="card-sense" class="gs-item bg-white border border-slate-200 rounded-[20px] p-[30px] flex flex-col gap-[22px]">
                 <div>
-                    <div class="inline-block text-[11px] font-bold tracking-[0.1em] uppercase text-slate-900 bg-white border border-slate-900 rounded-full px-3 py-[5px] mb-4">For students &middot; Class 9&ndash;12</div>
+                    <div class="inline-block text-[11px] font-bold tracking-[0.1em] uppercase text-slate-900 bg-white border border-slate-900 rounded-full px-3 py-[5px] mb-4">For students &middot; Classes 8&ndash;12</div>
                     <h3 class="text-[26px] font-extrabold tracking-[-0.03em] mb-2"><span class="shimmer-text">Soch aur System&trade;</span></h3>
                     <p class="text-slate-600 m-0">Machine jawab de sakti hai. Sochna tumhe hai.</p>
                 </div>
                 <div class="grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-[18px] py-[18px] border-y border-slate-100">
                     <div>
                         <div class="text-[11px] font-bold tracking-[0.1em] uppercase text-slate-400 mb-1.5">Format</div>
-                        <div class="text-sm text-slate-700">In school, during school hours, teacher present throughout</div>
+                        <div class="text-sm text-slate-700">Your computer lab, inside school hours. Teams of 5, one computer per team.</div>
                     </div>
                     <div>
                         <div class="text-[11px] font-bold tracking-[0.1em] uppercase text-slate-400 mb-1.5">Duration</div>
-                        <div class="text-sm text-slate-700">Core &mdash; 2 days<br>Applied &mdash; 3 days, with a complete working project</div>
+                        <div class="text-sm text-slate-700">Core &mdash; 2 days &times; 4 hours<br>Applied &mdash; 3 days &times; 4 hours, ending in a team pitch</div>
                     </div>
                 </div>
                 <div>
-                    <div class="text-[11px] font-bold tracking-[0.1em] uppercase text-slate-400 mb-3">What students learn</div>
+                    <div class="text-[11px] font-bold tracking-[0.1em] uppercase text-slate-400 mb-2">What every team builds</div>
+                    <p class="text-[15px] leading-[1.6] text-slate-700 m-0"><b class="font-bold text-slate-900">Padhai Saathi</b>, a voice AI study companion for one chapter of their syllabus. It turns the chapter into notes and a quiz, then quizzes the student out loud in Hinglish and explains their mistakes.</p>
+                </div>
+                <div>
+                    <div class="text-[11px] font-bold tracking-[0.1em] uppercase text-slate-400 mb-3">What they learn by building it</div>
                     <ul class="list-none m-0 p-0 flex flex-col gap-2.5 text-[15px] text-slate-700">
-                        <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>How AI actually works &mdash; no myths, no shortcuts</span></li>
-                        <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>How to use AI tools for studying, not cheating</span></li>
-                        <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>How to judge an AI answer instead of trusting it blindly</span></li>
-                        <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>Responsible usage, ethics and the limits of AI</span></li>
-                        <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>One hands-on mini project</span></li>
+                        <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>How AI learns from examples, and why it can be confidently wrong</span></li>
+                        <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>How to give AI clear instructions and a chapter to answer from</span></li>
+                        <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>How to make several AIs work as one system: notes, quiz, voice</span></li>
+                        <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>How to test it like an engineer, and stop it being tricked</span></li>
+                        <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>Where AI is changing medicine, law, engineering and business</span></li>
                     </ul>
                 </div>
                 <div class="bg-slate-50 border border-slate-100 rounded-xl px-[18px] py-4 text-sm text-slate-500">
-                    <b class="text-slate-700 font-bold">This is not:</b> coding coaching, exam preparation, or a hackathon.
+                    <b class="text-slate-700 font-bold">Two tracks:</b> Classes 8&ndash;10 share one. Classes 11&ndash;12 get more technical content and a more technical build. No coding in either.
                 </div>
                 <div class="flex-1"></div>
-                <a href="#book" class="bg-slate-900 text-white text-center px-5 py-3.5 rounded-xl font-semibold text-[15px] hover:bg-slate-700 transition-colors">See how Soch aur System works in your school</a>
+                <a href="#days" class="bg-slate-900 text-white text-center px-5 py-3.5 rounded-xl font-semibold text-[15px] hover:bg-slate-700 transition-colors">See how the days run</a>
             </article>
 
             <!-- Teachers -->
@@ -1447,7 +1394,7 @@
                 <div class="grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-[18px] py-[18px] border-y border-slate-100">
                     <div>
                         <div class="text-[11px] font-bold tracking-[0.1em] uppercase text-slate-400 mb-1.5">Format</div>
-                        <div class="text-sm text-slate-700">In-school training, department-wise, 2&ndash;6 hours per subject</div>
+                        <div class="text-sm text-slate-700">In-school training, department by department, 2&ndash;6 hours per subject</div>
                     </div>
                     <div>
                         <div class="text-[11px] font-bold tracking-[0.1em] uppercase text-slate-400 mb-1.5">Subjects</div>
@@ -1457,18 +1404,361 @@
                 <div>
                     <div class="text-[11px] font-bold tracking-[0.1em] uppercase text-slate-400 mb-3">What teachers learn</div>
                     <ul class="list-none m-0 p-0 flex flex-col gap-2.5 text-[15px] text-slate-700">
-                        <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>Turn existing chapters into quizzes, worksheets and revision material</span></li>
-                        <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>Design AI-assisted learning systems for students</span></li>
+                        <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>Turn an existing chapter into quizzes, worksheets and revision sheets</span></li>
+                        <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>Check AI output for errors before it reaches a student</span></li>
                         <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>Cut preparation time without cutting quality</span></li>
-                        <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>Build material that is reusable year after year</span></li>
+                        <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>Keep material that can be reused year after year</span></li>
                     </ul>
                 </div>
                 <div class="bg-slate-50 border border-slate-100 rounded-xl px-[18px] py-4 text-sm text-slate-500">
-                    <b class="text-slate-700 font-bold">For teachers:</b> no extra responsibility, no evaluation, no tech background needed. All parent queries are handled by us.
+                    <b class="text-slate-700 font-bold">For teachers:</b> no tech background needed, no evaluation, no extra duties. Quoted separately to the school, per department.
                 </div>
                 <div class="flex-1"></div>
-                <a href="#book" class="border border-slate-300 text-slate-900 text-center px-5 py-[13px] rounded-xl font-semibold text-[15px] hover:bg-slate-50 transition-colors">Explore Chalk aur Calibration for your subject</a>
+                <a href="#book" class="border border-slate-300 text-slate-900 text-center px-5 py-[13px] rounded-xl font-semibold text-[15px] hover:bg-slate-50 transition-colors">Ask about Chalk aur Calibration</a>
             </article>
+        </div>
+    </div>
+</section>
+
+<!-- ============================= 7. APPROACH + THE DAYS =============================
+     Positions by category (using / studying / building AI) rather than by
+     naming competitors, then shows exactly how the days are spent. -->
+<section id="approach" class="max-w-[1180px] mx-auto px-6 py-[76px]">
+    <div class="gs-item">
+        <div class="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-400 mb-3.5">Why this is different</div>
+        <h2 class="text-[clamp(28px,3.4vw,40px)] leading-[1.12] tracking-[-0.03em] font-extrabold mb-3">Most AI classes stop at the tool.</h2>
+        <p class="text-slate-500 mb-10 max-w-[36em]">There are three ways to teach AI in a school. Only one ends with students holding something that works.</p>
+    </div>
+
+    <div class="gs-item grid grid-cols-[repeat(auto-fit,minmax(255px,1fr))] gap-5 mb-16">
+        <div class="border border-slate-200 rounded-[18px] p-[26px]">
+            <div class="text-[11px] font-bold tracking-[0.1em] uppercase text-slate-400 mb-3">Most courses</div>
+            <div class="text-[19px] font-bold tracking-[-0.02em] mb-2.5">Using AI</div>
+            <p class="text-[14.5px] leading-[1.6] text-slate-500 m-0">Prompts, ChatGPT, image generators. Useful, and learnable from one good video. The student stays a consumer.</p>
+        </div>
+        <div class="border border-slate-200 rounded-[18px] p-[26px]">
+            <div class="text-[11px] font-bold tracking-[0.1em] uppercase text-slate-400 mb-3">Some courses</div>
+            <div class="text-[19px] font-bold tracking-[-0.02em] mb-2.5">Studying AI</div>
+            <p class="text-[14.5px] leading-[1.6] text-slate-500 m-0">How models work, the theory, the maths. Real depth, aimed at an exam. Very little of it ever gets built.</p>
+        </div>
+        <div class="bg-slate-900 text-white rounded-[18px] p-[26px]">
+            <div class="text-[11px] font-bold tracking-[0.1em] uppercase text-slate-400 mb-3">What we do</div>
+            <div class="text-[19px] font-bold tracking-[-0.02em] mb-2.5">Building with AI</div>
+            <p class="text-[14.5px] leading-[1.6] text-slate-300 m-0">Connecting several AIs into one system that does a job, then testing where it fails. That is the skill that separates a builder from a user.</p>
+        </div>
+    </div>
+
+    <div id="days" class="gs-item scroll-mt-[88px]">
+        <div class="text-[20px] font-bold tracking-[-0.02em] mb-3">Learn 30 minutes. Build 30 minutes. Repeat.</div>
+        <p class="text-slate-500 mb-8 max-w-[40em]">Each 4-hour day has four cycles. Every idea is used in the build within the same hour, so nothing stays theory. The instructor checks every team in every build slot, and team roles rotate daily (Driver, Prompt Writer, Tester, Researcher, Presenter), so every student does every job.</p>
+    </div>
+
+    <div class="gs-item grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-5 mb-14">
+        <div class="border border-slate-200 rounded-[18px] p-[26px] flex flex-col">
+            <div class="text-[11px] font-bold tracking-[0.1em] uppercase text-slate-400 mb-2">Day 1</div>
+            <div class="text-[19px] font-bold tracking-[-0.02em] mb-3">How AI thinks</div>
+            <ul class="list-disc pl-5 m-0 flex flex-col gap-1.5 text-[14.5px] leading-[1.55] text-slate-600 marker:text-slate-300">
+                <li>How AI learns from examples, and why it can be confidently wrong</li>
+                <li>How to give AI clear instructions</li>
+                <li>Who builds AI, in India and the world</li>
+            </ul>
+            <div class="flex-1"></div>
+            <p class="mt-5 mb-0 text-[14px] text-slate-900 font-semibold">Each team designs its assistant on paper and gets a first version working.</p>
+        </div>
+        <div class="border border-slate-200 rounded-[18px] p-[26px] flex flex-col">
+            <div class="text-[11px] font-bold tracking-[0.1em] uppercase text-slate-400 mb-2">Day 2</div>
+            <div class="text-[19px] font-bold tracking-[-0.02em] mb-3">Knowledge, voice and safety</div>
+            <ul class="list-disc pl-5 m-0 flex flex-col gap-1.5 text-[14.5px] leading-[1.55] text-slate-600 marker:text-slate-300">
+                <li>Giving the assistant a chapter to answer from, with sources</li>
+                <li>Turning text into voice, in Hinglish</li>
+                <li>Protecting it from tricks and misuse</li>
+            </ul>
+            <div class="flex-1"></div>
+            <p class="mt-5 mb-0 text-[14px] text-slate-900 font-semibold">A working assistant that knows the chapter, speaks, and resists misuse. The 2-day Core ends here.</p>
+        </div>
+        <div class="bg-slate-900 text-white rounded-[18px] p-[26px] flex flex-col">
+            <div class="text-[11px] font-bold tracking-[0.1em] uppercase text-slate-400 mb-2">Day 3 &middot; Applied format</div>
+            <div class="text-[19px] font-bold tracking-[-0.02em] mb-3">Chain, test and pitch</div>
+            <ul class="list-disc pl-5 m-0 flex flex-col gap-1.5 text-[14.5px] leading-[1.55] text-slate-300 marker:text-slate-500">
+                <li>Making several AIs work together as a team</li>
+                <li>Testing like engineers, with a scorecard</li>
+                <li>A real problem statement to solve with their system</li>
+            </ul>
+            <div class="flex-1"></div>
+            <p class="mt-5 mb-0 text-[14px] text-white font-semibold">Teams pitch their system and winners are announced, in front of parents if the school allows.</p>
+        </div>
+    </div>
+
+    <div class="gs-item grid md:grid-cols-2 gap-x-14 gap-y-[22px]">
+        <div class="flex gap-3.5">
+            <span class="mt-[7px] w-[7px] h-[7px] rounded-full bg-slate-900 flex-none" aria-hidden="true"></span>
+            <div>
+                <div class="text-[15.5px] font-bold tracking-[-0.01em] mb-1">Where school AI education is heading</div>
+                <p class="text-[14.5px] leading-[1.6] text-slate-500 m-0">CBSE introduced Computational Thinking and AI for Classes 3&ndash;8 from the 2026&ndash;27 session, and CISCE offers Robotics and Artificial Intelligence as an ICSE subject in Classes 9&ndash;10. Schools that give students hands-on building experience now will be ahead of that shift, not catching up to it.</p>
+            </div>
+        </div>
+        <div class="flex gap-3.5">
+            <span class="mt-[7px] w-[7px] h-[7px] rounded-full bg-slate-900 flex-none" aria-hidden="true"></span>
+            <div>
+                <div class="text-[15.5px] font-bold tracking-[-0.01em] mb-1">In your school, or live online</div>
+                <p class="text-[14.5px] leading-[1.6] text-slate-500 m-0">The workshop is designed for your computer lab. When travel or the timetable gets in the way, the same batch can work with an instructor live online, with your teacher still in the room.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================= 8. OUTCOMES ============================= -->
+<section id="outcomes" class="bg-slate-50 border-y border-slate-100" aria-label="Program outcomes">
+    <div class="max-w-[1180px] mx-auto px-6 py-[76px]">
+        <div class="gs-item">
+            <div class="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-400 mb-3.5">Outcomes</div>
+            <h2 class="text-[clamp(28px,3.4vw,40px)] leading-[1.12] tracking-[-0.03em] font-extrabold mb-3">What students and the school walk away with</h2>
+            <p class="text-slate-500 mb-10 max-w-[36em]">Not a folder of notes. Everything on the left was built or tested in the room. Everything on the right is delivered to the school within a week.</p>
+        </div>
+        <div class="grid lg:grid-cols-[1.3fr_1fr] gap-8 items-start">
+            <div class="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-5">
+                <div class="gs-item bg-white border border-slate-200 rounded-2xl p-[26px]">
+                    <div class="text-[13px] font-bold text-slate-400 mb-3">01</div>
+                    <div class="text-[17px] font-bold mb-2">A working AI system</div>
+                    <p class="text-[15px] text-slate-500 m-0">Built by their team on their own chapter, and passed through a 10-question test. They can open it and walk you through it.</p>
+                </div>
+                <div class="gs-item bg-white border border-slate-200 rounded-2xl p-[26px]">
+                    <div class="text-[13px] font-bold text-slate-400 mb-3">02</div>
+                    <div class="text-[17px] font-bold mb-2">How AI works underneath</div>
+                    <p class="text-[15px] text-slate-500 m-0">Why a model answers the way it does, and why it can be fluent and wrong. Enough to judge it, not just use it.</p>
+                </div>
+                <div class="gs-item bg-white border border-slate-200 rounded-2xl p-[26px]">
+                    <div class="text-[13px] font-bold text-slate-400 mb-3">03</div>
+                    <div class="text-[17px] font-bold mb-2">The habit of checking AI</div>
+                    <p class="text-[15px] text-slate-500 m-0">They tried to break their own assistant and fixed what failed. A fluent answer no longer convinces them on its own.</p>
+                </div>
+                <div class="gs-item bg-white border border-slate-200 rounded-2xl p-[26px]">
+                    <div class="text-[13px] font-bold text-slate-400 mb-3">04</div>
+                    <div class="text-[17px] font-bold mb-2">A school-endorsed certificate</div>
+                    <p class="text-[15px] text-slate-500 m-0">Presented by the Principal, co-signed by the school and Dimaag aur Machine.</p>
+                </div>
+            </div>
+
+            <div class="gs-item bg-white border border-slate-200 rounded-2xl p-[26px]">
+                <div class="text-[11px] font-bold tracking-[0.1em] uppercase text-slate-400 mb-4">What your school receives</div>
+                <ul class="list-none m-0 p-0 flex flex-col gap-4 text-[15px]">
+                    <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span><b class="font-bold text-slate-900">A final-day showcase.</b> <span class="text-slate-500">Teams present live. Parents attend if you allow. The best team receives the AI Innovator Award.</span></span></li>
+                    <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span><b class="font-bold text-slate-900">Ready-made parent communication.</b> <span class="text-slate-500">A 2-minute program video, a flyer and a consent form for your usual channels.</span></span></li>
+                    <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span><b class="font-bold text-slate-900">Highlight video and photos.</b> <span class="text-slate-500">For your social media and admissions, only with written parental consent.</span></span></li>
+                    <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span><b class="font-bold text-slate-900">An outcome report.</b> <span class="text-slate-500">Attendance, before-and-after test scores, and every team's project.</span></span></li>
+                    <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span><b class="font-bold text-slate-900">No administrative load.</b> <span class="text-slate-500">We handle content, delivery, payments, receipts and parent queries.</span></span></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================= 4. PROCESS =============================
+     The principal's view of the whole engagement, first call to last day. -->
+<section id="process" class="max-w-[1180px] mx-auto px-6 py-[76px]">
+    <div class="grid md:grid-cols-2 gap-14">
+        <div class="gs-item">
+            <div class="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-400 mb-3.5">How it works</div>
+            <h2 class="text-[clamp(28px,3.4vw,40px)] leading-[1.12] tracking-[-0.03em] font-extrabold mb-4">How it runs in your school</h2>
+            <p class="text-slate-500 mb-6 max-w-[26em]">Every step from approval to the final day. Your staff are involved in three of them.</p>
+            <div class="border border-slate-200 bg-slate-50 rounded-[14px] px-5 py-[18px] text-[15px] text-slate-700 max-w-[26em]">
+                <b class="font-bold text-slate-900">The school provides</b> the computer lab, the time slot and one or two teachers.
+                <b class="font-bold text-slate-900">We handle</b> the teaching, materials, parent communication, payments and parent queries.
+            </div>
+        </div>
+        <!-- NotificationList (Animate UI community component, ported to vanilla).
+             Collapsed it is a stack of seven cards; clicking it (or the footer
+             button) unfolds it. Every card stays in the DOM in both states, so
+             assistive tech always reads all seven steps in order. -->
+        <div class="gs-item nl-stage" id="procStage">
+            <div class="nl-wrap" id="procList">
+                <ol class="nl-stack" id="procStack">
+                    <li class="nl-card">
+                        <span class="nl-num">1</span>
+                        <span>
+                            <span class="nl-title">Management approves and picks the dates.</span>
+                            <span class="nl-desc">Two or three consecutive days, 4 hours each, inside school hours.</span>
+                        </span>
+                    </li>
+                    <li class="nl-card">
+                        <span class="nl-num">2</span>
+                        <span>
+                            <span class="nl-title">The school shares our parent message.</span>
+                            <span class="nl-desc">We provide the program video, flyer and consent form. Enrolment is voluntary.</span>
+                        </span>
+                    </li>
+                    <li class="nl-card">
+                        <span class="nl-num">3</span>
+                        <span>
+                            <span class="nl-title">Parents enrol and pay online.</span>
+                            <span class="nl-desc">Receipts, refunds and questions come to us, not to your staff.</span>
+                        </span>
+                    </li>
+                    <li class="nl-card">
+                        <span class="nl-num">4</span>
+                        <span>
+                            <span class="nl-title">The workshop runs in your computer lab.</span>
+                            <span class="nl-desc">Teams of 5, one computer per team. A school teacher is in the room throughout.</span>
+                        </span>
+                    </li>
+                    <li class="nl-card">
+                        <span class="nl-num">5</span>
+                        <span>
+                            <span class="nl-title">On the last day, teams present what they built.</span>
+                            <span class="nl-desc">On the 3-day format, teams pitch and winners are announced. Parents can attend if the school allows.</span>
+                        </span>
+                    </li>
+                    <li class="nl-card">
+                        <span class="nl-num">6</span>
+                        <span>
+                            <span class="nl-title">Certificates and an outcome report.</span>
+                            <span class="nl-desc">Certificates co-signed by the school. A report with attendance, before-and-after test scores and every team's project.</span>
+                        </span>
+                    </li>
+                    <li class="nl-card">
+                        <span class="nl-num">7</span>
+                        <span>
+                            <span class="nl-title">The program ends.</span>
+                            <span class="nl-desc">One-time. No subscription and no follow-up sales.</span>
+                        </span>
+                    </li>
+                </ol>
+                <button type="button" class="nl-foot" aria-expanded="false" aria-controls="procStack">
+                    <span class="nl-count">7</span>
+                    <span class="nl-labels">
+                        <span class="nl-label nl-label-idle" id="procIdleLabel">Show all 7 steps</span>
+                        <span class="nl-label nl-label-open">Show less</span>
+                    </span>
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================= 11. IN ACTION (ACCORDION GALLERY) ============================= -->
+<section id="gallery" class="bg-white overflow-hidden" aria-label="Photos from real sessions">
+    <div class="max-w-[1180px] mx-auto px-6 py-[76px]">
+        <div class="gs-item flex items-end justify-between gap-6 flex-wrap mb-8">
+            <div>
+                <div class="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-400 mb-3.5">In action</div>
+                <h2 class="text-[clamp(28px,3.4vw,40px)] leading-[1.12] tracking-[-0.03em] font-extrabold m-0">Real sessions. Real classrooms.</h2>
+            </div>
+            <p class="text-sm text-slate-400 m-0"><span class="hidden sm:inline">Hover or tap a photo to open it.</span><span class="sm:hidden">Swipe for more photos.</span></p>
+        </div>
+    </div>
+    <div class="max-w-[1180px] mx-auto px-6 pb-[76px]">
+        <div class="accordion-gallery" id="agGallery" role="list" aria-label="Photos from real workshop sessions">
+            <div class="ag-panel" role="listitem" tabindex="0" aria-label="Transformers, explained live">
+                <span class="ag-panel__frame">
+                    <span class="ag-panel__media"><img src="Testimonials/teaching-1.webp" alt="Session on how AI models read and process text" loading="lazy" draggable="false"></span>
+                    <span class="ag-panel__overlay" aria-hidden="true"></span>
+                </span>
+                <span class="ag-panel__label" aria-hidden="true">
+                    <span class="ag-panel__bar"></span>
+                    <span class="ag-panel__text">Transformers, explained live</span>
+                </span>
+            </div>
+            <div class="ag-panel" role="listitem" tabindex="0" aria-label="Generative AI on the big screen">
+                <span class="ag-panel__frame">
+                    <span class="ag-panel__media"><img src="Testimonials/teaching-4.webp" alt="Showing AI-generated imagery on the classroom screen" loading="lazy" draggable="false"></span>
+                    <span class="ag-panel__overlay" aria-hidden="true"></span>
+                </span>
+                <span class="ag-panel__label" aria-hidden="true">
+                    <span class="ag-panel__bar"></span>
+                    <span class="ag-panel__text">Generative AI on the big screen</span>
+                </span>
+            </div>
+            <div class="ag-panel" role="listitem" tabindex="0" aria-label="Language models, made simple">
+                <span class="ag-panel__frame">
+                    <span class="ag-panel__media"><img src="Testimonials/teaching-5.webp" alt="Explaining how language models understand words" loading="lazy" draggable="false"></span>
+                    <span class="ag-panel__overlay" aria-hidden="true"></span>
+                </span>
+                <span class="ag-panel__label" aria-hidden="true">
+                    <span class="ag-panel__bar"></span>
+                    <span class="ag-panel__text">Language models, made simple</span>
+                </span>
+            </div>
+            <div class="ag-panel" role="listitem" tabindex="0" aria-label="Real datasets, real results">
+                <span class="ag-panel__frame">
+                    <span class="ag-panel__media"><img src="Testimonials/teaching-2.webp" alt="Walking the class through a machine-learning project on real data" loading="lazy" draggable="false"></span>
+                    <span class="ag-panel__overlay" aria-hidden="true"></span>
+                </span>
+                <span class="ag-panel__label" aria-hidden="true">
+                    <span class="ag-panel__bar"></span>
+                    <span class="ag-panel__text">Real datasets, real results</span>
+                </span>
+            </div>
+            <div class="ag-panel" role="listitem" tabindex="0" aria-label="Questions from the room">
+                <span class="ag-panel__frame">
+                    <span class="ag-panel__media"><img src="Testimonials/teaching-6.webp" alt="Answering questions during a classroom session" loading="lazy" draggable="false"></span>
+                    <span class="ag-panel__overlay" aria-hidden="true"></span>
+                </span>
+                <span class="ag-panel__label" aria-hidden="true">
+                    <span class="ag-panel__bar"></span>
+                    <span class="ag-panel__text">Questions from the room</span>
+                </span>
+            </div>
+            <div class="ag-panel" role="listitem" tabindex="0" aria-label="Hands-on machine learning">
+                <span class="ag-panel__frame">
+                    <span class="ag-panel__media"><img src="Testimonials/teaching-3.webp" alt="Demonstrating a clustering model at the projector" loading="lazy" draggable="false"></span>
+                    <span class="ag-panel__overlay" aria-hidden="true"></span>
+                </span>
+                <span class="ag-panel__label" aria-hidden="true">
+                    <span class="ag-panel__bar"></span>
+                    <span class="ag-panel__text">Hands-on machine learning</span>
+                </span>
+            </div>
+        </div>
+        <p class="text-sm text-slate-400 mt-4">Workshops conducted in school and university environments across Nashik and Pune.</p>
+    </div>
+</section>
+
+<!-- ============================= 10. INSTRUCTORS =============================
+     Two instructors behind one switcher. The avatar row is an AnimatedTooltip
+     port (Aceternity) and doubles as the selector: hovering previews an
+     instructor, clicking pins them. The badge on the portrait says whether
+     they teach offline or online. -->
+<section id="lead" class="bg-black text-white">
+    <div class="max-w-[1180px] mx-auto px-6 py-20 grid md:grid-cols-2 gap-14 items-center">
+        <div class="gs-item">
+            <div class="tt-row mb-8" id="leadAvatars" role="tablist" aria-label="Choose an instructor"></div>
+
+            <h2 class="text-[clamp(28px,3.4vw,40px)] leading-[1.12] tracking-[-0.03em] font-extrabold mb-[18px]" id="leadHeading">I don't just teach AI. I build it for a living.</h2>
+            <p class="text-slate-300 mb-[26px] max-w-[32em]" id="leadBio">I'm a Software Development Engineer building AI systems for companies in Germany. I design every session of this program and teach the in-school workshops myself, in English and Hindi, in a regular school computer lab. There is no franchise and no outsourced trainer pool.</p>
+
+            <div class="grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-4 mb-[26px]" id="leadCreds">
+                <div class="border border-white/10 rounded-[14px] px-[18px] py-4">
+                    <div class="text-[15px] font-bold">M.Sc. Computer Science</div>
+                    <div class="text-[13px] text-slate-400 mt-1">University of Konstanz, Germany</div>
+                </div>
+                <div class="border border-white/10 rounded-[14px] px-[18px] py-4">
+                    <div class="text-[15px] font-bold">B.Tech Computer Science</div>
+                    <div class="text-[13px] text-slate-400 mt-1">MIT ADT University, Pune</div>
+                </div>
+                <div class="border border-white/10 rounded-[14px] px-[18px] py-4">
+                    <div class="text-[15px] font-bold">500+ students taught</div>
+                    <div class="text-[13px] text-slate-400 mt-1">University of Konstanz and MIT ADT University</div>
+                </div>
+            </div>
+
+            <blockquote class="m-0 pl-[18px] border-l-2 border-white/20 text-slate-200 text-[17px] leading-[1.5]" id="leadQuote">&ldquo;Students don't need motivation. They need clarity &mdash; at the right age.&rdquo;</blockquote>
+        </div>
+
+        <div class="gs-item pin-stage">
+            <div class="pin-wrap" id="leadPin">
+                <div class="pin-card">
+                    <div class="pin-figure" id="pinFigure">
+                        <img src="amaan_shaikh_inst.jpg" alt="Amaan Shaikh" loading="lazy"
+                             style="object-position: 50% 40%; filter: brightness(1.15);">
+                        <div class="pin-mode" id="pinMode">
+                            <div class="pin-mode-label"><span class="pin-mode-dot"></span><span id="pinModeLabel">Offline</span></div>
+                            <div class="pin-mode-detail" id="pinModeDetail">Runs sessions inside your school</div>
+                        </div>
+                    </div>
+                    <div class="pin-name" id="pinName">Amaan Shaikh</div>
+                </div>
+
+            </div>
         </div>
     </div>
 </section>
@@ -1477,8 +1767,8 @@
 <section id="parents" class="max-w-[1180px] mx-auto px-6 py-[76px]">
     <div class="gs-item">
         <div class="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-400 mb-3.5">For parents</div>
-        <h2 class="text-[clamp(28px,3.4vw,40px)] leading-[1.12] tracking-[-0.03em] font-extrabold mb-3">The questions no one talks about</h2>
-        <p class="text-slate-500 mb-9 max-w-[34em]">Your child studies hard and scores well. Still, the uncertainty remains. Here are the four answers most parents want first.</p>
+        <h2 class="text-[clamp(28px,3.4vw,40px)] leading-[1.12] tracking-[-0.03em] font-extrabold mb-3">What parents will ask you. Answered.</h2>
+        <p class="text-slate-500 mb-9 max-w-[36em]">Once the circular goes out, these are the questions that reach your office. Each one has an answer below, and anything parents ask later comes to us directly, not to your staff.</p>
     </div>
 
     <!-- TextLoop (React Bits port): the parent questions run along a wave with a
@@ -1512,168 +1802,59 @@
         </ul>
     </div>
 
-    <div class="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-5">
+    <div class="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-5">
         <div class="gs-item border border-slate-200 rounded-2xl p-6">
+            <div class="text-[13px] italic text-slate-400 mb-2">&ldquo;Mera bachcha bas user hi rahega?&rdquo;</div>
             <div class="text-[17px] font-bold mb-2">They build. They don't just prompt.</div>
-            <p class="text-[15px] text-slate-500 m-0">Anyone can type into ChatGPT. Here a student builds something that runs, then finds out where it breaks and why.</p>
+            <p class="text-[15px] text-slate-500 m-0">Each team builds a voice assistant that works, then tries to break it and fixes what fails. Typing into ChatGPT is where most students stop.</p>
         </div>
         <div class="gs-item border border-slate-200 rounded-2xl p-6">
-            <div class="text-[17px] font-bold mb-2">No coding background needed.</div>
-            <p class="text-[15px] text-slate-500 m-0">Class 9 to 12, any stream. We start from where the student is, not from a programming syllabus.</p>
+            <div class="text-[13px] italic text-slate-400 mb-2">&ldquo;YouTube pe sab free hai. Isme naya kya hai?&rdquo;</div>
+            <div class="text-[17px] font-bold mb-2">Videos teach a tool. This teaches a system.</div>
+            <p class="text-[15px] text-slate-500 m-0">Making several AIs work together, with an instructor checking every team every hour, is the part a video can't give them.</p>
         </div>
         <div class="gs-item border border-slate-200 rounded-2xl p-6">
-            <div class="text-[17px] font-bold mb-2">Never alone with the tools.</div>
-            <p class="text-[15px] text-slate-500 m-0">A school teacher is in the room for every session and all AI use happens in class. Nothing to install or supervise at home.</p>
+            <div class="text-[13px] italic text-slate-400 mb-2">&ldquo;Coding nahi aati. Phir AI kaise banayega?&rdquo;</div>
+            <div class="text-[17px] font-bold mb-2">No coding needed.</div>
+            <p class="text-[15px] text-slate-500 m-0">Students assemble their system on our build platform, step by step. Any stream, Classes 8 to 12. Some basic curiosity about AI helps, but it isn't required.</p>
         </div>
         <div class="gs-item border border-slate-200 rounded-2xl p-6">
-            <div class="text-[17px] font-bold mb-2">Useful whichever way they go.</div>
-            <p class="text-[15px] text-slate-500 m-0">Medicine, law, design, commerce or engineering. It sits beside board prep, never against it.</p>
+            <div class="text-[13px] italic text-slate-400 mb-2">&ldquo;Certificate milega, ya kuch actually banega?&rdquo;</div>
+            <div class="text-[17px] font-bold mb-2">Both.</div>
+            <p class="text-[15px] text-slate-500 m-0">A working assistant, tested and shown live on the final day, and a certificate co-signed by the school.</p>
         </div>
-    </div>
+        <div class="gs-item border border-slate-200 rounded-2xl p-6">
+            <div class="text-[13px] italic text-slate-400 mb-2">&ldquo;Board exams ka time waste toh nahi hoga?&rdquo;</div>
+            <div class="text-[17px] font-bold mb-2">It's built on their own syllabus.</div>
+            <p class="text-[15px] text-slate-500 m-0">The assistant learns a chapter from their textbook and quizzes them on it. Two or three days inside school hours, no homework.</p>
+        </div>
+        <div class="gs-item border border-slate-200 rounded-2xl p-6">
+            <div class="text-[13px] italic text-slate-400 mb-2">&ldquo;Doctor banna hai, engineer nahi. Tab bhi kaam aayega?&rdquo;</div>
+            <div class="text-[17px] font-bold mb-2">Every team picks a profession track.</div>
+            <p class="text-[15px] text-slate-500 m-0">Doctor (Biology), Engineer (Physics), Lawyer (Civics) or Entrepreneur and CA (Commerce). Each shows how AI is changing that work.</p>
+        </div>
     </div>
 
     <div class="gs-item mt-5 bg-slate-900 text-white rounded-[20px] px-8 py-[34px] grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-6 items-center">
         <div class="text-[22px] font-bold tracking-[-0.02em] leading-[1.3]">Access is not the gap. Ability is.</div>
-        <p class="m-0 text-slate-300 text-[15px]">Every student can already open ChatGPT. Very few can make three tools work together. That gap closes inside the school itself, with the teacher in the room. Safe hai, control mein hai.</p>
+        <p class="m-0 text-slate-300 text-[15px]">Every student can already open ChatGPT. Very few can make three AIs work together and tell when one of them is wrong. That gap closes inside the school, with the teacher in the room. Safe hai, control mein hai.</p>
     </div>
 </section>
 
-<!-- ============================= 7. POSITIONING =============================
-     Principal-first. Positions by category rather than by naming competitors:
-     using AI / studying AI / building with AI, with the third highlighted. The
-     curriculum mandate is a supporting line, not the headline, because it is a
-     national/CBSE rollout and this page also targets ICSE, IB and State Board.
-     Closes with one parent-addressed line, since a parent's route to buying is
-     to push their school. -->
-<section id="approach" class="max-w-[1180px] mx-auto px-6 py-[76px]">
-    <div class="gs-item">
-        <div class="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-400 mb-3.5">Why this is different</div>
-        <h2 class="text-[clamp(28px,3.4vw,40px)] leading-[1.12] tracking-[-0.03em] font-extrabold mb-3">Most AI classes stop at the tool.</h2>
-        <p class="text-slate-500 mb-10 max-w-[36em]">There are three ways to teach AI inside a school. Only one of them sends a student home with something that actually runs.</p>
-    </div>
-
-    <div class="gs-item grid grid-cols-[repeat(auto-fit,minmax(255px,1fr))] gap-5 mb-14">
-        <div class="border border-slate-200 rounded-[18px] p-[26px]">
-            <div class="text-[11px] font-bold tracking-[0.1em] uppercase text-slate-400 mb-3">Most providers</div>
-            <div class="text-[19px] font-bold tracking-[-0.02em] mb-2.5">Using AI</div>
-            <p class="text-[14.5px] leading-[1.6] text-slate-500 m-0">Prompts, ChatGPT, an image generator. Genuinely useful, and learnable from one good video. This is where most courses stop.</p>
-        </div>
-        <div class="border border-slate-200 rounded-[18px] p-[26px]">
-            <div class="text-[11px] font-bold tracking-[0.1em] uppercase text-slate-400 mb-3">A few providers</div>
-            <div class="text-[19px] font-bold tracking-[-0.02em] mb-2.5">Studying AI</div>
-            <p class="text-[14.5px] leading-[1.6] text-slate-500 m-0">How the models work, the research, the mathematics. Real depth, aimed at an exam or a degree. Almost none of it ever gets built.</p>
-        </div>
-        <div class="bg-slate-900 text-white rounded-[18px] p-[26px]">
-            <div class="text-[11px] font-bold tracking-[0.1em] uppercase text-slate-400 mb-3">What we do</div>
-            <div class="text-[19px] font-bold tracking-[-0.02em] mb-2.5">Building with AI</div>
-            <p class="text-[14.5px] leading-[1.6] text-slate-300 m-0">Chaining tools into something that runs on its own. Anyone can learn a tool in an afternoon. A student who can build a system holds something that lasts.</p>
-        </div>
-    </div>
-
-    <div class="gs-item grid md:grid-cols-2 gap-10 md:gap-14 items-start">
-        <div>
-            <div class="text-[20px] font-bold tracking-[-0.02em] mb-3">Short teach, then build. All day.</div>
-            <p class="text-slate-500 mb-6 max-w-[30em]">Ten minutes of teaching, then they build the thing they just heard about. Again, and again, for two or three days. Nobody sits through a lecture and goes home with notes.</p>
-            <div class="border border-slate-200 bg-slate-50 rounded-[14px] px-5 py-[18px] text-[15px] leading-[1.6] text-slate-700 max-w-[30em]">
-                Every student leaves with two things: one working AI build, a chatbot or a small automation they can demonstrate, and a written workflow for their own subjects.
-            </div>
-        </div>
-
-        <div class="flex flex-col gap-[22px]">
-                <div class="flex gap-3.5">
-                    <span class="mt-[7px] w-[7px] h-[7px] rounded-full bg-slate-900 flex-none" aria-hidden="true"></span>
-                    <div>
-                        <div class="text-[15.5px] font-bold tracking-[-0.01em] mb-1">Compulsory sooner than most schools expect</div>
-                        <p class="text-[14.5px] leading-[1.6] text-slate-500 m-0">The national rollout puts AI in the school curriculum from 2026&ndash;27, reaching Classes 9 and 10 by 2027&ndash;28. Schools that start now are ready. Schools that wait will be catching up.</p>
-                    </div>
-                </div>
-                <div class="flex gap-3.5">
-                    <span class="mt-[7px] w-[7px] h-[7px] rounded-full bg-slate-900 flex-none" aria-hidden="true"></span>
-                    <div>
-                        <div class="text-[15.5px] font-bold tracking-[-0.01em] mb-1">Not only for the future engineers</div>
-                        <p class="text-[14.5px] leading-[1.6] text-slate-500 m-0">One session maps where AI agents are already changing medicine, law, design and commerce, so a student who is not heading into computer science still knows what this means for them.</p>
-                    </div>
-                </div>
-                <div class="flex gap-3.5">
-                    <span class="mt-[7px] w-[7px] h-[7px] rounded-full bg-slate-900 flex-none" aria-hidden="true"></span>
-                    <div>
-                        <div class="text-[15.5px] font-bold tracking-[-0.01em] mb-1">In your school, or live online</div>
-                        <p class="text-[14.5px] leading-[1.6] text-slate-500 m-0">Runs inside school hours with your teacher in the room, or live online for the same batch when travel or the timetable gets in the way. An adult is present either way, so no student is ever alone with the tools.</p>
-                    </div>
-                </div>
-                <div class="flex gap-3.5">
-                    <span class="mt-[7px] w-[7px] h-[7px] rounded-full bg-slate-900 flex-none" aria-hidden="true"></span>
-                    <div>
-                        <div class="text-[15.5px] font-bold tracking-[-0.01em] mb-1">The instructor builds alongside them</div>
-                        <p class="text-[14.5px] leading-[1.6] text-slate-500 m-0">For all two or three days. Not a recorded lecture and a worksheet.</p>
-                    </div>
-                </div>
-        </div>
-    </div>
-
-    <p class="gs-item mt-12 mb-0 text-sm text-slate-400 max-w-[44em]">
-        Parent reading this? Ask your school one question: are we doing this before it becomes compulsory?
-        <a href="program-brief.html" class="font-semibold text-slate-900 underline underline-offset-4 hover:text-slate-600">Forward them the program brief</a>.
-    </p>
-</section>
-
-<!-- ============================= 7. OUTCOMES ============================= -->
-<section class="bg-slate-50 border-y border-slate-100" aria-label="Program outcomes">
-    <div class="max-w-[1180px] mx-auto px-6 py-[76px]">
-        <div class="gs-item">
-            <div class="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-400 mb-3.5">Program outcomes</div>
-            <h2 class="text-[clamp(28px,3.4vw,40px)] leading-[1.12] tracking-[-0.03em] font-extrabold mb-3">What students walk away with</h2>
-            <p class="text-slate-500 mb-10 max-w-[34em]">Not a certificate and a folder of notes. Every item here is something they built or tested in the room.</p>
-        </div>
-        <div class="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-5">
-            <div class="gs-item bg-white border border-slate-200 rounded-2xl p-[26px]">
-                <div class="text-[13px] font-bold text-slate-400 mb-3">01</div>
-                <div class="text-[17px] font-bold mb-2">One AI build that runs</div>
-                <p class="text-[15px] text-slate-500 m-0">A chatbot or a small automation they built themselves, not a template they filled in. They can open it and walk you through it.</p>
-            </div>
-            <div class="gs-item bg-white border border-slate-200 rounded-2xl p-[26px]">
-                <div class="text-[13px] font-bold text-slate-400 mb-3">02</div>
-                <div class="text-[17px] font-bold mb-2">How it works underneath</div>
-                <p class="text-[15px] text-slate-500 m-0">Why a model answers the way it does, and what it is actually doing. Enough to reason about it, not just operate it.</p>
-            </div>
-            <div class="gs-item bg-white border border-slate-200 rounded-2xl p-[26px]">
-                <div class="text-[13px] font-bold text-slate-400 mb-3">03</div>
-                <div class="text-[17px] font-bold mb-2">Where it breaks</div>
-                <p class="text-[15px] text-slate-500 m-0">The limits, the bias, the confidently wrong answers. They learn to test output instead of trusting it.</p>
-            </div>
-            <div class="gs-item bg-white border border-slate-200 rounded-2xl p-[26px]">
-                <div class="text-[13px] font-bold text-slate-400 mb-3">04</div>
-                <div class="text-[17px] font-bold mb-2">Tools chained into a system</div>
-                <p class="text-[15px] text-slate-500 m-0">Making several tools work together is the part that does not come from watching a video. This is the core of the workshop.</p>
-            </div>
-            <div class="gs-item bg-white border border-slate-200 rounded-2xl p-[26px]">
-                <div class="text-[13px] font-bold text-slate-400 mb-3">05</div>
-                <div class="text-[17px] font-bold mb-2">A workflow for their own subjects</div>
-                <p class="text-[15px] text-slate-500 m-0">Written down during the workshop, for their actual chapters, so it still works the week after.</p>
-            </div>
-            <div class="gs-item bg-white border border-slate-200 rounded-2xl p-[26px]">
-                <div class="text-[13px] font-bold text-slate-400 mb-3">06</div>
-                <div class="text-[17px] font-bold mb-2">School-endorsed certificate</div>
-                <p class="text-[15px] text-slate-500 m-0">A participation certificate co-signed by the school.</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- ============================= 8. COMPARE ============================= -->
+<!-- ============================= 9. COMPARE ============================= -->
 <section id="compare" class="max-w-[1180px] mx-auto px-6 py-[76px]">
     <div class="gs-item">
-        <div class="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-400 mb-3.5">Why this program</div>
-        <h2 class="text-[clamp(28px,3.4vw,40px)] leading-[1.12] tracking-[-0.03em] font-extrabold mb-3">Compare <span id="rot-compare" class="rot-badge">the alternatives</span> before you decide</h2>
-        <p class="text-slate-500 mb-8 max-w-[36em]">We're not criticising the alternatives &mdash; they serve different purposes. This shows what this program is designed to do differently.</p>
+        <div class="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-400 mb-3.5">Compared</div>
+        <h2 class="text-[clamp(28px,3.4vw,40px)] leading-[1.12] tracking-[-0.03em] font-extrabold mb-3">How this compares</h2>
+        <p class="text-slate-500 mb-8 max-w-[36em]">Free videos and coding classes are useful, for different goals. This is what a school gets here that neither of them offers.</p>
     </div>
 
     <!-- Desktop table -->
     <div class="gs-item hidden md:block border border-slate-200 rounded-[18px] overflow-hidden">
         <div class="grid grid-cols-[1.3fr_1fr_1fr_1.15fr] bg-slate-50 border-b border-slate-200 text-[13px] font-bold">
-            <div class="px-[18px] py-4 text-slate-400 tracking-[0.06em] uppercase">What parents ask</div>
-            <div class="px-[18px] py-4 text-slate-500">YouTube / Udemy</div>
-            <div class="px-[18px] py-4 text-slate-500">Coding centres</div>
+            <div class="px-[18px] py-4 text-slate-400 tracking-[0.06em] uppercase">What matters to a school</div>
+            <div class="px-[18px] py-4 text-slate-500">Free videos &amp; apps</div>
+            <div class="px-[18px] py-4 text-slate-500">Coding classes</div>
             <div class="px-[18px] py-4 bg-slate-900 text-white">Dimaag aur Machine</div>
         </div>
         <div id="compare-desktop"></div>
@@ -1682,74 +1863,123 @@
     <!-- Mobile cards -->
     <div id="compare-mobile" class="gs-item md:hidden flex flex-col gap-3.5"></div>
 
-    <p class="text-sm text-slate-400 mt-4">Many parents combine this program with tuition or coding classes. This does not replace either.</p>
+    <p class="text-sm text-slate-400 mt-4">Many students also attend tuition or coding classes. This does not replace either.</p>
 </section>
 
-<!-- ============================= 9. PROGRAM LEAD ============================= -->
-<!-- ============================= 9. INSTRUCTORS =============================
-     Three instructors behind one switcher. The avatar row is an AnimatedTooltip
-     port (Aceternity) and doubles as the selector: hovering previews an
-     instructor, clicking pins them. The portrait sits in a 3D-pin card
-     (PinContainer port) whose sonar rings and spike rise on hover, and clicking
-     the card reveals whether that instructor teaches offline, online or both.
-     Instructors two and three are placeholders: initials rather than photos and
-     obviously-unfinished copy, so nothing here can be mistaken for a real
-     person before you fill them in. -->
-<section id="lead" class="bg-black text-white">
-    <div class="max-w-[1180px] mx-auto px-6 py-20 grid md:grid-cols-2 gap-14 items-center">
+<!-- ============================= 12. WHO DOES WHAT + FEES =============================
+     Fees are described, not priced: the exact per-student fee varies by
+     school and lives in each school's written proposal. -->
+<section id="terms" class="bg-slate-50 border-y border-slate-100" aria-label="Who does what, and fees">
+    <div class="max-w-[1180px] mx-auto px-6 py-[76px]">
         <div class="gs-item">
-            <div class="tt-row mb-8" id="leadAvatars" role="tablist" aria-label="Choose an instructor"></div>
-
-            <h2 class="text-[clamp(28px,3.4vw,40px)] leading-[1.12] tracking-[-0.03em] font-extrabold mb-[18px]" id="leadHeading">I don't just teach AI &mdash; I build with it every day.</h2>
-            <p class="text-slate-300 mb-[26px] max-w-[32em]" id="leadBio">As a Software Development Engineer developing AI systems for companies in Germany, I work with large language models professionally. This program brings that experience directly into Indian classrooms &mdash; in simple language, for regular classrooms, with no fancy labs required.</p>
-
-            <div class="grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-4 mb-[26px]" id="leadCreds">
-                <div class="border border-white/10 rounded-[14px] px-[18px] py-4">
-                    <div class="text-[15px] font-bold">M.Sc. Computer Science</div>
-                    <div class="text-[13px] text-slate-400 mt-1">University of Konstanz, Germany</div>
-                </div>
-                <div class="border border-white/10 rounded-[14px] px-[18px] py-4">
-                    <div class="text-[15px] font-bold">B.Tech Computer Science</div>
-                    <div class="text-[13px] text-slate-400 mt-1">MIT ADT University, Pune</div>
-                </div>
-                <div class="border border-white/10 rounded-[14px] px-[18px] py-4">
-                    <div class="text-[15px] font-bold">5+ years experience</div>
-                    <div class="text-[13px] text-slate-400 mt-1">LLMs, RAG systems, agentic AI</div>
-                </div>
-            </div>
-
-            <blockquote class="m-0 pl-[18px] border-l-2 border-white/20 text-slate-200 text-[17px] leading-[1.5]" id="leadQuote">&ldquo;Students don't need motivation. They need clarity &mdash; at the right age.&rdquo;</blockquote>
+            <div class="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-400 mb-3.5">Who does what</div>
+            <h2 class="text-[clamp(28px,3.4vw,40px)] leading-[1.12] tracking-[-0.03em] font-extrabold mb-10">Simple for the school.</h2>
         </div>
-
-        <div class="gs-item pin-stage">
-            <div class="pin-wrap" id="leadPin">
-                <div class="pin-card">
-                    <div class="pin-figure" id="pinFigure">
-                        <img src="amaan_shaikh_inst.jpg" alt="Amaan Shaikh" loading="lazy"
-                             style="object-position: 50% 40%; filter: brightness(1.15);">
-                        <div class="pin-mode" id="pinMode">
-                            <div class="pin-mode-label"><span class="pin-mode-dot"></span><span id="pinModeLabel">Offline</span></div>
-                            <div class="pin-mode-detail" id="pinModeDetail">Runs sessions inside your school</div>
-                        </div>
-                    </div>
-                    <div class="pin-name" id="pinName">Amaan Shaikh</div>
-                </div>
-
+        <div class="grid md:grid-cols-2 gap-5 mb-5">
+            <div class="gs-item bg-white border border-slate-200 rounded-2xl p-[26px]">
+                <div class="text-[17px] font-bold mb-4">Your school provides</div>
+                <ul class="list-none m-0 p-0 flex flex-col gap-3 text-[15px] text-slate-700">
+                    <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>The computer lab: one working computer per team of 5, plus 2 spare</span></li>
+                    <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>A projector, and internet access to the workshop&rsquo;s AI websites</span></li>
+                    <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>Two or three consecutive days, 4 hours each, inside school hours</span></li>
+                    <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>One or two teachers in the room for every session</span></li>
+                    <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>Sharing our parent video, flyer and consent form on your usual channels</span></li>
+                </ul>
             </div>
+            <div class="gs-item bg-white border border-slate-200 rounded-2xl p-[26px]">
+                <div class="text-[17px] font-bold mb-4">Dimaag aur Machine provides</div>
+                <ul class="list-none m-0 p-0 flex flex-col gap-3 text-[15px] text-slate-700">
+                    <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>Program design and all teaching</span></li>
+                    <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>Our build platform, plus every AI tool and account students use</span></li>
+                    <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>Headsets, microphones, speakers and workshop materials</span></li>
+                    <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>Online payments, receipts, refunds and all parent queries</span></li>
+                    <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>Certificates, the final-day showcase, highlight video and outcome report</span></li>
+                </ul>
+            </div>
+        </div>
+        <div class="gs-item bg-slate-900 text-white rounded-[20px] px-8 py-[30px] grid md:grid-cols-[0.8fr_1.2fr] gap-6 items-start">
+            <div>
+                <div class="text-[11px] font-bold tracking-[0.1em] uppercase text-slate-400 mb-2">About fees</div>
+                <div class="text-[22px] font-bold tracking-[-0.02em] leading-[1.3]">Zero cost to the school for Soch aur System.</div>
+            </div>
+            <ul class="list-none m-0 p-0 flex flex-col gap-2.5 text-[15px] text-slate-300">
+                <li>A one-time, all-inclusive fee per student, paid by parents. Enrolment is voluntary.</li>
+                <li>In the range of a school robotics or activity workshop. The exact fee is set in your school&rsquo;s written proposal, by format and batch size.</li>
+                <li>Batches of 30&ndash;60 students. Larger schools get additional batches.</li>
+                <li>No subscription, nothing sold afterwards, no follow-up program to decline.</li>
+            </ul>
         </div>
     </div>
 </section>
 
-<!-- ============================= 10. AI ASSISTANT (embedded, below the instructor) ============================= -->
+<!-- ============================= 13. FAQ ============================= -->
+<section id="faq" class="max-w-[860px] mx-auto px-6 py-[76px]" aria-label="Frequently asked questions">
+    <div class="gs-item">
+        <div class="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-400 mb-3.5">FAQ</div>
+        <h2 class="text-[clamp(28px,3.4vw,40px)] leading-[1.12] tracking-[-0.03em] font-extrabold mb-8">Questions principals ask</h2>
+    </div>
+    <div class="gs-item">
+        <details class="border-b border-slate-100 py-5">
+            <summary class="flex items-center justify-between gap-5 text-[17px] font-semibold text-slate-900">
+                <span>Which classes is it for?</span>
+                <span class="faq-icon text-slate-400 text-xl font-normal">+</span>
+            </summary>
+            <p class="mt-3 mb-0 text-slate-500 text-[15px]">Classes 8 to 12, any stream. Classes 8&ndash;10 share one track. Classes 11&ndash;12 get more technical content and a more technical build. No coding is needed in either, and no prior AI knowledge, though some curiosity about it helps.</p>
+        </details>
+        <details class="border-b border-slate-100 py-5">
+            <summary class="flex items-center justify-between gap-5 text-[17px] font-semibold text-slate-900">
+                <span>How much school time does it take?</span>
+                <span class="faq-icon text-slate-400 text-xl font-normal">+</span>
+            </summary>
+            <p class="mt-3 mb-0 text-slate-500 text-[15px]">Two days (8 hours) or three days (12 hours), 4 hours a day on consecutive days, inside school hours. There is no homework and nothing to prepare beforehand.</p>
+        </details>
+        <details class="border-b border-slate-100 py-5">
+            <summary class="flex items-center justify-between gap-5 text-[17px] font-semibold text-slate-900">
+                <span>Do students need their own laptops?</span>
+                <span class="faq-icon text-slate-400 text-xl font-normal">+</span>
+            </summary>
+            <p class="mt-3 mb-0 text-slate-500 text-[15px]">No. Teams of 5 share one computer in your lab, so a lab with one working computer per team plus 2 spare is enough, with internet access to the workshop&rsquo;s AI websites. We bring the headsets, microphones, speakers and every tool and account.</p>
+        </details>
+        <details class="border-b border-slate-100 py-5">
+            <summary class="flex items-center justify-between gap-5 text-[17px] font-semibold text-slate-900">
+                <span>Is it safe? Whose accounts do students use?</span>
+                <span class="faq-icon text-slate-400 text-xl font-normal">+</span>
+            </summary>
+            <p class="mt-3 mb-0 text-slate-500 text-[15px]">Students never sign up for anything. All tools run in a workspace the instructor manages. Students work only with textbook content and never enter personal details into an AI tool. A school teacher is in the room throughout, and students are photographed or filmed only with written parental consent.</p>
+        </details>
+        <details class="border-b border-slate-100 py-5">
+            <summary class="flex items-center justify-between gap-5 text-[17px] font-semibold text-slate-900">
+                <span>What happens on the third day?</span>
+                <span class="faq-icon text-slate-400 text-xl font-normal">+</span>
+            </summary>
+            <p class="mt-3 mb-0 text-slate-500 text-[15px]">The 3-day Applied format adds one more module to the system the teams have built, then gives each team a real problem statement to solve with it. Teams pitch their solution, and winners are announced. If the school allows, parents attend as the audience.</p>
+        </details>
+        <details class="border-b border-slate-100 py-5">
+            <summary class="flex items-center justify-between gap-5 text-[17px] font-semibold text-slate-900">
+                <span>What does it cost, and who pays?</span>
+                <span class="faq-icon text-slate-400 text-xl font-normal">+</span>
+            </summary>
+            <p class="mt-3 mb-0 text-slate-500 text-[15px]">Parents pay a one-time, all-inclusive fee per student, in the range of a school robotics or activity workshop. The exact fee is in your school&rsquo;s written proposal. The student program costs the school nothing. The teacher program, Chalk aur Calibration, is quoted to the school separately.</p>
+        </details>
+        <details class="border-b border-slate-100 py-5">
+            <summary class="flex items-center justify-between gap-5 text-[17px] font-semibold text-slate-900">
+                <span>Who teaches the sessions?</span>
+                <span class="faq-icon text-slate-400 text-xl font-normal">+</span>
+            </summary>
+            <p class="mt-3 mb-0 text-slate-500 text-[15px]">Amaan Shaikh designs every session and teaches the in-school workshops himself. He is a Software Development Engineer building AI systems in Germany, with an M.Sc. in Computer Science from the University of Konstanz, and has taught 500+ students at Konstanz and MIT ADT University.</p>
+        </details>
+    </div>
+</section>
+
 <!-- ============================= 10. NORTH (embedded AI assistant) =============================
      A DynamicIsland-style widget: a glowing orb plus the invitation, expanding to
      the live controls once connected. Voice only by design, so there is no text
      bar and no on-card transcript; the transcript lives behind the dialog. -->
 <section id="ai-agent" class="max-w-[1180px] mx-auto px-6 py-[76px]">
-    <div class="grid md:grid-cols-2 gap-10 md:gap-14 items-center">
+    <div class="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
         <div class="gs-item">
-            <h2 class="text-[clamp(26px,3vw,36px)] leading-[1.12] tracking-[-0.03em] font-extrabold mb-4"><span data-hl="underline" data-hl-color="#fb923c" data-hl-stroke="3" data-hl-pad="5">Students build this in class.</span></h2>
-            <p class="text-[17px] leading-[1.55] text-slate-600 max-w-[28em]">North is a live AI voice agent. Classes 9 to 12 learn to <span data-hl="highlight" data-hl-color="#bfdbfe" data-hl-pad="3">build one like it</span>.</p>
+            <h2 class="text-[clamp(26px,3vw,36px)] leading-[1.12] tracking-[-0.03em] font-extrabold mb-4"><span data-hl="underline" data-hl-color="#fb923c" data-hl-stroke="3" data-hl-pad="5">Press the circle. Ask anything.</span></h2>
+            <p class="text-[17px] leading-[1.55] text-slate-600 max-w-[30em]">North is a live AI voice assistant, running right here on the page. Speak in Hindi or English and it answers questions about the program. No form, no booking, no salesperson. Students learn to <span data-hl="highlight" data-hl-color="#bfdbfe" data-hl-pad="3">build one like it</span> in the workshop.</p>
         </div>
 
         <div class="ni-stage">
@@ -1768,7 +1998,7 @@
                     <span class="ni-gloss" aria-hidden="true"></span>
                 </span>
                 <span class="ni-copy">
-                    <span class="ni-title">Hesitant to ask? Talk to North.</span>
+                    <span class="ni-title">Talk to North</span>
                     <span class="agent-mode" id="agentMode"></span>
                 </span>
             </button>
@@ -1790,188 +2020,34 @@
     </div>
 </section>
 
-<!-- ============================= 11. IN ACTION (ACCORDION GALLERY) ============================= -->
-<section id="gallery" class="bg-white overflow-hidden" aria-label="Photos from real sessions">
-    <div class="max-w-[1180px] mx-auto px-6 py-[76px]">
-        <div class="gs-item flex items-end justify-between gap-6 flex-wrap mb-8">
-            <div>
-                <div class="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-400 mb-3.5">In action</div>
-                <h2 class="text-[clamp(28px,3.4vw,40px)] leading-[1.12] tracking-[-0.03em] font-extrabold m-0">Real sessions. Real classrooms.</h2>
-            </div>
-            <p class="text-sm text-slate-400 m-0">Hover or tap a photo &mdash; it opens up.</p>
-        </div>
-    </div>
-    <div class="max-w-[1180px] mx-auto px-6 pb-[76px]">
-        <div class="accordion-gallery" id="agGallery" role="list" aria-label="Photos from real workshop sessions">
-            <div class="ag-panel" role="listitem" tabindex="0" aria-label="Transformers, explained live">
-                <span class="ag-panel__frame">
-                    <span class="ag-panel__media"><img src="Testimonials/teaching-1.png" alt="Session on how AI models read and process text" loading="lazy" draggable="false"></span>
-                    <span class="ag-panel__overlay" aria-hidden="true"></span>
-                </span>
-                <span class="ag-panel__label" aria-hidden="true">
-                    <span class="ag-panel__bar"></span>
-                    <span class="ag-panel__text">Transformers, explained live</span>
-                </span>
-            </div>
-            <div class="ag-panel" role="listitem" tabindex="0" aria-label="Generative AI on the big screen">
-                <span class="ag-panel__frame">
-                    <span class="ag-panel__media"><img src="Testimonials/teaching-4.png" alt="Showing AI-generated imagery on the classroom screen" loading="lazy" draggable="false"></span>
-                    <span class="ag-panel__overlay" aria-hidden="true"></span>
-                </span>
-                <span class="ag-panel__label" aria-hidden="true">
-                    <span class="ag-panel__bar"></span>
-                    <span class="ag-panel__text">Generative AI on the big screen</span>
-                </span>
-            </div>
-            <div class="ag-panel" role="listitem" tabindex="0" aria-label="Language models, made simple">
-                <span class="ag-panel__frame">
-                    <span class="ag-panel__media"><img src="Testimonials/teaching-5.png" alt="Explaining how language models understand words" loading="lazy" draggable="false"></span>
-                    <span class="ag-panel__overlay" aria-hidden="true"></span>
-                </span>
-                <span class="ag-panel__label" aria-hidden="true">
-                    <span class="ag-panel__bar"></span>
-                    <span class="ag-panel__text">Language models, made simple</span>
-                </span>
-            </div>
-            <div class="ag-panel" role="listitem" tabindex="0" aria-label="Real datasets, real results">
-                <span class="ag-panel__frame">
-                    <span class="ag-panel__media"><img src="Testimonials/teaching-2.png" alt="Walking the class through a machine-learning project on real data" loading="lazy" draggable="false"></span>
-                    <span class="ag-panel__overlay" aria-hidden="true"></span>
-                </span>
-                <span class="ag-panel__label" aria-hidden="true">
-                    <span class="ag-panel__bar"></span>
-                    <span class="ag-panel__text">Real datasets, real results</span>
-                </span>
-            </div>
-            <div class="ag-panel" role="listitem" tabindex="0" aria-label="Questions from the room">
-                <span class="ag-panel__frame">
-                    <span class="ag-panel__media"><img src="Testimonials/teaching-6.png" alt="Answering questions during a classroom session" loading="lazy" draggable="false"></span>
-                    <span class="ag-panel__overlay" aria-hidden="true"></span>
-                </span>
-                <span class="ag-panel__label" aria-hidden="true">
-                    <span class="ag-panel__bar"></span>
-                    <span class="ag-panel__text">Questions from the room</span>
-                </span>
-            </div>
-            <div class="ag-panel" role="listitem" tabindex="0" aria-label="Hands-on machine learning">
-                <span class="ag-panel__frame">
-                    <span class="ag-panel__media"><img src="Testimonials/teaching-3.png" alt="Demonstrating a clustering model at the projector" loading="lazy" draggable="false"></span>
-                    <span class="ag-panel__overlay" aria-hidden="true"></span>
-                </span>
-                <span class="ag-panel__label" aria-hidden="true">
-                    <span class="ag-panel__bar"></span>
-                    <span class="ag-panel__text">Hands-on machine learning</span>
-                </span>
-            </div>
-        </div>
-        <p class="text-sm text-slate-400 mt-4">Workshops conducted in school and university environments across Nashik and Pune.</p>
-    </div>
-</section>
-
-<!-- ============================= 12. FEES / NOT ============================= -->
-<section class="bg-slate-50 border-y border-slate-100" aria-label="Fees and clarifications">
-    <div class="max-w-[1180px] mx-auto px-6 py-[76px] grid md:grid-cols-2 gap-10">
-        <div class="gs-item">
-            <h2 class="text-[clamp(24px,2.8vw,32px)] leading-[1.15] tracking-[-0.03em] font-extrabold mb-[18px]">About fees</h2>
-            <ul class="list-none m-0 p-0 flex flex-col gap-3 text-[15px] text-slate-700">
-                <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>Comparable to robotics or activity workshops &mdash; &#8377;1,200&ndash;&#8377;1,500 per student for 2 days, up to &#8377;1,700 for 3 days</span></li>
-                <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>One-time program &mdash; no subscriptions</span></li>
-                <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>No upselling, no future pressure</span></li>
-                <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-green-600 font-bold">&#10003;</span><span>Zero cost to the school</span></li>
-            </ul>
-        </div>
-        <div class="gs-item">
-            <h2 class="text-[clamp(24px,2.8vw,32px)] leading-[1.15] tracking-[-0.03em] font-extrabold mb-[18px]">Let's be clear &mdash; this is not</h2>
-            <ul class="list-none m-0 p-0 flex flex-col gap-3 text-[15px] text-slate-700">
-                <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-red-600 font-bold">&#10005;</span><span>A free seminar</span></li>
-                <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-red-600 font-bold">&#10005;</span><span>An online video course</span></li>
-                <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-red-600 font-bold">&#10005;</span><span>Individual coaching</span></li>
-                <li class="grid grid-cols-[18px_1fr] gap-2.5"><span class="text-red-600 font-bold">&#10005;</span><span>A random AI seminar</span></li>
-            </ul>
-        </div>
-    </div>
-</section>
-
-<!-- ============================= 13. FAQ ============================= -->
-<section class="max-w-[860px] mx-auto px-6 py-[76px]" aria-label="Frequently asked questions">
-    <div class="gs-item">
-        <div class="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-400 mb-3.5">FAQ</div>
-        <h2 class="text-[clamp(28px,3.4vw,40px)] leading-[1.12] tracking-[-0.03em] font-extrabold mb-8">Common questions</h2>
-    </div>
-    <div class="gs-item">
-        <details class="border-b border-slate-100 py-5">
-            <summary class="flex items-center justify-between gap-5 text-[17px] font-semibold text-slate-900">
-                <span>What age group is this program for?</span>
-                <span class="faq-icon text-slate-400 text-xl font-normal">+</span>
-            </summary>
-            <p class="mt-3 mb-0 text-slate-500 text-[15px]">Students from Class 9 to Class 12, across all streams. The curriculum focuses on practical AI skills, project building, career exploration and critical thinking about AI usage.</p>
-        </details>
-        <details class="border-b border-slate-100 py-5">
-            <summary class="flex items-center justify-between gap-5 text-[17px] font-semibold text-slate-900">
-                <span>How long is the program?</span>
-                <span class="faq-icon text-slate-400 text-xl font-normal">+</span>
-            </summary>
-            <p class="mt-3 mb-0 text-slate-500 text-[15px]">Soch aur System runs as a 2-day core or 3-day applied format during school hours. Longer school engagements run 8&ndash;10 sessions of 45&ndash;60 minutes, typically spread over 4&ndash;6 weeks.</p>
-        </details>
-        <details class="border-b border-slate-100 py-5">
-            <summary class="flex items-center justify-between gap-5 text-[17px] font-semibold text-slate-900">
-                <span>Do students need their own laptops?</span>
-                <span class="faq-icon text-slate-400 text-xl font-normal">+</span>
-            </summary>
-            <p class="mt-3 mb-0 text-slate-500 text-[15px]">No. We work with whatever the school has &mdash; a computer lab, tablets, or a projector-based demo setup. The program is designed to run with minimal infrastructure.</p>
-        </details>
-        <details class="border-b border-slate-100 py-5">
-            <summary class="flex items-center justify-between gap-5 text-[17px] font-semibold text-slate-900">
-                <span>Is this safe? Will students misuse AI?</span>
-                <span class="faq-icon text-slate-400 text-xl font-normal">+</span>
-            </summary>
-            <p class="mt-3 mb-0 text-slate-500 text-[15px]">Safety and ethics are core parts of the curriculum. Students learn responsible usage, how to identify misinformation, and the consequences of misuse. AI is taught as a learning tool, not a shortcut.</p>
-        </details>
-        <details class="border-b border-slate-100 py-5">
-            <summary class="flex items-center justify-between gap-5 text-[17px] font-semibold text-slate-900">
-                <span>What's the cost for parents?</span>
-                <span class="faq-icon text-slate-400 text-xl font-normal">+</span>
-            </summary>
-            <p class="mt-3 mb-0 text-slate-500 text-[15px]">Fees are comparable to other school activity programs such as robotics or spoken English workshops. Exact pricing depends on batch size and school arrangement. No hidden costs, subscriptions or upsells.</p>
-        </details>
-        <details class="border-b border-slate-100 py-5">
-            <summary class="flex items-center justify-between gap-5 text-[17px] font-semibold text-slate-900">
-                <span>Why should we trust this program?</span>
-                <span class="faq-icon text-slate-400 text-xl font-normal">+</span>
-            </summary>
-            <p class="mt-3 mb-0 text-slate-500 text-[15px]">It is led by Amaan Shaikh, a working Software Engineer in Germany with a Master's in Computer Science. It is taught by someone who builds AI systems professionally and knows which skills actually matter.</p>
-        </details>
-    </div>
-</section>
-
 <!-- ============================= 14. BOOK ============================= -->
 <section id="book" class="bg-slate-900 text-white">
     <div class="max-w-[1180px] mx-auto px-6 py-20 grid md:grid-cols-[0.85fr_1.15fr] gap-12">
         <div class="gs-item">
-            <h2 class="text-[clamp(28px,3.6vw,42px)] leading-[1.1] tracking-[-0.03em] font-extrabold mb-4">Start a conversation.<br>Decide if it fits your school.</h2>
-            <p class="text-slate-300 mb-7 max-w-[30em]">A 30-minute discussion to understand how the program works, ask your questions, and see whether it's right for your school. No obligation.</p>
+            <h2 class="text-[clamp(28px,3.6vw,42px)] leading-[1.1] tracking-[-0.03em] font-extrabold mb-4">Start with a 30-minute call.<br>Decide if it fits your school.</h2>
+            <p class="text-slate-300 mb-7 max-w-[30em]">You speak with Amaan directly. Bring your timetable and a rough idea of your computer lab, and you&rsquo;ll leave the call with a suggested format and dates.</p>
             <div class="flex flex-col gap-3 text-sm text-slate-400">
+                <div>Afterwards you receive a written proposal for your school: format, dates, fees and terms.</div>
                 <div>Nashik schools get priority scheduling.</div>
-                <div>Academic year 2026&ndash;27 slots are open.</div>
-                <div>Only a limited number of schools are onboarded each term to maintain quality. If this term fills, the next window moves to the following academic cycle.</div>
+                <div>Dates for the 2026&ndash;27 academic year are open.</div>
             </div>
             <p class="mt-7 text-sm text-slate-400">
-                Prefer to ask privately first?
-                <button data-open-assistant class="underline underline-offset-4 font-semibold text-white hover:text-slate-300 bg-transparent border-none cursor-pointer p-0 font-sans text-sm">Talk to North</button>
-                &mdash; no salesperson, just answers.
+                Have a quick question first?
+                <button data-open-assistant class="underline underline-offset-4 font-semibold text-white hover:text-slate-300 bg-transparent border-none cursor-pointer p-0 font-sans text-sm">Ask North</button>,
+                the voice assistant on this page.
             </p>
         </div>
         <div class="gs-item bg-white text-slate-900 rounded-[20px] p-[30px]">
-            <div class="text-[19px] font-bold mb-1.5">Book a 30-minute discussion</div>
-            <p class="text-sm text-slate-500 mb-5">Pick a time that works for you &mdash; the call happens directly with the program lead, not a salesperson.</p>
+            <div class="text-[19px] font-bold mb-1.5">Book a 30-minute call</div>
+            <p class="text-sm text-slate-500 mb-5">Pick a time that works for you. The call is with Amaan, who teaches the program.</p>
             <!-- Height is capped: long slot lists scroll inside this box instead of stretching the page. -->
             <div class="max-h-[600px] overflow-y-auto overscroll-contain rounded-xl border border-slate-100">
                 <div id="cal-booking" style="width:100%; min-height:500px; overflow:hidden;"></div>
             </div>
             <p class="text-[13px] text-slate-400 mt-4 mb-0">
                 Not ready to book?
-                <a href="program-brief.html" class="font-semibold text-slate-900 underline underline-offset-4 hover:text-slate-600">Read the program brief</a>
-                &mdash; a single page you can print or forward to your management committee.
+                <a href="program-brief.html" class="font-semibold text-slate-900 underline underline-offset-4 hover:text-slate-600">Read the program brief</a>,
+                a single page you can print or forward to your management committee.
             </p>
         </div>
     </div>
@@ -1990,6 +2066,7 @@
             </div>
         </div>
         <div class="flex items-center gap-5 text-[13px] text-slate-400 flex-wrap">
+            <a href="mailto:dimaagaurmachine@gmail.com" class="hover:text-slate-900 transition-colors">dimaagaurmachine@gmail.com</a>
             <a href="privacy-policy.html" class="hover:text-slate-900 transition-colors">Privacy policy</a>
             <a href="https://www.linkedin.com/in/amaanshaikh711/" target="_blank" rel="noopener noreferrer" class="hover:text-slate-900 transition-colors">LinkedIn</a>
             <a href="https://www.instagram.com/amaan_711/" target="_blank" rel="noopener noreferrer" class="hover:text-slate-900 transition-colors">Instagram</a>
@@ -2011,22 +2088,21 @@
         </button>
         <div class="dam-modal-body">
             <h3 id="bookModalTitle">30 minutes. No obligation.</h3>
-            <p class="dm-sub">A short conversation with the program lead, not a salesperson, to see whether this fits your school.</p>
+            <p class="dm-sub">A short call with Amaan, who teaches the program, to see whether it fits your school. A written proposal follows.</p>
             <div class="dam-check">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>
-                <span>Zero cost to the school</span>
+                <span>Zero cost to the school for the student program</span>
             </div>
             <div class="dam-check">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>
-                <span>Runs inside school hours with no syllabus disruption</span>
+                <span>Runs in your computer lab, inside school hours</span>
             </div>
             <div class="dam-check">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>
                 <span>A school teacher present in every session</span>
             </div>
-            <p class="dm-alt">Rather ask privately first?
-                <button type="button" id="bookModalAssistant">Talk to North</button>.
-                No salesperson, just answers.
+            <p class="dm-alt">Have a quick question first?
+                <button type="button" id="bookModalAssistant">Ask North</button>, the voice assistant on this page.
             </p>
         </div>
         <div class="dam-modal-foot">
@@ -2163,9 +2239,9 @@ window.addEventListener('DOMContentLoaded', function () {
 
     var LOGOS = {
         cbse:  { src: 'Board Logos/CBSE_new_logo.svg', h: 38 },
-        cisce: { src: 'Board Logos/CISCE_logo.png',    h: 38 },
-        ib:    { src: 'Board Logos/IB.png',            h: 34 },
-        ssc:   { src: 'Board Logos/SSC.webp',          h: 38 }
+        cisce: { src: 'Board Logos/CISCE-sm.webp',    h: 38 },
+        ib:    { src: 'Board Logos/IB-sm.webp',            h: 34 },
+        ssc:   { src: 'Board Logos/SSC-sm.webp',          h: 38 }
     };
 
     // One named colour per promise, at 400-weight so it carries on the near
@@ -2212,17 +2288,17 @@ window.addEventListener('DOMContentLoaded', function () {
         { size: 'tall', dwell: 3200, html:
             '<span class="di-tall-row">' + tile(LOGOS.cbse) + tile(LOGOS.cisce) + tile(LOGOS.ib) + tile(LOGOS.ssc) + '</span>' +
             '<span class="di-tall-line">Four boards. One program.' +
-            '<span class="di-tall-sub">CBSE, ICSE, IB and SSC Maharashtra Board.</span></span>' },
+            '<span class="di-tall-sub">CBSE, ICSE, IB and Maharashtra State Board.</span></span>' },
 
         noteState('note', I.clock, C.sky, 'Every session runs inside school hours, in your timetable.'),
-        boardState(LOGOS.cbse,  'CBSE',                 'Runs alongside the CBSE timetable, inside school hours.'),
+        boardState(LOGOS.cbse,  'CBSE',                 'Runs alongside CBSE\'s new AI and Computational Thinking curriculum.'),
         noteState('long', I.house, C.violet, 'Nothing goes home. No homework, no evening screen time.'),
-        boardState(LOGOS.cisce, 'CISCE / ICSE',         'Maps to ICSE computer applications and project work.'),
+        boardState(LOGOS.cisce, 'CISCE / ICSE',         'Complements the ICSE Robotics and AI subject in Classes 9 and 10.'),
         noteState('note', I.teacher, C.emerald, 'A school teacher stays in the room for every class.'),
-        boardState(LOGOS.ib,    'IB',                   'Supports inquiry-led learning and independent research.'),
-        noteState('long', I.shield, C.rose, 'AI tools are used in class only, always supervised.'),
-        boardState(LOGOS.ssc,   'SSC Maharashtra Board', 'Taught in simple language for State Board classrooms.'),
-        noteState('note', I.book, C.amber, 'Nothing in the syllabus is replaced or postponed.')
+        boardState(LOGOS.ib,    'IB',                   'Fits IB\'s inquiry-led, project-based way of learning.'),
+        noteState('long', I.shield, C.rose, 'No student accounts. No personal data goes into any AI tool.'),
+        boardState(LOGOS.ssc,   'Maharashtra State Board', 'Taught in English and Hindi, for State Board classrooms.'),
+        noteState('note', I.book, C.amber, 'Built on a chapter from the students\' own textbook.')
     ];
 
     var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -2310,7 +2386,10 @@ window.addEventListener('DOMContentLoaded', function () {
     function layout() {
         // Measure at natural (expanded) geometry with transitions suppressed,
         // then derive the collapsed offsets. Nothing is reserved: the section
-        // grows and shrinks with the stack, accordion style.
+        // grows and shrinks with the stack, accordion style. An open stack
+        // stays open: this runs on resize, and phones fire resize while
+        // scrolling, which used to snap a tapped-open list shut.
+        var wasOpen = wrap.classList.contains('is-open');
         wrap.classList.add('nl-measuring', 'is-open');
         var heights = cards.map(function (c) { return c.offsetHeight; });
         cards.forEach(function (c, i) {
@@ -2323,7 +2402,7 @@ window.addEventListener('DOMContentLoaded', function () {
             c.style.setProperty('--mt-c', mt + 'px');
             c.style.setProperty('--sx-c', (1 - i * TAPER).toFixed(3));
         });
-        wrap.classList.remove('is-open');
+        if (!wasOpen) wrap.classList.remove('is-open');
         void wrap.offsetWidth;                    // commit before re-enabling
         wrap.classList.remove('nl-measuring');
     }
@@ -2332,24 +2411,26 @@ window.addEventListener('DOMContentLoaded', function () {
     // Fonts landing late change the wrapping, so re-measure once loaded.
     window.addEventListener('load', layout);
 
-    var rz;
+    // Only a width change can re-wrap the cards; height-only resizes are the
+    // mobile address bar showing and hiding.
+    var rz, lastW = window.innerWidth;
     window.addEventListener('resize', function () {
+        if (window.innerWidth === lastW) return;
+        lastW = window.innerWidth;
         clearTimeout(rz);
         rz = setTimeout(layout, 150);
     });
 
-    var fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-    if (fine) {
-        wrap.addEventListener('mouseenter', function () { wrap.classList.add('is-open'); });
-        wrap.addEventListener('mouseleave', function () { wrap.classList.remove('is-open'); });
-    } else {
-        // No hover to work with, so the stack is tapped open. The idle label
-        // says so, otherwise six of seven steps sit behind an invisible gesture.
-        wrap.classList.add('nl-tap');
-        var idle = document.getElementById('procIdleLabel');
-        if (idle) idle.textContent = 'Tap to view the process steps';
-        wrap.addEventListener('click', function () { wrap.classList.toggle('is-open'); });
-    }
+    // Click (or tap) to open, on every device. Opening on hover pushed the
+    // rest of the page down ~330px under the cursor mid-scroll.
+    // The footer is a real <button>, so keyboard users get it for free; its
+    // click bubbles up to this one handler.
+    var footBtn = wrap.querySelector('.nl-foot');
+    wrap.classList.add('nl-tap');
+    wrap.addEventListener('click', function () {
+        var open = wrap.classList.toggle('is-open');
+        if (footBtn) footBtn.setAttribute('aria-expanded', String(open));
+    });
 });
 </script>
 
@@ -2357,10 +2438,9 @@ window.addEventListener('DOMContentLoaded', function () {
      Hovering an avatar previews that instructor, clicking pins them, and leaving
      the row falls back to whoever is pinned. The offline/online badge on the
      portrait is always visible.
-     NOTE: instructors two and three are DUMMY entries. Their names, bios and
-     quotes are invented and their portraits are generated silhouettes, not
-     photographs of real people. Replace both before this goes in front of
-     schools. -->
+     NOTE: the second instructor's portrait is a generated silhouette until the
+     real photo arrives (swap DUMMY_2 for the image path), and his bio and
+     credentials still need confirming. -->
 <script>
 window.addEventListener('DOMContentLoaded', function () {
     var row = document.getElementById('leadAvatars');
@@ -2368,7 +2448,6 @@ window.addEventListener('DOMContentLoaded', function () {
     if (!row || !pin) return;
 
     var DUMMY_2 = 'data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20400%20500%22%3E%3Cdefs%3E%3ClinearGradient%20id=%22g%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%23233043%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%230d1424%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width=%22400%22%20height=%22500%22%20fill=%22url%28%23g%29%22/%3E%3Ccircle%20cx=%22200%22%20cy=%22205%22%20r=%2266%22%20fill=%22%237c8ba1%22/%3E%3Cpath%20d=%22M72%20500c0-70%2057-127%20128-127s128%2057%20128%20127z%22%20fill=%22%237c8ba1%22/%3E%3C/svg%3E';
-    var DUMMY_3 = 'data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20400%20500%22%3E%3Cdefs%3E%3ClinearGradient%20id=%22g%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%232a2f3d%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%23111521%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width=%22400%22%20height=%22500%22%20fill=%22url%28%23g%29%22/%3E%3Ccircle%20cx=%22200%22%20cy=%22205%22%20r=%2266%22%20fill=%22%23828da0%22/%3E%3Cpath%20d=%22M72%20500c0-70%2057-127%20128-127s128%2057%20128%20127z%22%20fill=%22%23828da0%22/%3E%3C/svg%3E';
 
     var MODES = {
         offline: { label: 'Offline',            detail: 'Runs sessions inside your school',     dot: '#34d399' },
@@ -2380,12 +2459,12 @@ window.addEventListener('DOMContentLoaded', function () {
         {
             avatar: 'amaan_shaikh_bw.jpg', photo: 'amaan_shaikh_inst.jpg', focus: '50% 40%',
             name: 'Amaan Shaikh', tip: 'Program lead',
-            heading: "I don't just teach AI — I build with it every day.",
-            bio: 'As a Software Development Engineer developing AI systems for companies in Germany, I work with large language models professionally. This program brings that experience directly into Indian classrooms — in simple language, for regular classrooms, with no fancy labs required.',
+            heading: "I don't just teach AI. I build it for a living.",
+            bio: "I'm a Software Development Engineer building AI systems for companies in Germany. I design every session of this program and teach the in-school workshops myself, in English and Hindi, in a regular school computer lab. There is no franchise and no outsourced trainer pool.",
             creds: [
                 ['M.Sc. Computer Science', 'University of Konstanz, Germany'],
                 ['B.Tech Computer Science', 'MIT ADT University, Pune'],
-                ['5+ years experience', 'LLMs, RAG systems, agentic AI']
+                ['500+ students taught', 'University of Konstanz and MIT ADT University']
             ],
             quote: '“Students don’t need motivation. They need clarity — at the right age.”',
             mode: 'offline'
@@ -2402,19 +2481,6 @@ window.addEventListener('DOMContentLoaded', function () {
             ],
             quote: '“The screen changes the room, not the standards.”',
             mode: 'online'
-        },
-        {
-            avatar: DUMMY_3, photo: DUMMY_3, focus: '50% 30%',
-            name: 'Rohan Bhosale', tip: 'Online and offline',
-            heading: 'Students learn faster when the tools stop feeling like magic.',
-            bio: 'I work on computer vision and LLM applications, and I teach in both formats. I travel for the in-school weeks and pick the same batches up remotely in between, so a school can start offline and carry on online without changing instructor.',
-            creds: [
-                ['Applied AI', 'Computer vision, LLM apps'],
-                ['Teaching format', 'In-school and remote'],
-                ['6+ years experience', 'Production AI systems']
-            ],
-            quote: '“Once a student can predict what the model will do, the fear goes.”',
-            mode: 'both'
         }
     ];
 
@@ -2587,6 +2653,17 @@ window.addEventListener('DOMContentLoaded', function () {
             repeat: -1,
             onUpdate: function () { head.setAttribute('startOffset', state.off.toFixed(1)); }
         });
+        if (!visible) tween.pause();
+    }
+
+    // Re-laying out a long run of SVG text every frame is not free, so the
+    // ribbon only moves while it is on screen.
+    var visible = true;
+    if ('IntersectionObserver' in window) {
+        new IntersectionObserver(function (entries) {
+            visible = entries[0].isIntersecting;
+            if (tween) { if (visible) tween.play(); else tween.pause(); }
+        }, { rootMargin: '100px' }).observe(wrap);
     }
 
     function setup() {
@@ -2605,8 +2682,12 @@ window.addEventListener('DOMContentLoaded', function () {
     if (document.fonts && document.fonts.ready) {
         document.fonts.ready.then(function () { if (build()) animate(); }).catch(function () {});
     }
-    var rz;
+    // Width changes only: phones fire resize while scrolling (the address
+    // bar), and rebuilding then made the ribbon jump back to its start.
+    var rz, lastW = window.innerWidth;
     window.addEventListener('resize', function () {
+        if (window.innerWidth === lastW) return;
+        lastW = window.innerWidth;
         clearTimeout(rz);
         // build() calls fit(), so crossing the breakpoint swaps the path too
         rz = setTimeout(function () { if (build()) animate(); }, 200);
@@ -2783,14 +2864,14 @@ window.addEventListener('DOMContentLoaded', function () {
 <script>
 (function () {
     var rows = [
-        { q: 'When does my child attend?',           a: 'Anytime — no structure, often abandoned',       b: 'Weekends or after school, adds to the load', c: 'During school hours, no extra burden' },
-        { q: 'Who is teaching my child?',            a: 'Unknown creators, no accountability',           b: 'Fresh graduates trained in coding only',     c: 'Working SDE in Germany, M.Sc. CS, builds AI daily' },
-        { q: 'Will my child actually use AI?',       a: 'Mostly watching videos, little practice',       b: 'Coding exercises, not real AI tools',        c: 'Uses ChatGPT, Claude and Gemini every session' },
-        { q: 'What proof will my child have?',       a: 'Generic completion certificate, if any',        b: 'Centre certificate, not school-recognised',  c: 'School-endorsed certificate plus a working project' },
-        { q: 'Is it safe? Who supervises?',          a: 'No supervision, unsupervised internet',         b: 'Supervised, but not AI-safety focused',      c: 'In school, teacher present, AI ethics taught' },
-        { q: 'Will this help with career clarity?',  a: 'No career guidance',                            b: 'Coding careers only',                        c: '10+ AI career paths mapped to subjects' },
-        { q: "What's the real cost?",                a: 'Free or cheap, with hidden upsells',            b: '₹15–30K+ a year, ongoing subscription', c: 'One-time fee, no subscriptions or upsells' },
-        { q: 'Does the school approve?',             a: 'No school involvement',                         b: 'No school involvement',                      c: 'School-partnered, runs inside campus' }
+        { q: 'Held in school, with a teacher present', a: 'No',                          b: 'Usually not',                    c: 'Yes, in your computer lab' },
+        { q: 'Students build a working AI system',      a: 'No, mostly watching',         b: 'Rarely',                         c: 'Yes, every team' },
+        { q: 'No coding background needed',             a: 'Yes',                         b: 'No',                             c: 'Yes' },
+        { q: 'Taught by a working AI engineer',         a: 'No',                          b: 'Rarely',                         c: 'Yes, an SDE building AI in Germany' },
+        { q: 'Safe and responsible use built in',       a: 'No',                          b: 'Sometimes',                      c: 'Yes. No student accounts, no personal data' },
+        { q: 'Linked to careers',                       a: 'No',                          b: 'Coding careers only',            c: 'Yes, a profession track per team' },
+        { q: 'Parents see the result',                  a: 'No',                          b: 'Rarely',                         c: 'Yes, at a live showcase' },
+        { q: 'Fits the school timetable',               a: 'Watched at home, if at all',  b: 'After school or weekends',       c: 'Inside school hours, 2 or 3 days' }
     ];
 
     function el(tag, cls, text) {
@@ -2815,7 +2896,7 @@ window.addEventListener('DOMContentLoaded', function () {
         var card = el('div', 'border border-slate-200 rounded-2xl overflow-hidden');
         card.appendChild(el('div', 'px-4 py-3.5 bg-slate-50 border-b border-slate-200 text-[15px] font-bold', row.q));
         var body = el('div', 'px-4 py-3.5 flex flex-col gap-3 text-sm');
-        [['YouTube / Udemy', row.a], ['Coding centres', row.b]].forEach(function (pair) {
+        [['Free videos & apps', row.a], ['Coding classes', row.b]].forEach(function (pair) {
             var block = el('div');
             block.appendChild(el('div', 'text-[11px] font-bold tracking-[0.08em] uppercase text-slate-400 mb-[3px]', pair[0]));
             block.appendChild(el('div', 'text-slate-500', pair[1]));
@@ -2831,58 +2912,46 @@ window.addEventListener('DOMContentLoaded', function () {
 })();
 </script>
 
-<!-- GSAP choreography: hero word reveal, counter, parallax, section reveals,
-     chip marquee. Everything degrades to static content if GSAP fails to
-     load or the visitor prefers reduced motion. -->
+<!-- GSAP choreography: portrait parallax and section reveals. The hero itself
+     is not animated in: it paints once, styled, and stays put (fading it in
+     after first paint, and counting the 500+ badge up from 0, was a visible
+     flash). Everything degrades to static content if GSAP fails to load or
+     the visitor prefers reduced motion. -->
 <script>
 window.addEventListener('DOMContentLoaded', function () {
     var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (reduced) return;
     var tries = 0;
+    function reveal() { document.documentElement.classList.remove('gs-pending'); }
     function start() {
         if (!window.gsap || !window.ScrollTrigger) {
-            if (tries++ < 25) return setTimeout(start, 200);
-            return; // CDN failed — content stays fully visible
+            if (tries++ < 15) return setTimeout(start, 200);
+            return reveal(); // CDN failed — show everything statically
         }
         var gsap = window.gsap;
         gsap.registerPlugin(window.ScrollTrigger);
 
-        // 1) Headline: intentionally NOT animated. It paints immediately with
-        //    the CSS shimmer only — the old word-mask reveal clipped descenders.
-
-        // 2) The 500+ badge counts up once
-        var cnt = document.getElementById('hero-count');
-        if (cnt) {
-            var counter = { v: 0 };
-            gsap.to(counter, {
-                v: 500, duration: 1.6, ease: 'power2.out', delay: 0.2,
-                onUpdate: function () { cnt.textContent = Math.round(counter.v); }
-            });
-        }
-
-        // 3) Hero copy stagger (headline handled above)
-        gsap.from(document.querySelectorAll('[data-hero] > *:not(h1)'), {
-            y: 22, opacity: 0, duration: 0.8, ease: 'power3.out', stagger: 0.09
-        });
-
-        // 4) Portrait: soft entrance + slow parallax against the scroll
-        //    (targets the outer wrapper — the inner card belongs to CometCard)
+        // Slow parallax against the scroll on the portrait's outer wrapper
+        // (the inner card belongs to CometCard). Desktop only: on phones the
+        // portrait sits below the copy and the drift just reads as lag.
         var portrait = document.querySelector('[data-hero-parallax]');
-        if (portrait) {
-            gsap.from(portrait, { opacity: 0, scale: 0.96, duration: 1.1, ease: 'power2.out', delay: 0.15 });
+        if (portrait && window.matchMedia('(min-width: 768px)').matches) {
             gsap.to(portrait, {
                 y: -36, ease: 'none',
                 scrollTrigger: { trigger: '#top', start: 'top top', end: 'bottom top', scrub: true }
             });
         }
 
-        // 5) Per-section reveals
+        // Per-section reveals. The CSS pre-hide is dropped in the same task as
+        // these tweens are created (no paint in between), so content is never
+        // shown, hidden, then shown again.
+        reveal();
         document.querySelectorAll('section').forEach(function (sec) {
             var kids = sec.querySelectorAll('.gs-item');
             if (!kids.length) return;
             gsap.from(kids, {
-                scrollTrigger: { trigger: sec, start: 'top 82%', once: true },
-                y: 26, opacity: 0, duration: 0.7, ease: 'power2.out', stagger: 0.06
+                scrollTrigger: { trigger: sec, start: 'top 85%', once: true },
+                y: 22, opacity: 0, duration: 0.6, ease: 'power2.out', stagger: 0.05
             });
         });
 
@@ -3033,14 +3102,6 @@ window.addEventListener('DOMContentLoaded', function () {
                 { text: 'teachers', cls: 'rot-teachers' }
             ]
         },
-        {
-            id: 'rot-compare', interval: 2600,
-            words: [
-                { text: 'YouTube / Udemy', cls: 'rot-alt' },
-                { text: 'coding centres', cls: 'rot-alt' },
-                { text: 'Dimaag aur Machine', cls: 'rot-dam' }
-            ]
-        },
     ];
     var ALL_CLASSES = ['rot-students', 'rot-teachers', 'rot-alt', 'rot-dam'];
     var tries = 0;
@@ -3074,23 +3135,29 @@ window.addEventListener('DOMContentLoaded', function () {
             });
             return stage.children;
         }
+        // The badge is sized once to its widest word, in em so it scales with
+        // the heading's clamp(). A badge that changed width every few seconds
+        // re-wrapped the heading and shoved everything below it.
+        function sizeToWidest() {
+            var current = stage.textContent, widest = 0;
+            cfg.words.forEach(function (w) { build(w.text); widest = Math.max(widest, stage.offsetWidth); });
+            build(current);
+            var cs = getComputedStyle(host);
+            var fs = parseFloat(cs.fontSize) || 16;
+            var padX = (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0);
+            host.style.width = ((widest + padX + 1) / fs).toFixed(3) + 'em';
+        }
+        sizeToWidest();
+        // the web font is usually wider than the fallback it was measured in
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(sizeToWidest).catch(function () {});
+
         function show(i, animateIn) {
             var w = cfg.words[i];
-            var oldW = host.offsetWidth;
             ALL_CLASSES.forEach(function (c) { host.classList.remove(c); });
             host.classList.add(w.cls);
             sr.textContent = w.text;
             var chars = build(w.text);
             if (animateIn) {
-                // Words differ in length, so the badge width is tweened too —
-                // the port of the original component's `layout` animation.
-                var newW = host.offsetWidth;
-                if (Math.abs(newW - oldW) > 1) {
-                    gsap.fromTo(host, { width: oldW + 'px' }, {
-                        width: newW + 'px', duration: 0.35, ease: 'power2.inOut',
-                        clearProps: 'width'
-                    });
-                }
                 gsap.fromTo(chars, { yPercent: 100 }, {
                     yPercent: 0, duration: 0.5, ease: 'back.out(1.6)',
                     stagger: { each: STAGGER, from: 'end' }
@@ -3148,8 +3215,13 @@ window.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
-<!-- Cal.com booking embed -->
+<!-- Cal.com booking embed. Loaded only when the booking section comes
+     within ~800px of the viewport: the embed is a heavy iframe, and loading it
+     with the page slowed every first visit, most of all on phones. -->
 <script type="text/javascript">
+function damLoadCal() {
+    if (window.__damCal) return;
+    window.__damCal = true;
     (function (C, A, L) { let p = function (a, ar) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement("script")).src = A; cal.loaded = true; } if (ar[0] === L) { const api = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if(typeof namespace === "string"){cal.ns[namespace] = cal.ns[namespace] || api;p(cal.ns[namespace], ar);p(cal, ["initNamespace", namespace]);} else p(cal, ar); return;} p(cal, ar); }; })(window, "https://app.cal.com/embed/embed.js", "init");
     Cal("init", { origin: "https://cal.com" });
     Cal("inline", {
@@ -3163,6 +3235,15 @@ window.addEventListener('DOMContentLoaded', function () {
         hideEventTypeDetails: false,
         layout: "month_view"
     });
+}
+(function () {
+    var book = document.getElementById('book');
+    if (!book || !('IntersectionObserver' in window)) { damLoadCal(); return; }
+    var io = new IntersectionObserver(function (entries) {
+        if (entries[0].isIntersecting) { io.disconnect(); damLoadCal(); }
+    }, { rootMargin: '800px 0px' });
+    io.observe(book);
+})();
 </script>
 
 <!-- Hero particle ring (three.js) -->
@@ -3172,15 +3253,19 @@ window.addEventListener('DOMContentLoaded', function () {
     const heroSection = document.getElementById('top');
     if (!canvas || !heroSection || typeof THREE === 'undefined') return;
 
+    // Phones and touch tablets get a lighter ring: fewer particles, a lower
+    // pixel ratio, and no antialiasing (soft round points don't need it).
+    const small = window.matchMedia('(max-width: 767px), (pointer: coarse)').matches;
+
     // Browsers without WebGL (blocked GPU, very old hardware) just skip the effect.
     let renderer;
     try {
-        renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+        renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false, powerPreference: 'low-power' });
     } catch (e) {
         canvas.remove();
         return;
     }
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, small ? 1.5 : 2));
     renderer.setClearColor(0x000000, 0);
 
     const scene = new THREE.Scene();
@@ -3188,7 +3273,7 @@ window.addEventListener('DOMContentLoaded', function () {
     camera.position.z = 250;
     camera.position.y = -40;
 
-    const PARTICLE_COUNT = 2500;
+    const PARTICLE_COUNT = small ? 900 : 2000;
     const RING_INNER = 112.5;
     const RING_OUTER = 262.5;
     const DEPTH_RANGE = 60;
@@ -3302,7 +3387,7 @@ window.addEventListener('DOMContentLoaded', function () {
     let hoverSpeedTarget = 0,   hoverSpeedCurrent = 0;
     let hoverColorTarget = 0,   hoverColorCurrent = 0;
     let hoverOpacityTarget = 1, hoverOpacityCurrent = 1;
-    let hoverAngleAccum = 0, prevElapsed = 0;
+    let hoverAngleAccum = 0, simTime = 0;
     const HOVER_EXPAND = 40, HOVER_SPEED_BOOST = 3, HOVER_OPACITY = 2.0, HOVER_LERP = 0.04;
 
     document.querySelectorAll('[data-ring-hover]').forEach(function (btn) {
@@ -3316,9 +3401,16 @@ window.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    // Only touch the drawing buffer when the hero's size really changed.
+    // setSize() resets the canvas, which clears it, and phones fire resize
+    // every time the address bar slides in or out while scrolling: that blank
+    // frame was the flicker at the top of the page.
+    let sizeW = 0, sizeH = 0;
     function resize() {
         const w = heroSection.offsetWidth, h = heroSection.offsetHeight;
-        renderer.setSize(w, h);
+        if (w === sizeW && h === sizeH) return;
+        sizeW = w; sizeH = h;
+        renderer.setSize(w, h, false);           // false: CSS keeps sizing the canvas
         camera.aspect = w / h;
         camera.updateProjectionMatrix();
     }
@@ -3333,6 +3425,10 @@ window.addEventListener('DOMContentLoaded', function () {
         else if (rect.top >= 0)   scrollOpacity = 1;
         else                      scrollOpacity = Math.max(0, Math.min(1, rect.bottom / heroH));
     }, { passive: true });
+
+    // The loop only runs while the hero is on screen and the tab is visible;
+    // it used to keep moving every particle forever, even scrolled away.
+    let rafId = null, heroVisible = true;
 
     const clock = new THREE.Clock();
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -3353,11 +3449,12 @@ window.addEventListener('DOMContentLoaded', function () {
     }
 
     function animate() {
-        requestAnimationFrame(animate);
+        rafId = requestAnimationFrame(animate);
 
-        const elapsed = clock.getElapsedTime();
-        const dt = elapsed - prevElapsed;
-        prevElapsed = elapsed;
+        // own clock, capped per frame, so a pause doesn't fast-forward the ring
+        const dt = Math.min(clock.getDelta(), 0.1);
+        simTime += dt;
+        const elapsed = simTime;
         const warpedElapsed = getWarpedTime(elapsed);
         const posAttr = geometry.attributes.position;
 
@@ -3404,7 +3501,27 @@ window.addEventListener('DOMContentLoaded', function () {
         material.uniforms.uOpacity.value = scrollOpacity * hoverOpacityCurrent;
         renderer.render(scene, camera);
     }
-    animate();
+
+    function run() {
+        if (rafId != null || !heroVisible || document.hidden) return;
+        clock.getDelta();                        // discard the paused stretch
+        rafId = requestAnimationFrame(animate);
+    }
+    function halt() {
+        if (rafId != null) { cancelAnimationFrame(rafId); rafId = null; }
+    }
+    if ('IntersectionObserver' in window) {
+        new IntersectionObserver(function (entries) {
+            heroVisible = entries[0].isIntersecting;
+            if (heroVisible) run(); else halt();
+        }).observe(heroSection);
+    }
+    document.addEventListener('visibilitychange', function () {
+        if (document.hidden) halt(); else run();
+    });
+
+    // Reduced motion: draw the ring once, still, and never loop.
+    if (reducedMotion) { animate(); halt(); } else { run(); }
 });
 </script>
 
@@ -3560,7 +3677,18 @@ window.addEventListener('DOMContentLoaded', function () {
     var firstRun = true;
     var tl = null;
 
+    // Phones get a plain swipe row (CSS). Clear anything the accordion wrote
+    // inline so it can't fight the stylesheet, and stop here.
+    var phone = window.matchMedia('(max-width: 640px)');
+    function clearInline() {
+        if (tl) { tl.kill(); tl = null; }
+        var all = panels.concat(medias, bars, texts);
+        if (g) g.set(all, { clearProps: 'all' });
+        else all.forEach(function (el) { el.removeAttribute('style'); });
+    }
+
     function applyLayout(animate) {
+        if (phone.matches) { clearInline(); return; }
         var r = Math.min(Math.max(CFG.expandRatio, 0.2), 0.9);
         var grow = count > 1 ? (r * (count - 1)) / (1 - r) : 1;
         var dur = animate && !reduced ? CFG.duration : 0;
@@ -3722,8 +3850,14 @@ window.addEventListener('DOMContentLoaded', function () {
         var target = st.base + level * st.gain;
         if (state === 'connecting') target += 0.08 * (1 + Math.sin(now / 180));
         amp += (Math.min(target, 1) - amp) * 0.12;
+        // Idle, the orb only drifts slowly, so ~25fps is indistinguishable and
+        // halves the style work (17 properties, 7 blurred layers) on phones.
+        // Live calls get every frame, since they track the voice.
+        if (state === 'idle' && now - lastApply < 40) return;
+        lastApply = now;
         apply();
     }
+    var lastApply = 0;
     function start() {
         if (reduced || rafId != null || !inView || document.hidden) return;
         lastT = 0;
@@ -3870,7 +4004,7 @@ window.addEventListener('DOMContentLoaded', function () {
     // ---------- playback queue (interruption-safe via generation counter) ----------
     function enqueue(b64) { audioQ.push(b64); if (!playing) drain(); }
     function drain() {
-        if (!audioQ.length) { playing = false; curSrc = null; if (connected) { setMode('listening', muted ? 'Muted' : (micAvailable ? 'Listening…' : 'Text mode — type below')); setCircle('listening'); } return; }
+        if (!audioQ.length) { playing = false; curSrc = null; if (connected) { setMode('listening', muted ? 'Muted' : 'Listening…'); setCircle('listening'); } return; }
         if (!audioCtx) { audioQ.length = 0; playing = false; return; }
         playing = true;
         var gen = audioGen;
@@ -3949,8 +4083,11 @@ window.addEventListener('DOMContentLoaded', function () {
         if (audioCtx) return audioCtx;
         var AC = window.AudioContext || window.webkitAudioContext;
         if (!AC) return null;
-        try { audioCtx = new AC({ sampleRate: 16000 }); }
-        catch (e) { audioCtx = new AC(); } // browser picks the rate; we resample
+        // The browser's own rate, always. Firefox refuses to connect a 48 kHz
+        // mic to a 16 kHz context, which silently dropped it into a dead
+        // "text mode". downsample() already converts the mic to inRate, and
+        // playback buffers are created at outRate and resampled by the context.
+        audioCtx = new AC();
         outputAn = audioCtx.createAnalyser();
         outputAn.fftSize = 256;
         outputWired = false;
@@ -3961,7 +4098,7 @@ window.addEventListener('DOMContentLoaded', function () {
             return Promise.reject(new Error('getUserMedia unavailable'));
         }
         return navigator.mediaDevices.getUserMedia({
-            audio: { sampleRate: 16000, channelCount: 1, echoCancellation: true, noiseSuppression: true }
+            audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true }
         }).then(function (stream) {
             micStream = stream;
             micSource = audioCtx.createMediaStreamSource(stream);
@@ -4013,11 +4150,10 @@ window.addEventListener('DOMContentLoaded', function () {
             micAvailable = true;
             openSocket();
         }).catch(function () {
-            // Mic denied or unavailable: continue in text mode. The agent still
-            // speaks its replies; the visitor types instead of talking.
-            micAvailable = false;
-            addMsg('system', 'Microphone unavailable — continuing in text mode.');
-            openSocket();
+            // Mic denied or unavailable. Release anything half-opened (the mic
+            // light would otherwise stay on) and say why: North is voice only.
+            micOff();
+            failConnect('North needs your microphone. Allow access and tap again.');
         });
     }
 
@@ -4088,7 +4224,7 @@ window.addEventListener('DOMContentLoaded', function () {
                 case 'interruption': {
                     lastInterrupt = (m.interruption_event && m.interruption_event.event_id) || m.event_id || Infinity;
                     flushAudio();
-                    setMode('listening', muted ? 'Muted' : (micAvailable ? 'Listening…' : 'Text mode — type below'));
+                    setMode('listening', muted ? 'Muted' : 'Listening…');
                     setCircle('listening');
                     break;
                 }

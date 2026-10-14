@@ -13,20 +13,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://unpkg.com/lucide@latest"></script>
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
+    <!-- Tailwind compiled ahead of time; shared with index.html (see tailwind.config.js) -->
+    <link rel="stylesheet" href="styles.css">
+    <script defer src="https://unpkg.com/lucide@1.57.0"></script>
 
     <style>
         ::-webkit-scrollbar { width: 8px; }
@@ -63,7 +52,7 @@
             <div class="mb-12">
                 <p class="text-sm text-slate-500 font-medium tracking-widest uppercase mb-3">Legal</p>
                 <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-4">Privacy Policy</h1>
-                <p class="text-slate-500">Last updated: February 2026</p>
+                <p class="text-slate-500">Last updated: October 2026</p>
             </div>
 
             <!-- Content -->
@@ -90,7 +79,11 @@
                     <ul class="space-y-2 text-slate-600">
                         <li class="flex items-start gap-2">
                             <i data-lucide="check" class="h-4 w-4 text-slate-400 mt-1 flex-shrink-0"></i>
-                            <span><strong>Inquiry form:</strong> Email address and message content when you submit a question through our contact form.</span>
+                            <span><strong>Email:</strong> Your email address and message when you write to us.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i data-lucide="check" class="h-4 w-4 text-slate-400 mt-1 flex-shrink-0"></i>
+                            <span><strong>Voice assistant:</strong> What you say to North, our on-page voice assistant, is processed by ElevenLabs to generate replies. Nothing is recorded by us.</span>
                         </li>
                         <li class="flex items-start gap-2">
                             <i data-lucide="check" class="h-4 w-4 text-slate-400 mt-1 flex-shrink-0"></i>
@@ -168,10 +161,6 @@
                             <p class="text-sm text-slate-600">Used for scheduling discussions. When you book a slot, your name and email are processed by Cal.com.</p>
                         </div>
                         <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
-                            <p class="font-semibold text-slate-900 mb-1">Formspree</p>
-                            <p class="text-sm text-slate-600">Used to handle inquiry form submissions. Your email and message are routed through Formspree's servers.</p>
-                        </div>
-                        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
                             <p class="font-semibold text-slate-900 mb-1">ElevenLabs</p>
                             <p class="text-sm text-slate-600">Powers the AI voice assistant on our website. Voice interactions are processed by ElevenLabs to generate responses. No voice data is stored by us.</p>
                         </div>
@@ -225,7 +214,7 @@
                     <ul class="space-y-2 text-slate-600">
                         <li class="flex items-start gap-2">
                             <i data-lucide="check" class="h-4 w-4 text-slate-400 mt-1 flex-shrink-0"></i>
-                            <span>Data submitted through forms is stored with our third-party service providers (Formspree, Cal.com) on their secure servers.</span>
+                            <span>Booking details are stored by our scheduling provider, Cal.com, on its own secure servers.</span>
                         </li>
                         <li class="flex items-start gap-2">
                             <i data-lucide="check" class="h-4 w-4 text-slate-400 mt-1 flex-shrink-0"></i>
@@ -305,7 +294,7 @@
                         <p class="text-slate-600 text-sm mt-2">Nashik, Maharashtra, India</p>
                         <div class="flex items-center gap-2 mt-3">
                             <i data-lucide="mail" class="h-4 w-4 text-slate-400"></i>
-                            <a href="mailto:amaan@example.com" class="text-sm text-slate-900 font-medium hover:underline">amaan@example.com</a>
+                            <a href="mailto:dimaagaurmachine@gmail.com" class="text-sm text-slate-900 font-medium hover:underline">dimaagaurmachine@gmail.com</a>
                         </div>
                     </div>
                 </section>
