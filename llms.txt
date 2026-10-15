@@ -20,7 +20,7 @@ Tagline: "Degree nahi. Direction chahiye." (Hindi: "Not a degree. Direction.") T
 ## Who teaches
 
 - **Amaan Shaikh**, founder and program lead. Software Development Engineer building AI systems for companies in Germany. M.Sc. Computer Science, University of Konstanz; B.Tech Computer Science, MIT ADT University, Pune. Has taught 500+ students. Designs every session and teaches the in-school workshops himself, in English and Hindi.
-- **Kevin Patel**, online instructor. Data scientist building machine learning systems for product teams; leads the online cohorts, taught live over video with the school's own teacher in the room.
+- **Kevin Patel**, online instructor. Engineer and entrepreneur with an academic and professional background across India and Germany, working in software development, product development and technology innovation. Leads the online cohorts, taught live over video with the school's own teacher in the room.
 
 ## Practical facts
 
@@ -40,3 +40,4 @@ Tagline: "Degree nahi. Direction chahiye." (Hindi: "Not a degree. Direction.") T
 
 - Book a 30-minute call with Amaan: https://cal.com/dimaag-aur-machine/30min (also embedded at https://dimaagaurmachine.com/#book)
 - Email: dimaagaurmachine@gmail.com
+- Amaan Shaikh on LinkedIn: https://www.linkedin.com/in/amaanshaikhsde/
