@@ -1,7 +1,35 @@
 # robots.txt for Dimaag aur Machine
-# https://dimaagaurmachine.github.io/website/
+# Everything public is open to search engines and AI assistants alike.
 
 User-agent: *
 Allow: /
+Disallow: /_to-delete/
+Disallow: /Logo%20Kit/
 
-Sitemap: https://dimaagaurmachine.github.io/website/sitemap.xml
+# AI search and answer engines: named explicitly so they are never caught by
+# a default-deny on their side.
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-SearchBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+Sitemap: https://dimaagaurmachine.com/sitemap.xml

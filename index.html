@@ -1,80 +1,417 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en-IN" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dimaag aur Machine | AI Literacy Workshops for Schools in Nashik</title>
-    <meta name="description" content="A 2 or 3 day in-school AI workshop for Classes 8-12 that turns students from AI consumers into AI producers. Teams build a working AI agent for a real problem, without code. Zero cost to the school.">
-    <meta name="keywords" content="Dimaag aur Machine, AI workshop schools Nashik, AI builder program students, AI education CBSE ICSE SSC IB, teacher AI training">
+    <title>AI Workshop for Schools in Nashik | Dimaag aur Machine</title>
+    <meta name="description" content="In-school AI workshop for Classes 8–12 in Nashik. In 2 or 3 days, student teams build a working AI agent for a real problem, no coding needed. Zero effort for the school.">
+    <meta name="keywords" content="AI workshop for schools, AI workshop Nashik, AI course for school students, AI literacy program India, no-code AI agent workshop, AI for Class 8 to 12, CBSE ICSE SSC IB AI workshop, AI training for teachers, Dimaag aur Machine">
     <meta name="author" content="Amaan Shaikh">
-    <meta name="robots" content="index, follow">
-    <link rel="canonical" href="https://dimaagaurmachine.github.io/website/">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <link rel="canonical" href="https://dimaagaurmachine.com/">
+    <link rel="alternate" hreflang="en-IN" href="https://dimaagaurmachine.com/">
+    <link rel="alternate" hreflang="x-default" href="https://dimaagaurmachine.com/">
 
-    <!-- Open Graph / Facebook / WhatsApp -->
+    <!-- Icons + install metadata (all generated from Logo Kit/) -->
+    <link rel="icon" href="favicon.ico?v=2" sizes="48x48">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/brand/favicon-32.png?v=2">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/brand/favicon-16.png?v=2">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=2">
+    <link rel="manifest" href="site.webmanifest">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="application-name" content="Dimaag aur Machine">
+    <meta name="apple-mobile-web-app-title" content="Dimaag aur Machine">
+    <meta name="format-detection" content="telephone=no">
+
+    <!-- Open Graph (WhatsApp, LinkedIn, Facebook) -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://dimaagaurmachine.github.io/website/">
-    <meta property="og:title" content="Dimaag aur Machine | AI Literacy Workshops for Schools in Nashik">
-    <meta property="og:description" content="A 2 or 3 day in-school workshop for Classes 8-12. Teams build a working AI agent for a real problem, without code. Zero cost to the school.">
-    <meta property="og:image" content="https://dimaagaurmachine.github.io/website/amaan_shaikh_bw.jpg">
-    <meta property="og:locale" content="en_IN">
     <meta property="og:site_name" content="Dimaag aur Machine">
+    <meta property="og:locale" content="en_IN">
+    <meta property="og:url" content="https://dimaagaurmachine.com/">
+    <meta property="og:title" content="AI Workshop for Schools in Nashik | Dimaag aur Machine">
+    <meta property="og:description" content="In-school AI workshop for Classes 8–12 in Nashik. In 2 or 3 days, student teams build a working AI agent for a real problem, no coding needed. Zero effort for the school.">
+    <meta property="og:image" content="https://dimaagaurmachine.com/assets/brand/og-image.jpg">
+    <meta property="og:image:secure_url" content="https://dimaagaurmachine.com/assets/brand/og-image.jpg">
+    <meta property="og:image:type" content="image/jpeg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Dimaag aur Machine: from AI users to AI builders. A 2 or 3 day in-school AI workshop for Classes 8 to 12.">
 
-    <!-- Twitter Card -->
+    <!-- X / Twitter -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:url" content="https://dimaagaurmachine.github.io/website/">
-    <meta name="twitter:title" content="Dimaag aur Machine | AI Literacy Workshops for Schools in Nashik">
-    <meta name="twitter:description" content="A 2 or 3 day in-school workshop for Classes 8-12. Teams build a working AI agent for a real problem, without code.">
-    <meta name="twitter:image" content="https://dimaagaurmachine.github.io/website/amaan_shaikh_bw.jpg">
+    <meta name="twitter:title" content="AI Workshop for Schools in Nashik | Dimaag aur Machine">
+    <meta name="twitter:description" content="In-school AI workshop for Classes 8–12 in Nashik. In 2 or 3 days, student teams build a working AI agent for a real problem, no coding needed. Zero effort for the school.">
+    <meta name="twitter:image" content="https://dimaagaurmachine.com/assets/brand/og-image.jpg">
+    <meta name="twitter:image:alt" content="Dimaag aur Machine: from AI users to AI builders.">
 
-    <!-- Additional SEO -->
-    <meta name="theme-color" content="#0f172a">
+    <!-- Local -->
     <meta name="geo.region" content="IN-MH">
     <meta name="geo.placename" content="Nashik">
+    <meta name="geo.position" content="19.9975;73.7898">
+    <meta name="ICBM" content="19.9975, 73.7898">
 
-    <!-- Structured Data - Organization -->
+    <!-- Structured data: one connected graph (organisation, site, page, both
+         programs, both instructors, and the FAQ exactly as it reads on the page).
+         If you edit an FAQ answer below, update its copy here too. -->
     <script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@graph": [
+  {
+   "@type": [
+    "EducationalOrganization",
+    "Organization"
+   ],
+   "@id": "https://dimaagaurmachine.com/#organization",
+   "name": "Dimaag aur Machine",
+   "url": "https://dimaagaurmachine.com/",
+   "email": "dimaagaurmachine@gmail.com",
+   "logo": {
+    "@type": "ImageObject",
+    "@id": "https://dimaagaurmachine.com/#logo",
+    "url": "https://dimaagaurmachine.com/assets/brand/icon-512.png",
+    "width": 512,
+    "height": 512,
+    "caption": "Dimaag aur Machine"
+   },
+   "image": {
+    "@id": "https://dimaagaurmachine.com/#logo"
+   },
+   "description": "In-school AI workshops for school students in Classes 8 to 12 and AI training for teachers, based in Nashik, Maharashtra. Student teams build a working AI agent for a real problem without writing code.",
+   "slogan": "Degree nahi. Direction chahiye.",
+   "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Nashik",
+    "addressRegion": "Maharashtra",
+    "addressCountry": "IN"
+   },
+   "areaServed": [
     {
-        "@context": "https://schema.org",
-        "@type": "EducationalOrganization",
-        "name": "Dimaag aur Machine",
-        "description": "In-school AI builder workshops for school students and teachers in Nashik, Maharashtra",
-        "url": "https://dimaagaurmachine.github.io/website/",
-        "logo": "https://dimaagaurmachine.github.io/website/workshoplogo.png",
-        "address": {
-            "@type": "PostalAddress",
-            "addressLocality": "Nashik",
-            "addressRegion": "Maharashtra",
-            "addressCountry": "IN"
-        },
-        "founder": {
-            "@type": "Person",
-            "name": "Amaan Shaikh",
-            "jobTitle": "Founder & Program Director",
-            "alumniOf": [
-                { "@type": "CollegeOrUniversity", "name": "University of Konstanz", "address": "Germany" },
-                { "@type": "CollegeOrUniversity", "name": "MIT ADT University", "address": "Pune, India" }
-            ]
-        },
-        "areaServed": { "@type": "City", "name": "Nashik" },
-        "serviceType": ["AI Literacy Education", "School Workshops", "Teacher Training"]
-    }
-    </script>
-
-    <!-- Structured Data - Course -->
-    <script type="application/ld+json">
+     "@type": "City",
+     "name": "Nashik"
+    },
     {
-        "@context": "https://schema.org",
-        "@type": "Course",
-        "name": "Soch aur System - Dimaag aur Machine",
-        "description": "A 2 or 3 day in-school AI workshop for students in Classes 8 to 12. Working in teams, students build a working AI agent for a real problem without writing code, under teacher supervision.",
-        "provider": {
-            "@type": "EducationalOrganization",
-            "name": "Dimaag aur Machine"
-        },
-        "educationalLevel": "Secondary School",
-        "teaches": ["Building with AI", "Building an AI agent without code", "Managing AI agents across a workflow", "How AI works and where it fails", "Responsible use and the limits of AI", "AI across professions"],
-        "occupationalCredentialAwarded": "School-endorsed participation certificate"
+     "@type": "State",
+     "name": "Maharashtra"
+    },
+    {
+     "@type": "Country",
+     "name": "India"
     }
+   ],
+   "founder": {
+    "@id": "https://dimaagaurmachine.com/#amaan-shaikh"
+   },
+   "contactPoint": {
+    "@type": "ContactPoint",
+    "contactType": "School partnerships",
+    "email": "dimaagaurmachine@gmail.com",
+    "availableLanguage": [
+     "English",
+     "Hindi"
+    ],
+    "areaServed": "IN"
+   },
+   "knowsAbout": [
+    "Artificial intelligence education",
+    "AI literacy",
+    "AI agents",
+    "No-code AI",
+    "Responsible AI",
+    "Teacher training in AI"
+   ]
+  },
+  {
+   "@type": "WebSite",
+   "@id": "https://dimaagaurmachine.com/#website",
+   "url": "https://dimaagaurmachine.com/",
+   "name": "Dimaag aur Machine",
+   "inLanguage": "en-IN",
+   "publisher": {
+    "@id": "https://dimaagaurmachine.com/#organization"
+   }
+  },
+  {
+   "@type": "WebPage",
+   "@id": "https://dimaagaurmachine.com/#webpage",
+   "url": "https://dimaagaurmachine.com/",
+   "name": "AI Workshop for Schools in Nashik | Dimaag aur Machine",
+   "description": "In-school AI workshop for Classes 8–12 in Nashik. In 2 or 3 days, student teams build a working AI agent for a real problem, no coding needed. Zero effort for the school.",
+   "isPartOf": {
+    "@id": "https://dimaagaurmachine.com/#website"
+   },
+   "about": {
+    "@id": "https://dimaagaurmachine.com/#organization"
+   },
+   "inLanguage": "en-IN",
+   "primaryImageOfPage": {
+    "@type": "ImageObject",
+    "url": "https://dimaagaurmachine.com/assets/brand/og-image.jpg",
+    "width": 1200,
+    "height": 630
+   },
+   "dateModified": "2026-10-15"
+  },
+  {
+   "@type": "Course",
+   "@id": "https://dimaagaurmachine.com/#soch-aur-system",
+   "name": "Soch aur System: in-school AI workshop for Classes 8–12",
+   "alternateName": "Soch aur System",
+   "description": "A 2 or 3 day in-school AI workshop for students in Classes 8 to 12. Working in teams, students build a working AI agent for a real problem without writing code, under teacher supervision. Classes 8–10 and Classes 11–12 take separate workshops.",
+   "provider": {
+    "@id": "https://dimaagaurmachine.com/#organization"
+   },
+   "inLanguage": [
+    "en",
+    "hi"
+   ],
+   "educationalLevel": "Secondary school (Classes 8–12)",
+   "audience": {
+    "@type": "EducationalAudience",
+    "educationalRole": "student"
+   },
+   "coursePrerequisites": "No coding experience needed",
+   "teaches": [
+    "Building with AI",
+    "Building an AI agent without code",
+    "Managing AI agents across a workflow",
+    "How AI works and where it fails",
+    "Responsible use and the limits of AI",
+    "AI across professions"
+   ],
+   "educationalCredentialAwarded": "School-endorsed participation certificate",
+   "offers": {
+    "@type": "Offer",
+    "category": "Paid",
+    "availability": "https://schema.org/InStock",
+    "areaServed": "IN"
+   },
+   "hasCourseInstance": [
+    {
+     "@type": "CourseInstance",
+     "courseMode": "Onsite",
+     "courseWorkload": "PT8H",
+     "courseSchedule": {
+      "@type": "Schedule",
+      "duration": "PT4H",
+      "repeatFrequency": "Daily",
+      "repeatCount": 2
+     },
+     "location": {
+      "@type": "Place",
+      "name": "Your school's computer lab and AV room",
+      "address": {
+       "@type": "PostalAddress",
+       "addressLocality": "Nashik",
+       "addressRegion": "Maharashtra",
+       "addressCountry": "IN"
+      }
+     },
+     "instructor": {
+      "@id": "https://dimaagaurmachine.com/#amaan-shaikh"
+     }
+    },
+    {
+     "@type": "CourseInstance",
+     "courseMode": "Onsite",
+     "courseWorkload": "PT12H",
+     "courseSchedule": {
+      "@type": "Schedule",
+      "duration": "PT4H",
+      "repeatFrequency": "Daily",
+      "repeatCount": 3
+     },
+     "location": {
+      "@type": "Place",
+      "name": "Your school's computer lab and AV room",
+      "address": {
+       "@type": "PostalAddress",
+       "addressLocality": "Nashik",
+       "addressRegion": "Maharashtra",
+       "addressCountry": "IN"
+      }
+     },
+     "instructor": {
+      "@id": "https://dimaagaurmachine.com/#amaan-shaikh"
+     }
+    },
+    {
+     "@type": "CourseInstance",
+     "courseMode": "Online",
+     "courseWorkload": "PT8H",
+     "instructor": {
+      "@id": "https://dimaagaurmachine.com/#kevin-patel"
+     }
+    }
+   ]
+  },
+  {
+   "@type": "Course",
+   "@id": "https://dimaagaurmachine.com/#chalk-aur-calibration",
+   "name": "Chalk aur Calibration: AI training for school teachers",
+   "alternateName": "Chalk aur Calibration",
+   "description": "In-school AI training for teachers, department by department, 2 to 6 hours per subject. Teachers learn to turn an existing chapter into quizzes, worksheets and revision sheets, and to check AI output for errors before it reaches a student.",
+   "provider": {
+    "@id": "https://dimaagaurmachine.com/#organization"
+   },
+   "inLanguage": [
+    "en",
+    "hi"
+   ],
+   "audience": {
+    "@type": "EducationalAudience",
+    "educationalRole": "teacher"
+   },
+   "coursePrerequisites": "No tech background needed",
+   "offers": {
+    "@type": "Offer",
+    "category": "Paid",
+    "areaServed": "IN"
+   },
+   "hasCourseInstance": {
+    "@type": "CourseInstance",
+    "courseMode": "Onsite",
+    "courseWorkload": "PT2H",
+    "instructor": {
+     "@id": "https://dimaagaurmachine.com/#amaan-shaikh"
+    }
+   }
+  },
+  {
+   "@type": "Person",
+   "@id": "https://dimaagaurmachine.com/#amaan-shaikh",
+   "name": "Amaan Shaikh",
+   "jobTitle": "Founder and Program Lead",
+   "description": "Software Development Engineer building AI systems for companies in Germany. Designs every session of Dimaag aur Machine and teaches the in-school workshops.",
+   "image": "https://dimaagaurmachine.com/assets/people/amaan-shaikh-960.jpg",
+   "worksFor": {
+    "@id": "https://dimaagaurmachine.com/#organization"
+   },
+   "alumniOf": [
+    {
+     "@type": "CollegeOrUniversity",
+     "name": "University of Konstanz",
+     "address": {
+      "@type": "PostalAddress",
+      "addressCountry": "DE"
+     }
+    },
+    {
+     "@type": "CollegeOrUniversity",
+     "name": "MIT ADT University",
+     "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Pune",
+      "addressCountry": "IN"
+     }
+    }
+   ],
+   "hasCredential": [
+    {
+     "@type": "EducationalOccupationalCredential",
+     "credentialCategory": "degree",
+     "name": "M.Sc. Computer Science"
+    },
+    {
+     "@type": "EducationalOccupationalCredential",
+     "credentialCategory": "degree",
+     "name": "B.Tech Computer Science"
+    }
+   ],
+   "knowsAbout": [
+    "Artificial intelligence",
+    "AI agents",
+    "Software engineering",
+    "Teaching"
+   ],
+   "sameAs": [
+    "https://www.linkedin.com/in/amaanshaikh711/",
+    "https://www.instagram.com/amaan_711/"
+   ]
+  },
+  {
+   "@type": "Person",
+   "@id": "https://dimaagaurmachine.com/#kevin-patel",
+   "name": "Kevin Patel",
+   "jobTitle": "Online Instructor",
+   "description": "Data scientist who builds machine learning systems for product teams and leads the online cohorts of Dimaag aur Machine.",
+   "image": "https://dimaagaurmachine.com/assets/people/kevin-patel.jpg",
+   "worksFor": {
+    "@id": "https://dimaagaurmachine.com/#organization"
+   },
+   "knowsAbout": [
+    "Machine learning",
+    "Data science",
+    "Natural language processing"
+   ]
+  },
+  {
+   "@type": "FAQPage",
+   "@id": "https://dimaagaurmachine.com/#faq",
+   "mainEntity": [
+    {
+     "@type": "Question",
+     "name": "Which classes is it for?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Classes 8 to 12, any stream. Classes 8–10 take one workshop. Classes 11–12 take a separate, more advanced workshop, and the two years can run together. No coding is needed in either."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Two days or three?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "The school chooses. Both run 4 hours a day inside school hours. The 2-day workshop ends with a finished AI agent per team. The 3-day workshop adds advanced modules and a judged 5-minute pitch per team, with prizes. Consecutive days work best: Thursday to Saturday, or Friday and Saturday."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "How is this different from Computer Applications or robotics?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Computer Applications teaches programming for the board exam, and robotics teaches hardware. This teaches AI itself, as a life skill: how it works, how to build with it, and where not to trust it. It sits alongside both and replaces neither."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "What do we need to provide?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Access to your computer lab and AV room, one or two teachers in the room, and 4 hours a day for 2 or 3 days. We bring headphones for every team if the lab does not have them, and everything students build on."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Is it safe? Whose accounts do students use?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Students never sign up for anything or enter names, phone numbers or emails. All tools run in a workspace the instructor manages, and the AI services used are named to the school in advance. A student’s own voice is used only with written parental consent, and voice samples and conversation logs are deleted when the product goes offline. Misuse of AI, and where it begins, is part of what they learn. A school teacher is in the room throughout, and students are photographed only with written parental consent."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "What does it cost, and who pays?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Parents pay a one-time, all-inclusive fee per student through the school’s own fee system, in the range of a school robotics or activity workshop. Cancelling is free up to 7 days before the workshop. The exact fee and full terms are in your school’s written proposal. The student program costs the school nothing. The teacher program, Chalk aur Calibration, is quoted to the school separately."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Who teaches the sessions?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Amaan Shaikh designs every session and teaches the in-school workshops himself. He is a Software Development Engineer building AI systems in Germany, with an M.Sc. in Computer Science from the University of Konstanz, and has taught 500+ students at Konstanz and MIT ADT University."
+     }
+    }
+   ],
+   "isPartOf": {
+    "@id": "https://dimaagaurmachine.com/#webpage"
+   }
+  }
+ ]
+}
     </script>
 
     <!-- Preconnect / prefetch -->
@@ -85,6 +422,11 @@
     <link rel="dns-prefetch" href="https://api.elevenlabs.io">
     <link rel="preconnect" href="https://api.elevenlabs.io" crossorigin>
 
+    <!-- Hero portrait is the largest paint: fetch it alongside the CSS -->
+    <link rel="preload" as="image" type="image/webp" fetchpriority="high"
+          imagesrcset="assets/people/amaan-shaikh-640.webp 640w, assets/people/amaan-shaikh-960.webp 960w, assets/people/amaan-shaikh-1224.webp 1224w"
+          imagesizes="(min-width: 1180px) 545px, (min-width: 768px) 46vw, 100vw">
+
     <!-- Fonts -->
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" as="style">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
@@ -93,7 +435,7 @@
     <!-- Tailwind, compiled ahead of time (see tailwind.config.js). The Play CDN
          used to build these styles in the browser after load, which flashed
          unstyled content on every visit. -->
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="assets/css/styles.css">
 
     <!-- Section reveals: hide .gs-item before first paint so GSAP never has to
          hide content that is already on screen (that was the flash). The GSAP
@@ -320,7 +662,7 @@
         /* TextLoop (React Bits port): questions flowing along a ribbon path */
         .tl-wrap { position: relative; width: 100%; overflow: hidden; }
         .tl-svg { display: block; width: 100%; height: auto; }
-        .tl-text { user-select: none; font-size: 32px; font-weight: 700; letter-spacing: .3px; }
+        .tl-text { -webkit-user-select: none; user-select: none; font-size: 32px; font-weight: 700; letter-spacing: .3px; }
         .tl-measure { visibility: hidden; pointer-events: none; }
 
         /* Horizontal session gallery: swipeable row by default, pinned scrub when GSAP runs */
@@ -360,10 +702,11 @@
         }
         .ag-panel__media img {
             width: 100%; height: 100%; object-fit: cover; display: block;
-            user-select: none; -webkit-user-drag: none;
+            -webkit-user-select: none; user-select: none; -webkit-user-drag: none;
         }
         .ag-panel__overlay {
             position: absolute; inset: 0; pointer-events: none;
+            background: linear-gradient(180deg, transparent 45%, rgba(0, 0, 0, .7) 100%), rgba(0, 0, 0, .3);
             background:
                 linear-gradient(180deg, transparent 45%, color-mix(in srgb, var(--ag-overlay) 78%, transparent) 100%),
                 color-mix(in srgb, var(--ag-overlay) calc(var(--ag-dim, 0.35) * 100%), transparent);
@@ -375,6 +718,7 @@
         .ag-panel__bar {
             flex: 0 0 auto; width: 3px; height: 26px; border-radius: 3px;
             background: var(--ag-accent); opacity: 0;
+            box-shadow: 0 0 12px var(--ag-accent);
             box-shadow: 0 0 12px color-mix(in srgb, var(--ag-accent) 60%, transparent);
         }
         .ag-panel__text {
@@ -584,7 +928,7 @@
         /* Full transcript dialog */
         .agent-dialog-overlay {
             position: fixed; inset: 0; z-index: 100;
-            background: rgba(15,23,42,.45); backdrop-filter: blur(6px);
+            background: rgba(15,23,42,.45); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
             display: none; align-items: center; justify-content: center; padding: 24px;
         }
         .agent-dialog-overlay.open { display: flex; }
@@ -640,6 +984,7 @@
             border-radius: 16px;
             background: rgba(248, 250, 252, 0.9);
             border: 1px solid #eef1f5;
+            -webkit-backdrop-filter: blur(8px);
             backdrop-filter: blur(8px);
         }
         .dock-item {
@@ -685,6 +1030,13 @@
         }
         .dock-item:hover .dock-tip,
         .dock-item:focus-visible .dock-tip { opacity: 1; transform: translateX(-50%) translateY(0); }
+        /* Header brand lockup: one image, sized by height so the 7.3:1 ratio
+           is kept. Steps down on narrow phones so logo + menu always fit. */
+        .dam-brand-img { display: block; height: 30px; width: auto; max-width: none; }
+        @media (max-width: 400px) { .dam-brand-img { height: 24px; } }
+        @media (max-width: 340px) { .dam-brand-img { height: 21px; } }
+        #menu-btn { flex-shrink: 0; }
+
         /* below 1024px the dock, logo and CTA do not fit on one line (the logo
            wrapped on iPad portrait), so the menu button covers that range */
         @media (min-width: 1024px) { .dock-slot { display: block; } }
@@ -773,6 +1125,7 @@
             display: none; align-items: center; justify-content: center; padding: 20px;
             perspective: 800px; transform-style: preserve-3d;
             background: rgba(15, 23, 42, .5);
+            -webkit-backdrop-filter: blur(10px);
             backdrop-filter: blur(10px);
             opacity: 0; transition: opacity .22s ease;
         }
@@ -1063,9 +1416,9 @@
            both.
            ====================================================================== */
         .pin-stage { position: relative; display: flex; align-items: center; justify-content: center; }
-        .pin-wrap { position: relative; }
+        .pin-wrap { position: relative; width: 320px; max-width: 100%; }
         .pin-card {
-            position: relative; width: 320px; max-width: 100%;
+            position: relative; width: 100%;
             padding: 14px; border-radius: 18px;
             background: #000000; border: 1px solid rgba(255, 255, 255, .1);
             box-shadow: 0 8px 16px rgb(0 0 0 / .4);
@@ -1076,13 +1429,35 @@
             background: #0f172a; aspect-ratio: 4 / 5;
         }
         .pin-figure img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        /* portraits stacked; only opacity changes on switch */
+        .pin-photo {
+            position: absolute; inset: 0; display: block;
+            opacity: 0; transition: opacity .35s ease;
+        }
+        .pin-photo.is-shown { opacity: 1; }
         .pin-name { font-size: 16px; font-weight: 700; color: #f1f5f9; margin-top: 13px; margin-bottom: 2px; }
+        .pin-line { font-size: 13px; line-height: 1.45; color: #94a3b8; min-height: 2.9em; }
+
+        /* Instructor bios share one grid cell: the cell is always the height of
+           the tallest bio, so switching never moves anything on the page.
+           visibility waits for the fade-out to finish before hiding. */
+        .lead-stack { display: grid; }
+        .lead-panel {
+            grid-area: 1 / 1;
+            opacity: 0; visibility: hidden;
+            transform: translateY(6px);
+            transition: opacity .28s ease, transform .28s ease, visibility 0s linear .28s;
+        }
+        .lead-panel.is-shown {
+            opacity: 1; visibility: visible; transform: none;
+            transition: opacity .28s ease, transform .28s ease, visibility 0s;
+        }
 
         /* mode badge: always on, white rounded border over the portrait */
         .pin-mode {
             position: absolute; left: 12px; right: 12px; bottom: 12px; z-index: 5;
             border-radius: 14px; padding: 10px 14px;
-            background: rgba(2, 6, 23, .82); backdrop-filter: blur(6px);
+            background: rgba(2, 6, 23, .82); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
             border: 1.5px solid #ffffff;
         }
         .pin-mode-label { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 700; color: #fff; }
@@ -1120,9 +1495,14 @@
 <!-- ============================= HEADER ============================= -->
 <header class="sticky top-0 z-50 bg-white border-b border-slate-100" role="banner">
     <div class="max-w-[1180px] mx-auto px-6 py-3.5 flex items-center gap-6 relative">
-        <a href="#top" class="flex items-center gap-2.5 hover:opacity-80 transition-opacity" aria-label="Dimaag aur Machine — home">
-            <img src="workshoplogo.png" alt="" class="h-8 w-auto" style="mix-blend-mode: multiply;">
-            <span class="font-extrabold text-base tracking-tight">Dimaag aur Machine</span>
+        <!-- Brand lockup from Logo Kit/ (ring + wordmark in one image). WebP with a
+             PNG fallback for older Safari; fixed width/height so it never shifts the
+             bar while loading. flex-shrink-0 keeps it from squashing at 320px. -->
+        <a href="#top" class="dam-brand flex items-center flex-shrink-0 hover:opacity-80 transition-opacity" aria-label="Dimaag aur Machine, home">
+            <picture>
+                <source type="image/webp" srcset="assets/brand/logo-black.webp">
+                <img src="assets/brand/logo-black.png" alt="Dimaag aur Machine" width="704" height="96" decoding="async" fetchpriority="high" class="dam-brand-img">
+            </picture>
         </a>
         <div class="flex-1"></div>
 
@@ -1243,7 +1623,7 @@
                     your school, they learn to build with AI and to build AI: each team creates a working
                     AI agent for a real problem. No coding needed.
                 </p>
-                <p class="text-base text-slate-500 mb-8 max-w-[32em]">Zero cost to the school. No syllabus disruption. Nothing goes home.</p>
+                <p class="text-base text-slate-500 mb-8 max-w-[32em]">Zero effort for the school. No syllabus disruption. Nothing goes home.</p>
 
                 <div class="inline-grid gap-3 mb-5 max-w-full">
                     <a href="#book" data-ring-hover data-modal-open aria-haspopup="dialog"
@@ -1271,10 +1651,15 @@
             <div class="fp-host" id="hero-fp">
               <div class="comet-card">
                 <div class="relative bg-[#0b1220] rounded-[26px] overflow-hidden min-h-[540px] flex items-end" id="hero-tilt">
-                    <img src="amaan_shaikh_inst.jpg" alt="Amaan Shaikh, program instructor"
-                         width="1224" height="1951"
-                         class="absolute inset-0 w-full h-full object-cover block"
-                         style="object-position: 50% 55%; filter: brightness(1.25) contrast(1.05);">
+                    <picture>
+                        <source type="image/webp"
+                                srcset="assets/people/amaan-shaikh-640.webp 640w, assets/people/amaan-shaikh-960.webp 960w, assets/people/amaan-shaikh-1224.webp 1224w"
+                                sizes="(min-width: 1180px) 545px, (min-width: 768px) 46vw, 100vw">
+                        <img src="assets/people/amaan-shaikh-960.jpg" alt="Amaan Shaikh, founder and program instructor of Dimaag aur Machine"
+                             width="960" height="1530" fetchpriority="high" decoding="async"
+                             class="absolute inset-0 w-full h-full object-cover block"
+                             style="object-position: 50% 55%; filter: brightness(1.25) contrast(1.05);">
+                    </picture>
                     <div class="absolute inset-0 pointer-events-none" style="background: linear-gradient(to bottom, rgba(11,18,32,0) 40%, rgba(11,18,32,0.72) 72%, rgba(11,18,32,0.94) 100%);"></div>
                     <div class="relative p-8 w-full flex flex-col gap-[18px]">
                         <div>
@@ -1645,7 +2030,7 @@
         <div class="accordion-gallery" id="agGallery" role="list" aria-label="Photos from real workshop sessions">
             <div class="ag-panel" role="listitem" tabindex="0" aria-label="Transformers, explained live">
                 <span class="ag-panel__frame">
-                    <span class="ag-panel__media"><img src="Testimonials/teaching-1.webp" alt="Session on how AI models read and process text" loading="lazy" draggable="false"></span>
+                    <span class="ag-panel__media"><img src="assets/gallery/teaching-1.webp" width="1400" height="774" decoding="async" alt="Session on how AI models read and process text" loading="lazy" draggable="false"></span>
                     <span class="ag-panel__overlay" aria-hidden="true"></span>
                 </span>
                 <span class="ag-panel__label" aria-hidden="true">
@@ -1655,7 +2040,7 @@
             </div>
             <div class="ag-panel" role="listitem" tabindex="0" aria-label="Generative AI on the big screen">
                 <span class="ag-panel__frame">
-                    <span class="ag-panel__media"><img src="Testimonials/teaching-4.webp" alt="Showing AI-generated imagery on the classroom screen" loading="lazy" draggable="false"></span>
+                    <span class="ag-panel__media"><img src="assets/gallery/teaching-4.webp" width="1400" height="774" decoding="async" alt="Showing AI-generated imagery on the classroom screen" loading="lazy" draggable="false"></span>
                     <span class="ag-panel__overlay" aria-hidden="true"></span>
                 </span>
                 <span class="ag-panel__label" aria-hidden="true">
@@ -1665,7 +2050,7 @@
             </div>
             <div class="ag-panel" role="listitem" tabindex="0" aria-label="Language models, made simple">
                 <span class="ag-panel__frame">
-                    <span class="ag-panel__media"><img src="Testimonials/teaching-5.webp" alt="Explaining how language models understand words" loading="lazy" draggable="false"></span>
+                    <span class="ag-panel__media"><img src="assets/gallery/teaching-5.webp" width="1400" height="774" decoding="async" alt="Explaining how language models understand words" loading="lazy" draggable="false"></span>
                     <span class="ag-panel__overlay" aria-hidden="true"></span>
                 </span>
                 <span class="ag-panel__label" aria-hidden="true">
@@ -1675,7 +2060,7 @@
             </div>
             <div class="ag-panel" role="listitem" tabindex="0" aria-label="Real datasets, real results">
                 <span class="ag-panel__frame">
-                    <span class="ag-panel__media"><img src="Testimonials/teaching-2.webp" alt="Walking the class through a machine-learning project on real data" loading="lazy" draggable="false"></span>
+                    <span class="ag-panel__media"><img src="assets/gallery/teaching-2.webp" width="1400" height="774" decoding="async" alt="Walking the class through a machine-learning project on real data" loading="lazy" draggable="false"></span>
                     <span class="ag-panel__overlay" aria-hidden="true"></span>
                 </span>
                 <span class="ag-panel__label" aria-hidden="true">
@@ -1685,7 +2070,7 @@
             </div>
             <div class="ag-panel" role="listitem" tabindex="0" aria-label="Questions from the room">
                 <span class="ag-panel__frame">
-                    <span class="ag-panel__media"><img src="Testimonials/teaching-6.webp" alt="Answering questions during a classroom session" loading="lazy" draggable="false"></span>
+                    <span class="ag-panel__media"><img src="assets/gallery/teaching-6.webp" width="1400" height="774" decoding="async" alt="Answering questions during a classroom session" loading="lazy" draggable="false"></span>
                     <span class="ag-panel__overlay" aria-hidden="true"></span>
                 </span>
                 <span class="ag-panel__label" aria-hidden="true">
@@ -1695,7 +2080,7 @@
             </div>
             <div class="ag-panel" role="listitem" tabindex="0" aria-label="Hands-on machine learning">
                 <span class="ag-panel__frame">
-                    <span class="ag-panel__media"><img src="Testimonials/teaching-3.webp" alt="Demonstrating a clustering model at the projector" loading="lazy" draggable="false"></span>
+                    <span class="ag-panel__media"><img src="assets/gallery/teaching-3.webp" width="1400" height="774" decoding="async" alt="Demonstrating a clustering model at the projector" loading="lazy" draggable="false"></span>
                     <span class="ag-panel__overlay" aria-hidden="true"></span>
                 </span>
                 <span class="ag-panel__label" aria-hidden="true">
@@ -1713,46 +2098,89 @@
      port (Aceternity) and doubles as the selector: hovering previews an
      instructor, clicking pins them. The badge on the portrait says whether
      they teach offline or online. -->
-<section id="lead" class="bg-black text-white">
-    <div class="max-w-[1180px] mx-auto px-6 py-20 grid md:grid-cols-2 gap-14 items-center">
+<section id="lead" class="bg-black text-white" aria-labelledby="lead-h-amaan">
+    <!-- grid-cols-1 (minmax(0,1fr)) so the 320px portrait card can't widen the
+         single phone column past the screen -->
+    <div class="max-w-[1180px] mx-auto px-6 py-20 grid grid-cols-1 md:grid-cols-2 gap-14 items-center">
         <div class="gs-item">
+            <!-- Avatar switcher (AnimatedTooltip port). Buttons are built by the
+                 script below from the panels, so there is one source of truth. -->
             <div class="tt-row mb-8" id="leadAvatars" role="tablist" aria-label="Choose an instructor"></div>
 
-            <h2 class="text-[clamp(28px,3.4vw,40px)] leading-[1.12] tracking-[-0.03em] font-extrabold mb-[18px]" id="leadHeading">I don't just teach AI. I build it for a living.</h2>
-            <p class="text-slate-300 mb-[26px] max-w-[32em]" id="leadBio">I'm a Software Development Engineer building AI systems for companies in Germany. I design every session of this program and teach the in-school workshops myself, in English and Hindi, in a regular school computer lab. There is no franchise and no outsourced trainer pool.</p>
+            <!-- Both instructors live in the same grid cell, stacked. The cell is
+                 always as tall as the longest bio, so switching never changes the
+                 page height and the avatar row can never jump under the cursor.
+                 Both bios are real HTML, so crawlers and AI assistants read them
+                 without running any script. -->
+            <div class="lead-stack">
+                <div class="lead-panel is-shown" id="lead-panel-amaan" role="tabpanel" aria-labelledby="lead-h-amaan"
+                     data-name="Amaan Shaikh" data-tip="Program lead" data-avatar="assets/people/amaan-shaikh-avatar.webp" data-mode="offline">
+                    <h2 id="lead-h-amaan" class="text-[clamp(28px,3.4vw,40px)] leading-[1.12] tracking-[-0.03em] font-extrabold mb-[18px]">I don't just teach AI. I build it for a living.</h2>
+                    <p class="text-slate-300 mb-[26px] max-w-[32em]">I'm a Software Development Engineer building AI systems for companies in Germany. I design every session of this program and teach the in-school workshops myself, in English and Hindi, in a regular school computer lab. There is no franchise and no outsourced trainer pool.</p>
+                    <div class="grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-4 mb-[26px]">
+                        <div class="border border-white/10 rounded-[14px] px-[18px] py-4">
+                            <div class="text-[15px] font-bold">M.Sc. Computer Science</div>
+                            <div class="text-[13px] text-slate-400 mt-1">University of Konstanz, Germany</div>
+                        </div>
+                        <div class="border border-white/10 rounded-[14px] px-[18px] py-4">
+                            <div class="text-[15px] font-bold">B.Tech Computer Science</div>
+                            <div class="text-[13px] text-slate-400 mt-1">MIT ADT University, Pune</div>
+                        </div>
+                        <div class="border border-white/10 rounded-[14px] px-[18px] py-4">
+                            <div class="text-[15px] font-bold">500+ students taught</div>
+                            <div class="text-[13px] text-slate-400 mt-1">University of Konstanz and MIT ADT University</div>
+                        </div>
+                    </div>
+                    <blockquote class="m-0 pl-[18px] border-l-2 border-white/20 text-slate-200 text-[17px] leading-[1.5]">&ldquo;Students don't need motivation. They need clarity &mdash; at the right age.&rdquo;</blockquote>
+                </div>
 
-            <div class="grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-4 mb-[26px]" id="leadCreds">
-                <div class="border border-white/10 rounded-[14px] px-[18px] py-4">
-                    <div class="text-[15px] font-bold">M.Sc. Computer Science</div>
-                    <div class="text-[13px] text-slate-400 mt-1">University of Konstanz, Germany</div>
-                </div>
-                <div class="border border-white/10 rounded-[14px] px-[18px] py-4">
-                    <div class="text-[15px] font-bold">B.Tech Computer Science</div>
-                    <div class="text-[13px] text-slate-400 mt-1">MIT ADT University, Pune</div>
-                </div>
-                <div class="border border-white/10 rounded-[14px] px-[18px] py-4">
-                    <div class="text-[15px] font-bold">500+ students taught</div>
-                    <div class="text-[13px] text-slate-400 mt-1">University of Konstanz and MIT ADT University</div>
+                <div class="lead-panel" id="lead-panel-kevin" role="tabpanel" aria-labelledby="lead-h-kevin"
+                     data-name="Kevin Patel" data-tip="Online instructor" data-avatar="assets/people/kevin-patel-avatar.webp" data-mode="online">
+                    <h2 id="lead-h-kevin" class="text-[clamp(28px,3.4vw,40px)] leading-[1.12] tracking-[-0.03em] font-extrabold mb-[18px]">I build models for a living. Online, I teach students to build their own.</h2>
+                    <p class="text-slate-300 mb-[26px] max-w-[32em]">I'm a data scientist building machine learning systems for product teams: the pipelines, language models and analytics behind real apps. For this program I lead the online cohorts. Students join me live over video while their own teacher stays in the room, and every team works through exactly what the in-school batches do: one real problem, one working AI agent, built step by step.</p>
+                    <div class="grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-4 mb-[26px]">
+                        <div class="border border-white/10 rounded-[14px] px-[18px] py-4">
+                            <div class="text-[15px] font-bold">Data science</div>
+                            <div class="text-[13px] text-slate-400 mt-1">ML pipelines, NLP, analytics</div>
+                        </div>
+                        <div class="border border-white/10 rounded-[14px] px-[18px] py-4">
+                            <div class="text-[15px] font-bold">Live online cohorts</div>
+                            <div class="text-[13px] text-slate-400 mt-1">Same build as the in-school batches</div>
+                        </div>
+                        <div class="border border-white/10 rounded-[14px] px-[18px] py-4">
+                            <div class="text-[15px] font-bold">4+ years experience</div>
+                            <div class="text-[13px] text-slate-400 mt-1">Industry AI systems</div>
+                        </div>
+                    </div>
+                    <blockquote class="m-0 pl-[18px] border-l-2 border-white/20 text-slate-200 text-[17px] leading-[1.5]">&ldquo;The screen changes the room, not the standards.&rdquo;</blockquote>
                 </div>
             </div>
-
-            <blockquote class="m-0 pl-[18px] border-l-2 border-white/20 text-slate-200 text-[17px] leading-[1.5]" id="leadQuote">&ldquo;Students don't need motivation. They need clarity &mdash; at the right age.&rdquo;</blockquote>
         </div>
 
         <div class="gs-item pin-stage">
             <div class="pin-wrap" id="leadPin">
                 <div class="pin-card">
+                    <!-- One <picture> per instructor, stacked; switching crossfades
+                         opacity only (compositor work, no decode on hover). -->
                     <div class="pin-figure" id="pinFigure">
-                        <img src="amaan_shaikh_inst.jpg" alt="Amaan Shaikh" loading="lazy"
-                             style="object-position: 50% 40%; filter: brightness(1.15);">
+                        <picture class="pin-photo is-shown" data-for="lead-panel-amaan">
+                            <source type="image/webp" srcset="assets/people/amaan-shaikh-640.webp">
+                            <img src="assets/people/amaan-shaikh-960.jpg" alt="Amaan Shaikh, in-school instructor" width="640" height="1020" loading="lazy" decoding="async"
+                                 style="object-position: 50% 40%; filter: brightness(1.15);">
+                        </picture>
+                        <picture class="pin-photo" data-for="lead-panel-kevin">
+                            <source type="image/webp" srcset="assets/people/kevin-patel-640.webp">
+                            <img src="assets/people/kevin-patel.jpg" alt="Kevin Patel, online instructor" width="640" height="800" loading="lazy" decoding="async"
+                                 style="object-position: 50% 30%;">
+                        </picture>
                         <div class="pin-mode" id="pinMode">
                             <div class="pin-mode-label"><span class="pin-mode-dot"></span><span id="pinModeLabel">Offline</span></div>
                             <div class="pin-mode-detail" id="pinModeDetail">Runs sessions inside your school</div>
                         </div>
                     </div>
                     <div class="pin-name" id="pinName">Amaan Shaikh</div>
+                    <div class="pin-line" id="pinLine">Builds AI in Germany. Teaches it in Indian classrooms.</div>
                 </div>
-
             </div>
         </div>
     </div>
@@ -1797,7 +2225,7 @@
         </ul>
     </div>
 
-    <div class="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-5">
+    <div class="grid grid-cols-[repeat(auto-fit,minmax(min(300px,100%),1fr))] gap-5">
         <div class="gs-item border border-slate-200 rounded-2xl p-6">
             <div class="text-[13px] italic text-slate-400 mb-2">&ldquo;Mera bachcha bas user hi rahega?&rdquo;</div>
             <div class="text-[17px] font-bold mb-2">They build. They don't just prompt.</div>
@@ -1830,7 +2258,7 @@
         </div>
     </div>
 
-    <div class="gs-item mt-5 bg-slate-900 text-white rounded-[20px] px-8 py-[34px] grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-6 items-center">
+    <div class="gs-item mt-5 bg-slate-900 text-white rounded-[20px] px-8 py-[34px] grid grid-cols-[repeat(auto-fit,minmax(min(260px,100%),1fr))] gap-6 items-center">
         <div class="text-[22px] font-bold tracking-[-0.02em] leading-[1.3]">Access is not the gap. Ability is.</div>
         <p class="m-0 text-slate-300 text-[15px]">Every student can already open ChatGPT. Very few can build with it, or tell when it is wrong. That gap closes inside the school, with the teacher in the room. Safe hai, control mein hai.</p>
     </div>
@@ -1897,7 +2325,7 @@
         <div class="gs-item bg-slate-900 text-white rounded-[20px] px-8 py-[30px] grid md:grid-cols-[0.8fr_1.2fr] gap-6 items-start">
             <div>
                 <div class="text-[11px] font-bold tracking-[0.1em] uppercase text-slate-400 mb-2">About fees</div>
-                <div class="text-[22px] font-bold tracking-[-0.02em] leading-[1.3]">Zero cost to the school for Soch aur System.</div>
+                <div class="text-[22px] font-bold tracking-[-0.02em] leading-[1.3]">Zero effort for the school with Soch aur System.</div>
             </div>
             <ul class="list-none m-0 p-0 flex flex-col gap-2.5 text-[15px] text-slate-300">
                 <li>A one-time, all-inclusive fee per student, paid by parents through the school. Enrolment is voluntary.</li>
@@ -1977,6 +2405,7 @@
         <div class="gs-item">
             <h2 class="text-[clamp(26px,3vw,36px)] leading-[1.12] tracking-[-0.03em] font-extrabold mb-4"><span data-hl="underline" data-hl-color="#fb923c" data-hl-stroke="3" data-hl-pad="5">Press the circle. Ask anything.</span></h2>
             <p class="text-[17px] leading-[1.55] text-slate-600 max-w-[30em]">North is an AI agent we built to answer questions about this program, live on this page. Speak in Hindi or English. In the workshop, every team <span data-hl="highlight" data-hl-color="#bfdbfe" data-hl-pad="3">builds an agent like it</span>, each for a real problem of its own.</p>
+            <p class="text-[13px] text-slate-400 mt-4 max-w-[34em]">North uses your microphone only while a conversation is running. Your voice is processed by ElevenLabs to reply and is not stored by us. <a href="privacy-policy.html" class="font-semibold text-slate-600 underline underline-offset-4 hover:text-slate-900">Privacy policy</a></p>
         </div>
 
         <div class="ni-stage">
@@ -2046,6 +2475,7 @@
                 <a href="program-brief.html" class="font-semibold text-slate-900 underline underline-offset-4 hover:text-slate-600">Read the program brief</a>,
                 a single page you can print or forward to your management committee.
             </p>
+            <p class="text-[13px] text-slate-400 mt-2 mb-0">Bookings are handled by Cal.com. See our <a href="privacy-policy.html" class="font-semibold text-slate-900 underline underline-offset-4 hover:text-slate-600">privacy policy</a>.</p>
         </div>
     </div>
 </section>
@@ -2056,10 +2486,12 @@
 <footer class="border-t border-slate-100" role="contentinfo">
     <div class="max-w-[1180px] mx-auto px-6 py-9 flex items-center justify-between gap-5 flex-wrap">
         <div class="flex items-center gap-2.5">
-            <img src="workshoplogo.png" alt="" class="h-7 w-auto" style="mix-blend-mode: multiply;">
             <div>
-                <div class="text-sm font-bold">Dimaag aur Machine</div>
-                <div class="text-[13px] text-slate-400">By Amaan Shaikh &middot; SDE, Germany</div>
+                <picture>
+                    <source type="image/webp" srcset="assets/brand/logo-black.webp">
+                    <img src="assets/brand/logo-black.png" alt="Dimaag aur Machine" width="704" height="96" loading="lazy" decoding="async" style="height: 24px; width: auto; display: block;">
+                </picture>
+                <div class="text-[13px] text-slate-400 mt-2">By Amaan Shaikh &middot; SDE, Germany &middot; Nashik, Maharashtra</div>
             </div>
         </div>
         <div class="flex items-center gap-5 text-[13px] text-slate-400 flex-wrap">
@@ -2088,7 +2520,7 @@
             <p class="dm-sub">A short call with Amaan, who teaches the program, to see whether it fits your school. A written proposal follows.</p>
             <div class="dam-check">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>
-                <span>Zero cost to the school for the student program</span>
+                <span>Zero effort for the school: we run the student program end to end</span>
             </div>
             <div class="dam-check">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>
@@ -2235,10 +2667,10 @@ window.addEventListener('DOMContentLoaded', function () {
     if (!shell || !view) return;
 
     var LOGOS = {
-        cbse:  { src: 'Board Logos/CBSE_new_logo.svg', h: 38 },
-        cisce: { src: 'Board Logos/CISCE-sm.webp',    h: 38 },
-        ib:    { src: 'Board Logos/IB-sm.webp',            h: 34 },
-        ssc:   { src: 'Board Logos/SSC-sm.webp',          h: 38 }
+        cbse:  { src: 'assets/boards/cbse.svg', h: 38 },
+        cisce: { src: 'assets/boards/cisce.webp',    h: 38 },
+        ib:    { src: 'assets/boards/ib.webp',            h: 34 },
+        ssc:   { src: 'assets/boards/ssc.webp',          h: 38 }
     };
 
     // One named colour per promise, at 400-weight so it carries on the near
@@ -2432,137 +2864,122 @@ window.addEventListener('DOMContentLoaded', function () {
 </script>
 
 <!-- Instructors: AnimatedTooltip switcher (Aceternity port) driving one card.
-     Hovering an avatar previews that instructor, clicking pins them, and leaving
-     the row falls back to whoever is pinned. The offline/online badge on the
-     portrait is always visible.
-     NOTE: the second instructor's portrait is a generated silhouette until the
-     real photo arrives (swap DUMMY_2 for the image path), and his bio and
-     credentials still need confirming. -->
+     Hovering an avatar previews that instructor, clicking (or Enter/Space, or
+     the arrow keys) pins them, and leaving the row falls back to whoever is
+     pinned. Everything it shows is already in the HTML; switching only flips
+     classes, so a hover costs one opacity crossfade and no layout:
+       - the bios are stacked in one grid cell (.lead-stack),
+       - the portraits are stacked in the figure and already decoded,
+       - the tooltip tilt is written at most once per frame.
+     Per-instructor card details (badge, name, one-liner) live in CARD below. -->
 <script>
 window.addEventListener('DOMContentLoaded', function () {
     var row = document.getElementById('leadAvatars');
-    var pin = document.getElementById('leadPin');
-    if (!row || !pin) return;
-
-    var DUMMY_2 = 'data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20400%20500%22%3E%3Cdefs%3E%3ClinearGradient%20id=%22g%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%23233043%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%230d1424%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width=%22400%22%20height=%22500%22%20fill=%22url%28%23g%29%22/%3E%3Ccircle%20cx=%22200%22%20cy=%22205%22%20r=%2266%22%20fill=%22%237c8ba1%22/%3E%3Cpath%20d=%22M72%20500c0-70%2057-127%20128-127s128%2057%20128%20127z%22%20fill=%22%237c8ba1%22/%3E%3C/svg%3E';
+    var panels = Array.prototype.slice.call(document.querySelectorAll('#lead .lead-panel'));
+    if (!row || !panels.length) return;
 
     var MODES = {
         offline: { label: 'Offline',            detail: 'Runs sessions inside your school',     dot: '#34d399' },
         online:  { label: 'Online',             detail: 'Live remote sessions',                 dot: '#38bdf8' },
         both:    { label: 'Online and offline', detail: 'In-school weeks plus remote sessions', dot: '#a78bfa' }
     };
-
-    var PEOPLE = [
-        {
-            avatar: 'amaan_shaikh_bw.jpg', photo: 'amaan_shaikh_inst.jpg', focus: '50% 40%',
-            name: 'Amaan Shaikh', tip: 'Program lead',
-            heading: "I don't just teach AI. I build it for a living.",
-            bio: "I'm a Software Development Engineer building AI systems for companies in Germany. I design every session of this program and teach the in-school workshops myself, in English and Hindi, in a regular school computer lab. There is no franchise and no outsourced trainer pool.",
-            creds: [
-                ['M.Sc. Computer Science', 'University of Konstanz, Germany'],
-                ['B.Tech Computer Science', 'MIT ADT University, Pune'],
-                ['500+ students taught', 'University of Konstanz and MIT ADT University']
-            ],
-            quote: '“Students don’t need motivation. They need clarity — at the right age.”',
-            mode: 'offline'
-        },
-        {
-            avatar: DUMMY_2, photo: DUMMY_2, focus: '50% 30%',
-            name: 'Kevin Patel', tip: 'Online instructor',
-            heading: 'Online should not mean unsupervised.',
-            bio: 'I build machine learning systems for product teams, and I run the online cohorts for this program. Students join live over video with their own teacher in the room, working through exactly the same material as the in-school batches.',
-            creds: [
-                ['Data science', 'ML pipelines, NLP, analytics'],
-                ['Teaching format', 'Live online cohorts'],
-                ['4+ years experience', 'Industry AI systems']
-            ],
-            quote: '“The screen changes the room, not the standards.”',
-            mode: 'online'
-        }
-    ];
-
-    var el = {
-        heading: document.getElementById('leadHeading'),
-        bio:     document.getElementById('leadBio'),
-        creds:   document.getElementById('leadCreds'),
-        quote:   document.getElementById('leadQuote'),
-        figure:  document.getElementById('pinFigure'),
-        name:    document.getElementById('pinName'),
-        mLabel:  document.getElementById('pinModeLabel'),
-        mDetail: document.getElementById('pinModeDetail')
+    var CARD = {
+        'lead-panel-amaan': 'Builds AI in Germany. Teaches it in Indian classrooms.',
+        'lead-panel-kevin': 'Builds ML for product teams. Teaches it live, online.'
     };
+
+    var photos  = Array.prototype.slice.call(document.querySelectorAll('#pinFigure .pin-photo'));
+    var nameEl  = document.getElementById('pinName');
+    var lineEl  = document.getElementById('pinLine');
+    var mLabel  = document.getElementById('pinModeLabel');
+    var mDetail = document.getElementById('pinModeDetail');
     var modeBox = document.getElementById('pinMode');
-    var dot = modeBox ? modeBox.querySelector('.pin-mode-dot') : null;
+    var dot     = modeBox ? modeBox.querySelector('.pin-mode-dot') : null;
 
-    var pinned = 0, shown = -1;
+    // Decode every portrait up front, so the first hover never waits on one.
+    photos.forEach(function (ph) {
+        var img = ph.querySelector('img');
+        if (img && img.decode) img.decode().catch(function () {});
+    });
 
-    PEOPLE.forEach(function (p, i) {
+    var pinned = 0, shown = -1, buttons = [];
+
+    panels.forEach(function (p, i) {
         var btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'tt-item';
-        btn.setAttribute('aria-label', p.name + ', ' + p.tip);
+        btn.id = 'lead-tab-' + i;
+        btn.setAttribute('role', 'tab');
+        btn.setAttribute('aria-controls', p.id);
+        btn.setAttribute('aria-label', p.dataset.name + ', ' + p.dataset.tip);
         btn.innerHTML =
-            '<span class="tt-tip"><span class="tt-name">' + p.name + '</span>' +
-            '<span class="tt-role">' + p.tip + '</span></span>' +
-            '<img class="tt-av" src="' + p.avatar + '" alt="" loading="lazy">';
+            '<span class="tt-tip" aria-hidden="true"><span class="tt-name">' + p.dataset.name + '</span>' +
+            '<span class="tt-role">' + p.dataset.tip + '</span></span>' +
+            '<img class="tt-av" src="' + p.dataset.avatar + '" alt="" width="56" height="56" decoding="async">';
 
-        // the original tilts the name card by where the pointer sits across the avatar
-        var av = btn.querySelector('.tt-av');
-        btn.addEventListener('mousemove', function (e) {
-            var r = av.getBoundingClientRect();
-            var off = (e.clientX - r.left) / r.width - 0.5;       // -0.5 .. 0.5
-            btn.style.setProperty('--tt-rot', (off * 90).toFixed(1) + 'deg');
-            btn.style.setProperty('--tt-tx', (off * 100).toFixed(1) + 'px');
+        // Tooltip tilt follows the pointer across the avatar. The rect is read
+        // once on enter (the avatar does not move while hovered) and the write
+        // is batched to the next frame, so fast mouse moves never stack up.
+        var rect = null, offX = 0, queued = false;
+        function paint() {
+            queued = false;
+            btn.style.setProperty('--tt-rot', (offX * 90).toFixed(1) + 'deg');
+            btn.style.setProperty('--tt-tx', (offX * 100).toFixed(1) + 'px');
+        }
+        btn.addEventListener('pointerenter', function (e) {
+            if (e.pointerType === 'mouse') rect = btn.querySelector('.tt-av').getBoundingClientRect();
+            render(i);
         });
-        btn.addEventListener('mouseenter', function () { render(i); });
+        btn.addEventListener('pointermove', function (e) {
+            if (e.pointerType !== 'mouse' || !rect) return;
+            var off = (e.clientX - rect.left) / rect.width - 0.5;
+            offX = off < -0.5 ? -0.5 : (off > 0.5 ? 0.5 : off);
+            if (!queued) { queued = true; requestAnimationFrame(paint); }
+        });
+        btn.addEventListener('pointerleave', function () { rect = null; });
         btn.addEventListener('focus', function () { render(i); });
         btn.addEventListener('click', function () { pinned = i; render(i); });
         row.appendChild(btn);
+        buttons.push(btn);
     });
 
+    // keyboard: arrows move between instructors, like any tab list
+    row.addEventListener('keydown', function (e) {
+        var k = e.key, n = buttons.length, i = buttons.indexOf(document.activeElement);
+        if (i < 0) return;
+        var to = k === 'ArrowRight' || k === 'ArrowDown' ? (i + 1) % n
+               : k === 'ArrowLeft'  || k === 'ArrowUp'   ? (i - 1 + n) % n
+               : k === 'Home' ? 0 : k === 'End' ? n - 1 : -1;
+        if (to < 0) return;
+        e.preventDefault();
+        pinned = to;
+        buttons[to].focus();
+    });
     row.addEventListener('mouseleave', function () { render(pinned); });
     row.addEventListener('focusout', function (e) {
         if (!row.contains(e.relatedTarget)) render(pinned);
     });
 
     function render(i) {
-        if (i === shown) { markActive(); return; }
-        shown = i;
-        var p = PEOPLE[i], m = MODES[p.mode];
-
-        el.heading.textContent = p.heading;
-        el.bio.textContent = p.bio;
-        el.quote.textContent = p.quote;
-        el.creds.innerHTML = p.creds.map(function (c) {
-            return '<div class="border border-white/10 rounded-[14px] px-[18px] py-4">' +
-                   '<div class="text-[15px] font-bold">' + c[0] + '</div>' +
-                   '<div class="text-[13px] text-slate-400 mt-1">' + c[1] + '</div></div>';
-        }).join('');
-
-        el.name.textContent = p.name;
-        el.mLabel.textContent = m.label;
-        el.mDetail.textContent = m.detail;
-        if (dot) dot.style.background = m.dot;
-
-        // swap the portrait, keeping the badge mounted inside the figure
-        var old = el.figure.querySelector('img');
-        if (old) old.remove();
-        var img = document.createElement('img');
-        img.src = p.photo;
-        img.alt = p.name;
-        img.loading = 'lazy';
-        img.style.objectPosition = p.focus;
-        if (p.photo.indexOf('data:') !== 0) img.style.filter = 'brightness(1.15)';
-        el.figure.insertBefore(img, modeBox);
-
-        markActive();
-    }
-
-    function markActive() {
-        var items = row.querySelectorAll('.tt-item');
-        for (var k = 0; k < items.length; k++) {
-            items[k].classList.toggle('is-active', k === pinned);
+        if (i !== shown) {
+            shown = i;
+            var p = panels[i], m = MODES[p.dataset.mode] || MODES.offline;
+            panels.forEach(function (el, k) {
+                el.classList.toggle('is-shown', k === i);
+                if (k === i) el.removeAttribute('inert'); else el.setAttribute('inert', '');
+            });
+            photos.forEach(function (ph) { ph.classList.toggle('is-shown', ph.getAttribute('data-for') === p.id); });
+            nameEl.textContent = p.dataset.name;
+            if (lineEl) lineEl.textContent = CARD[p.id] || '';
+            mLabel.textContent = m.label;
+            mDetail.textContent = m.detail;
+            if (dot) dot.style.background = m.dot;
         }
+        buttons.forEach(function (b, k) {
+            b.classList.toggle('is-active', k === pinned);
+            b.setAttribute('aria-selected', String(k === pinned));
+            b.tabIndex = k === pinned ? 0 : -1;
+        });
     }
 
     render(0);
@@ -2969,116 +3386,131 @@ window.addEventListener('DOMContentLoaded', function () {
 <!-- Hero portrait: CometCard + FollowerPointerCard (Aceternity ports).
      Both are desktop-pointer only. CometCard runs a real spring integrator in
      place of motion's useSpring (stiffness 100 / damping 10 / mass 1, the
-     library default) so the tilt keeps its characteristic slight overshoot. -->
+     library default) so the tilt keeps its characteristic slight overshoot.
+     Smoothness rules this follows:
+       - pointer events only store coordinates; all reads and writes happen in
+         one requestAnimationFrame per frame (read rects first, then write),
+       - the pointer is measured against .comet-card, which the tilt never
+         transforms, so the card leaning away can't feed back into its own
+         target (that was the edge jitter),
+       - enter/leave are taken from that same stable box, so the 1.05 hover
+         scale can't make the cursor flicker in and out at the border,
+       - both loops park themselves once settled. -->
 <script>
 window.addEventListener('DOMContentLoaded', function () {
     var finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
     if (!finePointer) return;
     var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    // ---------------------------------------------------------- CometCard ----
+    var host  = document.getElementById('hero-fp');
+    var stage = host && host.querySelector('.comet-card');
     var card  = document.getElementById('hero-tilt');
-    var glare = card && card.querySelector('.comet-glare');
+    if (!host || !stage || !card) return;
+    var glare  = card.querySelector('.comet-glare');
+    var cursor = host.querySelector('.fp-cursor');
 
-    if (card && !reduced) {
-        var ROTATE_DEPTH = 17.5;   // Aceternity defaults
-        var TRANSLATE_DEPTH = 20;
-        var HOVER_SCALE = 1.05;
-        var HOVER_Z = 50;
+    var px = 0, py = 0;          // last pointer position (client coords)
+    var hovering = false;
 
-        // spring state for the normalised cursor offsets (-0.5 … 0.5)
-        var sx = 0, sy = 0, vx = 0, vy = 0;
-        var tx = 0, ty = 0;              // spring targets
-        var scale = 1, zLift = 0;        // whileHover, eased over ~0.2s
-        var scaleTarget = 1, zTarget = 0;
-        var hovering = false, running = false, last = 0;
+    // ---------------------------------------------------------- CometCard ----
+    var ROTATE_DEPTH = 17.5;     // Aceternity defaults
+    var TRANSLATE_DEPTH = 20;
+    var HOVER_SCALE = 1.05;
+    var HOVER_Z = 50;
+    var STIFF = 100, DAMP = 10, MASS = 1;
 
-        var STIFF = 100, DAMP = 10, MASS = 1;
+    var sx = 0, sy = 0, vx = 0, vy = 0;   // spring state, normalised -0.5 .. 0.5
+    var tx = 0, ty = 0;                   // spring targets
+    var scale = 1, zLift = 0;             // whileHover, eased over ~0.2s
+    var running = false, last = 0;
 
-        function clampHalf(v) { return v < -0.5 ? -0.5 : (v > 0.5 ? 0.5 : v); }
-        function map(v, a, b) { return a + (clampHalf(v) + 0.5) * (b - a); }
+    function clampHalf(v) { return v < -0.5 ? -0.5 : (v > 0.5 ? 0.5 : v); }
+    function map(v, a, b) { return a + (clampHalf(v) + 0.5) * (b - a); }
 
-        function frame(now) {
-            var dt = last ? Math.min((now - last) / 1000, 1 / 30) : 1 / 60;
-            last = now;
+    function tiltFrame(now) {
+        var dt = last ? Math.min((now - last) / 1000, 1 / 30) : 1 / 60;
+        last = now;
 
-            // critically-under-damped spring, matching motion's useSpring default
-            var ax = (-STIFF * (sx - tx) - DAMP * vx) / MASS;
-            var ay = (-STIFF * (sy - ty) - DAMP * vy) / MASS;
-            vx += ax * dt; vy += ay * dt;
-            sx += vx * dt; sy += vy * dt;
+        if (hovering) {
+            var r = stage.getBoundingClientRect();           // read
+            tx = clampHalf((px - r.left) / r.width - 0.5);
+            ty = clampHalf((py - r.top) / r.height - 0.5);
+        } else { tx = 0; ty = 0; }
 
-            // scale / z lift ease (whileHover transition: { duration: 0.2 })
-            var k = 1 - Math.exp(-dt / 0.07);
-            scale += (scaleTarget - scale) * k;
-            zLift += (zTarget - zLift) * k;
+        var ax = (-STIFF * (sx - tx) - DAMP * vx) / MASS;
+        var ay = (-STIFF * (sy - ty) - DAMP * vy) / MASS;
+        vx += ax * dt; vy += ay * dt;
+        sx += vx * dt; sy += vy * dt;
 
-            var rotateX = map(sy, -ROTATE_DEPTH, ROTATE_DEPTH);
-            var rotateY = map(sx, ROTATE_DEPTH, -ROTATE_DEPTH);
-            var trX = map(sx, -TRANSLATE_DEPTH, TRANSLATE_DEPTH);
-            var trY = map(sy, TRANSLATE_DEPTH, -TRANSLATE_DEPTH);
+        var k = 1 - Math.exp(-dt / 0.07);
+        scale += ((hovering ? HOVER_SCALE : 1) - scale) * k;
+        zLift += ((hovering ? HOVER_Z : 0) - zLift) * k;
 
-            card.style.transform =
-                'translate3d(' + trX.toFixed(2) + 'px,' + trY.toFixed(2) + 'px,' + zLift.toFixed(2) + 'px)' +
-                ' scale(' + scale.toFixed(4) + ')' +
-                ' rotateX(' + rotateX.toFixed(2) + 'deg)' +
-                ' rotateY(' + rotateY.toFixed(2) + 'deg)';
-
-            if (glare) {
-                var gx = map(sx, 0, 100), gy = map(sy, 0, 100);
-                glare.style.background =
-                    'radial-gradient(circle at ' + gx.toFixed(1) + '% ' + gy.toFixed(1) + '%,' +
-                    ' rgba(255,255,255,0.9) 10%, rgba(255,255,255,0.75) 20%, rgba(255,255,255,0) 80%)';
-            }
-
-            // park the loop once everything has settled and the cursor is away
-            var settled = !hovering &&
-                Math.abs(sx) < 0.0004 && Math.abs(sy) < 0.0004 &&
-                Math.abs(vx) < 0.0015 && Math.abs(vy) < 0.0015 &&
-                Math.abs(scale - 1) < 0.0004 && Math.abs(zLift) < 0.05;
-            if (settled) {
-                running = false; last = 0;
-                sx = sy = vx = vy = 0; scale = 1; zLift = 0;
-                card.style.transform = '';
-                if (glare) glare.style.background = '';
-                return;
-            }
-            requestAnimationFrame(frame);
+        var settled = !hovering &&
+            Math.abs(sx) < 0.0004 && Math.abs(sy) < 0.0004 &&
+            Math.abs(vx) < 0.0015 && Math.abs(vy) < 0.0015 &&
+            Math.abs(scale - 1) < 0.0004 && Math.abs(zLift) < 0.05;
+        if (settled) {
+            running = false; last = 0;
+            sx = sy = vx = vy = 0; scale = 1; zLift = 0;
+            card.style.transform = '';
+            if (glare) glare.style.background = '';
+            return;
         }
 
-        function kick() { if (!running) { running = true; last = 0; requestAnimationFrame(frame); } }
-
-        card.addEventListener('mousemove', function (e) {
-            var r = card.getBoundingClientRect();
-            tx = (e.clientX - r.left) / r.width - 0.5;
-            ty = (e.clientY - r.top) / r.height - 0.5;
-            kick();
-        });
-        card.addEventListener('mouseenter', function () {
-            hovering = true; scaleTarget = HOVER_SCALE; zTarget = HOVER_Z; kick();
-        });
-        card.addEventListener('mouseleave', function () {
-            hovering = false; tx = 0; ty = 0; scaleTarget = 1; zTarget = 0; kick();
-        });
+        card.style.transform =                               // write
+            'translate3d(' + map(sx, -TRANSLATE_DEPTH, TRANSLATE_DEPTH).toFixed(2) + 'px,' +
+                             map(sy, TRANSLATE_DEPTH, -TRANSLATE_DEPTH).toFixed(2) + 'px,' +
+                             zLift.toFixed(2) + 'px)' +
+            ' scale(' + scale.toFixed(4) + ')' +
+            ' rotateX(' + map(sy, -ROTATE_DEPTH, ROTATE_DEPTH).toFixed(2) + 'deg)' +
+            ' rotateY(' + map(sx, ROTATE_DEPTH, -ROTATE_DEPTH).toFixed(2) + 'deg)';
+        if (glare) {
+            glare.style.background =
+                'radial-gradient(circle at ' + map(sx, 0, 100).toFixed(1) + '% ' + map(sy, 0, 100).toFixed(1) + '%,' +
+                ' rgba(255,255,255,0.9) 10%, rgba(255,255,255,0.75) 20%, rgba(255,255,255,0) 80%)';
+        }
+        requestAnimationFrame(tiltFrame);
+    }
+    function kickTilt() {
+        if (reduced || running) return;
+        running = true; last = 0; requestAnimationFrame(tiltFrame);
     }
 
     // ------------------------------------------------ FollowerPointerCard ----
-    var host = document.getElementById('hero-fp');
-    if (host) {
-        var cursor = host.querySelector('.fp-cursor');
-        host.classList.add('fp-on');
-
-        // The upstream component measures the host rect once on mount, then adds
-        // window scroll to compensate. Re-measuring per move is simpler and, on
-        // a page that both scrolls and parallaxes this card, actually correct.
-        host.addEventListener('mousemove', function (e) {
-            var r = host.getBoundingClientRect();
-            cursor.style.setProperty('--fx', (e.clientX - r.left) + 'px');
-            cursor.style.setProperty('--fy', (e.clientY - r.top) + 'px');
-        });
-        host.addEventListener('mouseenter', function () { host.classList.add('fp-in'); });
-        host.addEventListener('mouseleave', function () { host.classList.remove('fp-in'); });
+    // Written as a direct transform (not custom properties) so each move is a
+    // single compositor update with no style recalculation of the pill.
+    var fpQueued = false;
+    function fpFrame() {
+        fpQueued = false;
+        if (!cursor || !hovering) return;
+        var r = host.getBoundingClientRect();
+        cursor.style.transform = 'translate3d(' + (px - r.left).toFixed(1) + 'px,' + (py - r.top).toFixed(1) + 'px,0)';
     }
+    function kickPointer() { if (!fpQueued) { fpQueued = true; requestAnimationFrame(fpFrame); } }
+    if (cursor) host.classList.add('fp-on');
+
+    // ---------------------------------------------------------- events ------
+    function onMove(e) {
+        if (e.pointerType && e.pointerType !== 'mouse') return;
+        px = e.clientX; py = e.clientY;
+        kickPointer(); kickTilt();
+    }
+    stage.addEventListener('pointerenter', function (e) {
+        if (e.pointerType && e.pointerType !== 'mouse') return;
+        hovering = true; px = e.clientX; py = e.clientY;
+        fpFrame();                                  // place the pill before it fades in
+        host.classList.add('fp-in');
+        kickTilt();
+    });
+    stage.addEventListener('pointermove', onMove, { passive: true });
+    stage.addEventListener('pointerleave', function () {
+        hovering = false;
+        host.classList.remove('fp-in');
+        kickTilt();
+    });
+    // the page (and this card's parallax) can move under a still cursor
+    window.addEventListener('scroll', function () { if (hovering) { kickPointer(); kickTilt(); } }, { passive: true });
 });
 </script>
 
@@ -3217,6 +3649,9 @@ window.addEventListener('DOMContentLoaded', function () {
      within ~800px of the viewport: the embed is a heavy iframe, and loading it
      with the page slowed every first visit, most of all on phones. -->
 <script type="text/javascript">
+// The one place the booking link lives. Paste the part after "cal.com/",
+// e.g. for https://cal.com/your-name/30min use "your-name/30min".
+var DAM_CAL_LINK = 'dimaag-aur-machine/30min';
 function damLoadCal() {
     if (window.__damCal) return;
     window.__damCal = true;
@@ -3224,7 +3659,7 @@ function damLoadCal() {
     Cal("init", { origin: "https://cal.com" });
     Cal("inline", {
         elementOrSelector: "#cal-booking",
-        calLink: "amaan-shaikh-6rpk8r/30min",
+        calLink: DAM_CAL_LINK,
         config: { layout: "month_view" }
     });
     Cal("ui", {

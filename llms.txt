@@ -1,0 +1,42 @@
+# Dimaag aur Machine
+
+> In-school AI workshops for school students in Classes 8 to 12, and AI training for teachers, based in Nashik, Maharashtra, India. In 2 or 3 days inside the school, student teams build a working AI agent for a real problem, without writing code. Zero effort for the school.
+
+Tagline: "Degree nahi. Direction chahiye." (Hindi: "Not a degree. Direction.") The program turns students from AI users into AI builders.
+
+## Programs
+
+- **Soch aur System** (students, Classes 8–12): a 2 or 3 day in-school workshop, 4 hours a day inside school hours, in the school's computer lab and AV room. Classes 8–10 take one workshop; Classes 11–12 take a separate, more advanced one, and the two can run together. Every team builds a working AI agent for a real problem at their school, from real AI models and tools, and deploys it. The 3-day format adds advanced modules and a judged 5-minute pitch per team, with prizes. No coding needed.
+- **Chalk aur Calibration** (teachers): in-school AI training, department by department, 2–6 hours per subject (Maths, Physics, Chemistry, Biology, Languages and Humanities). Teachers learn to turn an existing chapter into quizzes, worksheets and revision sheets, and to check AI output for errors before it reaches a student.
+
+## What students learn
+
+- Build with AI: use AI models and tools as building blocks for a real job
+- Build AI: understand how it works underneath, and make their own agent
+- Manage AI agents through a full workflow, start to finish
+- Where AI goes wrong, and where use turns into misuse
+- How AI is changing every profession, not only engineering
+
+## Who teaches
+
+- **Amaan Shaikh**, founder and program lead. Software Development Engineer building AI systems for companies in Germany. M.Sc. Computer Science, University of Konstanz; B.Tech Computer Science, MIT ADT University, Pune. Has taught 500+ students. Designs every session and teaches the in-school workshops himself, in English and Hindi.
+- **Kevin Patel**, online instructor. Data scientist building machine learning systems for product teams; leads the online cohorts, taught live over video with the school's own teacher in the room.
+
+## Practical facts
+
+- Boards: CBSE, ICSE (CISCE), SSC (Maharashtra State Board) and IB schools.
+- The school provides the computer lab, the AV room, one or two teachers in the room, and its usual channels to parents. Dimaag aur Machine provides the program and all teaching, the build platform, headphones if needed, marketing material, certificates, prizes, photos and a highlight video.
+- Fees: a one-time, all-inclusive fee per student, paid by parents through the school's own fee system, in the range of a school robotics or activity workshop. Enrolment is voluntary. The exact fee is in each school's written proposal. The student program costs the school nothing.
+- Safety: students never sign up for anything or enter personal details; all tools run in an instructor-managed workspace; a school teacher is present in every session.
+- Batches of 30 to 70 students; larger enrolments are split into two batches.
+
+## Links
+
+- [Home page](https://dimaagaurmachine.com/): programs, how the days run, instructors, FAQ for principals, and booking
+- [Program brief](https://dimaagaurmachine.com/program-brief.html): one printable page for school management
+- [Privacy policy](https://dimaagaurmachine.com/privacy-policy.html)
+
+## Contact
+
+- Book a 30-minute call with Amaan: https://cal.com/dimaag-aur-machine/30min (also embedded at https://dimaagaurmachine.com/#book)
+- Email: dimaagaurmachine@gmail.com

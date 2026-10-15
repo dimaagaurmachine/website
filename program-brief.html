@@ -1,12 +1,72 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-IN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Program Brief | Dimaag aur Machine</title>
-    <meta name="description" content="A one-page program brief for school management: what students build in the Dimaag aur Machine AI workshop, how the days run, what the school provides, and how fees work.">
-    <link rel="canonical" href="https://dimaagaurmachine.github.io/website/program-brief.html">
-    <meta name="robots" content="index, follow">
+    <title>AI Workshop Program Brief for Schools | Dimaag aur Machine</title>
+    <meta name="description" content="One-page brief for school management: what students build in the Dimaag aur Machine AI workshop, how the 2 or 3 days run, what the school provides, and how fees work.">
+    <link rel="canonical" href="https://dimaagaurmachine.com/program-brief.html">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <link rel="alternate" hreflang="en-IN" href="https://dimaagaurmachine.com/program-brief.html">
+    <link rel="alternate" hreflang="x-default" href="https://dimaagaurmachine.com/program-brief.html">
+    <link rel="icon" href="favicon.ico?v=2" sizes="48x48">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/brand/favicon-32.png?v=2">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=2">
+    <link rel="manifest" href="site.webmanifest">
+    <meta name="theme-color" content="#ffffff">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Dimaag aur Machine">
+    <meta property="og:locale" content="en_IN">
+    <meta property="og:url" content="https://dimaagaurmachine.com/program-brief.html">
+    <meta property="og:title" content="AI Workshop Program Brief for Schools | Dimaag aur Machine">
+    <meta property="og:description" content="One-page brief for school management: what students build in the Dimaag aur Machine AI workshop, how the 2 or 3 days run, what the school provides, and how fees work.">
+    <meta property="og:image" content="https://dimaagaurmachine.com/assets/brand/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Dimaag aur Machine: from AI users to AI builders.">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="AI Workshop Program Brief for Schools | Dimaag aur Machine">
+    <meta name="twitter:description" content="One-page brief for school management: what students build in the Dimaag aur Machine AI workshop, how the 2 or 3 days run, what the school provides, and how fees work.">
+    <meta name="twitter:image" content="https://dimaagaurmachine.com/assets/brand/og-image.jpg">
+    <script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@graph": [
+  {
+   "@type": "WebPage",
+   "@id": "https://dimaagaurmachine.com/program-brief.html#webpage",
+   "url": "https://dimaagaurmachine.com/program-brief.html",
+   "name": "AI Workshop Program Brief for Schools | Dimaag aur Machine",
+   "description": "One-page brief for school management: what students build in the Dimaag aur Machine AI workshop, how the 2 or 3 days run, what the school provides, and how fees work.",
+   "inLanguage": "en-IN",
+   "isPartOf": {
+    "@id": "https://dimaagaurmachine.com/#website"
+   },
+   "about": {
+    "@id": "https://dimaagaurmachine.com/#organization"
+   },
+   "dateModified": "2026-10-15"
+  },
+  {
+   "@type": "BreadcrumbList",
+   "itemListElement": [
+    {
+     "@type": "ListItem",
+     "position": 1,
+     "name": "Home",
+     "item": "https://dimaagaurmachine.com/"
+    },
+    {
+     "@type": "ListItem",
+     "position": 2,
+     "name": "Program brief",
+     "item": "https://dimaagaurmachine.com/program-brief.html"
+    }
+   ]
+  }
+ ]
+}
+    </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -81,8 +141,7 @@
             border-bottom: 2px solid var(--ink);
         }
         .brand { display: flex; align-items: center; gap: 9px; }
-        .brand img { height: 26px; width: auto; mix-blend-mode: multiply; }
-        .brand span { font-weight: 800; color: var(--ink); font-size: 16px; letter-spacing: -.01em; }
+        .brand img { height: 24px; width: auto; display: block; }
         .masthead .meta { text-align: right; font-size: 11px; color: var(--faint); line-height: 1.5; }
 
         h1 {
@@ -198,6 +257,9 @@
             .masthead { flex-direction: column; gap: 10px; }
             .masthead .meta { text-align: left; }
             h1 { font-size: 22px; }
+            /* the fee table wrapped badly and pushed the page sideways on phones */
+            .fees th, .fees td { padding: 8px 6px; }
+            .fees .amount { white-space: normal; }
         }
 
         /* ---------- Print ---------- */
@@ -226,8 +288,10 @@
 
     <header class="masthead">
         <div class="brand">
-            <img src="workshoplogo.png" alt="">
-            <span>Dimaag aur Machine</span>
+            <picture>
+                <source type="image/webp" srcset="assets/brand/logo-black.webp">
+                <img src="assets/brand/logo-black.png" alt="Dimaag aur Machine" width="704" height="96">
+            </picture>
         </div>
         <div class="meta">
             Program brief for school management<br>
@@ -347,7 +411,7 @@
     <section>
         <h2>Who delivers it</h2>
         <div class="instructor">
-            <img src="amaan_shaikh_bw.jpg" alt="Amaan Shaikh">
+            <img src="assets/people/amaan-shaikh-bw.jpg" alt="Amaan Shaikh, founder and instructor" width="800" height="1275">
             <div>
                 <h3>Amaan Shaikh</h3>
                 <p style="margin-bottom:7px; font-size:12.5px; color:var(--muted);">
@@ -375,7 +439,7 @@
 
     <footer>
         <span>Dimaag aur Machine &middot; AI literacy workshops for schools &middot; Nashik, Maharashtra</span>
-        <span>dimaagaurmachine.github.io/website</span>
+        <span>dimaagaurmachine.com &middot; <a href="privacy-policy.html">Privacy policy</a></span>
     </footer>
 
 </div>

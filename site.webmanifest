@@ -1,0 +1,15 @@
+{
+    "name": "Dimaag aur Machine",
+    "short_name": "Dimaag aur Machine",
+    "description": "In-school AI workshops for Classes 8 to 12 in Nashik.",
+    "start_url": "./",
+    "scope": "./",
+    "display": "browser",
+    "background_color": "#ffffff",
+    "theme_color": "#ffffff",
+    "icons": [
+        { "src": "assets/brand/icon-192.png", "sizes": "192x192", "type": "image/png" },
+        { "src": "assets/brand/icon-512.png", "sizes": "512x512", "type": "image/png" },
+        { "src": "assets/brand/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    ]
+}
