@@ -758,12 +758,13 @@
         }
 
         /* ======================= Embedded AI assistant: North =======================
-           Rebuilt as a DynamicIsland-style widget (cult-ui): one dark pill with a
-           orb and the invitation beside it. Clicking it connects and the island
-           expands downward to the live controls. The glow card, tap-to-start
-           button, pulse rings, rotating question and text bar are all gone.
-           #ai-agent-card keeps its id because DAMGlow writes the ring variables
-           there and they inherit down to the orb. */
+           One dark island: the orb and its status line, expanding to the caption
+           and live controls once connected. The orb is the talk button. In "Hold
+           to talk" mode the mic only reaches ElevenLabs while it is held (silence
+           is streamed otherwise), so room noise can never cut North off;
+           "Hands-free" streams the mic the whole time. The agent script writes
+           data-state / data-talk / data-mode on the island, and DAMGlow animates
+           the orb from CSS variables on it (--spin, --voice-amp, --m1..--m8). */
         /* Highlighter (Magic UI port): rough-notation paints an absolutely
            positioned SVG inside the annotated element, so it has to be a
            positioned inline-block with no background of its own. */
@@ -772,157 +773,185 @@
         .ni-stage { display: flex; justify-content: center; }
         @media (min-width: 1024px) { .ni-stage { justify-content: flex-end; } }
 
+        /* registered so the state palette cross-fades instead of snapping */
+        @property --c1 { syntax: '<color>'; inherits: true; initial-value: #fb923c; }
+        @property --c2 { syntax: '<color>'; inherits: true; initial-value: #c084fc; }
+        @property --c3 { syntax: '<color>'; inherits: true; initial-value: #60a5fa; }
+
         .ni-island {
             --voice-amp: 0;
-            position: relative; width: 100%; max-width: 560px;
-            background: #0b1220; border: 1px solid rgba(255, 255, 255, .1);
-            border-radius: 28px; padding: 14px;
-            box-shadow: 0 24px 60px -26px rgba(0, 0, 0, .85);
-            transition: border-color .5s ease, box-shadow .5s ease;
+            --c1: #fb923c; --c2: #c084fc; --c3: #60a5fa;
+            position: relative; width: 100%; max-width: 520px;
+            background: linear-gradient(180deg, #0e1628 0%, #0a101d 100%);
+            border: 1px solid rgba(255, 255, 255, .09);
+            border-radius: 30px; padding: 16px;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06), 0 30px 70px -30px rgba(2, 6, 23, .9);
+            transition: border-color .5s ease, box-shadow .5s ease, --c1 .7s ease, --c2 .7s ease, --c3 .7s ease;
         }
         .ni-island[data-live="1"] {
-            border-color: rgba(255, 255, 255, .2);
+            border-color: rgba(255, 255, 255, .15);
             box-shadow:
-                0 24px 60px -26px rgba(0, 0, 0, .9),
-                0 0 calc(var(--voice-amp) * 46px) calc(var(--voice-amp) * 4px) rgba(96, 165, 250, calc(var(--voice-amp) * .3));
+                inset 0 1px 0 rgba(255, 255, 255, .07),
+                0 30px 70px -30px rgba(2, 6, 23, .95),
+                0 0 calc(var(--voice-amp) * 56px) calc(var(--voice-amp) * 4px) color-mix(in srgb, var(--c2) calc(var(--voice-amp) * 40%), transparent);
         }
+        /* state palettes: listening is cool, thinking violet, speaking warm */
+        .ni-island[data-state="listening"] { --c1: #38bdf8; --c2: #60a5fa; --c3: #818cf8; }
+        .ni-island[data-state="thinking"]  { --c1: #a78bfa; --c2: #c084fc; --c3: #6366f1; }
+        .ni-island[data-state="speaking"]  { --c1: #fb923c; --c2: #f472b6; --c3: #c084fc; }
 
-        /* the clickable head: orb plus copy */
+        /* the head: orb plus copy, one big press target */
         .ni-head {
-            display: flex; align-items: center; gap: 16px; width: 100%;
+            display: flex; align-items: center; gap: 18px; width: 100%;
             background: none; border: 0; margin: 0; padding: 4px;
             text-align: left; cursor: pointer; color: inherit; font: inherit;
-            border-radius: 22px;
+            border-radius: 24px;
+            -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+            touch-action: manipulation; -webkit-tap-highlight-color: transparent;
         }
+        /* while live a press-and-hold must never turn into a scroll */
+        .ni-island[data-live="1"] .ni-head { touch-action: none; }
         .ni-head:focus-visible { outline: 2px solid #ffffff; outline-offset: 3px; }
 
-        /* The orb. setCircle() rewrites this element's className to
-           'pulse-wrap <state>', so every orb style has to hang off .pulse-wrap.
-           The WebGL strands are gone: the edge itself is now the living thing.
-           Three conic-gradient arcs (orange, purple, blue) sit on the rim, each
-           rotating at its own rate and breathing on its own waveform, so the rim
-           is bright in some places and dim in others rather than pulsing as one
-           even ring. DAMGlow writes --ra/--rb/--rc (angles) and --oa/--ob/--oc
-           (per-arc intensity) every frame; --voice-amp rides on top. */
+        /* The orb: a glass sphere with a slow colour swirl inside and a dark
+           lens at its centre. Voice fills the lens with colour and wobbles the
+           edge (DAMGlow writes the eight border-radius values). */
         .pulse-wrap {
             position: relative; flex: 0 0 auto;
-            width: 96px; height: 96px; border-radius: 50%;
-            transition: transform .4s ease;
+            width: 92px; height: 92px;
+            transition: transform .35s cubic-bezier(.3, 1.5, .5, 1);
+        }
+        .ni-head:hover .pulse-wrap { transform: scale(1.03); }
+        .ni-island[data-talk="hold"] .pulse-wrap { transform: scale(.93); }
+
+        .ni-halo {
+            position: absolute; inset: -16px; border-radius: 50%; z-index: -1; pointer-events: none;
+            background: radial-gradient(circle, var(--c2) 0%, var(--c3) 36%, transparent 70%);
+            filter: blur(16px);
+            opacity: calc(.2 + var(--voice-amp) * .65);
+        }
+        .ni-sphere {
+            position: absolute; inset: 0; overflow: hidden; isolation: isolate;
+            border-radius: var(--m1, 50%) var(--m2, 50%) var(--m3, 50%) var(--m4, 50%) / var(--m5, 50%) var(--m6, 50%) var(--m7, 50%) var(--m8, 50%);
+            background: #0a1222;
+            transform: scale(calc(1 + var(--voice-amp) * .1));
+        }
+        .ni-swirl {
+            position: absolute; inset: -30%;
+            background: conic-gradient(from calc(var(--spin, 0) * 1deg), var(--c1), var(--c2), var(--c3), var(--c1));
+            filter: blur(10px);
+        }
+        .ni-lens {
+            position: absolute; inset: 15%; border-radius: 50%;
+            background: radial-gradient(circle, #0a1222 0%, rgba(10, 18, 34, .88) 42%, rgba(10, 18, 34, 0) 72%);
+            filter: blur(3px);
+            opacity: calc(.92 - var(--voice-amp) * 1.8);
+            transform: scale(calc(1 - var(--voice-amp) * .9));
+        }
+        .ni-sheen {
+            position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+            background: radial-gradient(circle at 32% 24%, rgba(255, 255, 255, .38) 0%, rgba(255, 255, 255, .07) 15%, rgba(255, 255, 255, 0) 32%);
+            box-shadow: inset 0 -10px 18px rgba(0, 0, 0, .38), inset 0 2px 6px rgba(255, 255, 255, .14), inset 0 0 0 1px rgba(255, 255, 255, .07);
+        }
+        /* the hold ring: lights up while the mic is open */
+        .ni-press {
+            position: absolute; inset: -7px; border-radius: 50%; pointer-events: none;
+            border: 2px solid rgba(255, 255, 255, .8);
+            opacity: 0; transform: scale(.88);
+            transition: opacity .22s ease, transform .3s cubic-bezier(.3, 1.5, .5, 1);
+        }
+        .ni-island[data-talk="hold"] .ni-press,
+        .ni-island[data-talk="latch"] .ni-press { opacity: 1; transform: scale(1); }
+        .ni-island[data-talk="latch"] .ni-press { animation: ni-latch 1.6s ease-in-out infinite; }
+        @keyframes ni-latch { 50% { opacity: .35; } }
+
+        .ni-copy { min-width: 0; flex: 1; }
+        .ni-title { display: block; font-size: 18px; font-weight: 700; letter-spacing: -0.02em; color: #f8fafc; }
+        /* status line with a state dot; the agent script writes the text */
+        .agent-mode {
+            display: flex; align-items: center; flex-wrap: wrap; gap: 0 7px;
+            font-size: 13.5px; color: #94a3b8; margin-top: 4px; min-height: 1.3em;
+            transition: color .4s ease;
+        }
+        .agent-mode::before {
+            content: ""; width: 7px; height: 7px; border-radius: 50%; flex: 0 0 auto;
+            background: currentColor; opacity: 0; transition: opacity .3s ease;
+        }
+        .ni-island[data-live="0"] .agent-mode::before { display: none; }
+        .ni-island[data-live="1"] .agent-mode::before { opacity: 1; }
+        .ni-island[data-state="ready"]     .agent-mode { color: #cbd5e1; }
+        .ni-island[data-state="listening"] .agent-mode { color: #7dd3fc; }
+        .ni-island[data-state="thinking"]  .agent-mode { color: #c4b5fd; }
+        .ni-island[data-state="speaking"]  .agent-mode { color: #fdba74; }
+        .ni-island[data-state="listening"] .agent-mode::before,
+        .ni-island[data-state="thinking"]  .agent-mode::before { animation: ni-dot 1.2s ease-in-out infinite; }
+        @keyframes ni-dot { 50% { opacity: .25; } }
+        .agent-mode kbd {
+            font: 600 11px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+            padding: 3px 6px; border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, .18); border-bottom-width: 2px; color: #e2e8f0;
         }
 
-        /* the interior: three heavily blurred colour blobs drifting on their own
-           paths inside a clipped sphere, so the orb has weather rather than being
-           an empty disc. Positions come from DAMGlow as --b*x/--b*y percentages. */
-        .ni-core {
-            position: absolute; inset: 0; border-radius: 50%; overflow: hidden;
-            background: radial-gradient(circle at 50% 38%, #16223c 0%, #070c16 76%);
-            box-shadow: inset 0 -7px 16px rgba(0, 0, 0, .6),
-                        inset 0 4px 10px rgba(255, 255, 255, .05);
-        }
-        .ni-blob {
-            position: absolute; width: 60%; height: 60%; border-radius: 50%;
-            transform: translate(-50%, -50%) scale(var(--bs, 1));
-            filter: blur(7px); mix-blend-mode: screen;
-        }
-        .blob-a { left: calc(var(--b1x, 50) * 1%); top: calc(var(--b1y, 46) * 1%);
-                  width: 72%; height: 72%;
-                  background: radial-gradient(circle, #fdba74 0%, #f97316 36%, rgba(249,115,22,0) 66%); }
-        .blob-b { left: calc(var(--b2x, 42) * 1%); top: calc(var(--b2y, 58) * 1%);
-                  background: radial-gradient(circle, #d8b4fe 0%, #9333ea 36%, rgba(147,51,234,0) 66%); }
-        .blob-c { left: calc(var(--b3x, 60) * 1%); top: calc(var(--b3y, 54) * 1%);
-                  background: radial-gradient(circle, #7dd3fc 0%, #2563eb 36%, rgba(37,99,235,0) 66%); }
-
-        /* glass: a specular hit up-left and a faint terminator, so it reads as a
-           sphere with the plasma lit underneath rather than a flat circle */
-        .ni-gloss {
-            position: absolute; inset: 0; border-radius: 50%; pointer-events: none;
-            background:
-                radial-gradient(circle at 31% 22%, rgba(255,255,255,.30) 0%, rgba(255,255,255,.07) 11%, rgba(255,255,255,0) 27%),
-                radial-gradient(circle at 68% 86%, rgba(255,255,255,.05) 0%, rgba(255,255,255,0) 30%);
-        }
-        .ni-head:hover .pulse-wrap { transform: scale(1.04); }
-
-        .ni-ring {
-            position: absolute; inset: -2px; border-radius: 50%;
-            padding: 4.5px; pointer-events: none;
-            filter: blur(2.4px);         /* widens the arc into a soft glow band */
-            mix-blend-mode: screen;      /* arcs add light where they overlap */
-            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            mask-composite: exclude;
-        }
-        /* each arc is a sweep that fades out at both ends, so it reads as a
-           strand lying on the rim rather than a full outline */
-        .ring-a {
-            background: conic-gradient(from calc(var(--ra, 0) * 1deg),
-                        rgba(251,146,60,0) 0deg, #fdba74 34deg, #fb923c 62deg, rgba(251,146,60,0) 104deg);
-            opacity: var(--oa, .5);
-        }
-        .ring-b {
-            background: conic-gradient(from calc(var(--rb, 120) * 1deg),
-                        rgba(192,132,252,0) 0deg, #d8b4fe 30deg, #c084fc 58deg, rgba(192,132,252,0) 96deg);
-            opacity: var(--ob, .5);
-        }
-        .ring-c {
-            background: conic-gradient(from calc(var(--rc, 240) * 1deg),
-                        rgba(96,165,250,0) 0deg, #93c5fd 26deg, #60a5fa 54deg, rgba(96,165,250,0) 92deg);
-            opacity: var(--oc, .5);
-        }
-        /* outer halo: the whole palette, blurred, intensifying with the voice */
-        .ni-bloom {
-            position: absolute; inset: -9px; border-radius: 50%; z-index: -1;
-            pointer-events: none; filter: blur(13px); mix-blend-mode: screen;
-            background: conic-gradient(from calc(var(--rg, 0) * 1deg),
-                        #fb923c, #c084fc, #60a5fa, #c084fc, #fb923c);
-            opacity: calc(.32 + var(--voice-amp, 0) * .55);
-        }
-
-        /* reduced motion: hold a steady rim and park the plasma */
-        @media (prefers-reduced-motion: reduce) {
-            .ni-ring { opacity: .55 !important; }
-            .ni-bloom { opacity: .24 !important; }
-            .ni-blob { filter: blur(13px); }
-        }
-
-        .ni-copy { min-width: 0; }
-        .ni-title { display: block; font-size: 17px; font-weight: 700; letter-spacing: -0.02em; color: #f1f5f9; }
-        /* setMode() rewrites this to 'agent-mode <state>' */
-        .agent-mode { display: block; font-size: 13px; color: #94a3b8; margin-top: 3px; min-height: 1.25em; }
-        .agent-mode.listening { color: #60a5fa; }
-        .agent-mode.speaking  { color: #c084fc; }
-        .agent-mode:empty::before { content: "Tap and speak. Hindi or English."; color: #64748b; }
-
-        /* live controls, revealed as the island expands */
+        /* live area, revealed as the island expands */
         .ni-live {
             max-height: 0; opacity: 0; overflow: hidden;
-            transition: max-height .45s cubic-bezier(.22, 1.05, .36, 1), opacity .3s ease;
+            transition: max-height .5s cubic-bezier(.22, 1, .36, 1), opacity .3s ease;
         }
-        .ni-island[data-live="1"] .ni-live { max-height: 130px; opacity: 1; }
-        .ni-live-inner { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 16px 4px 4px; }
-        .agent-timer { font-variant-numeric: tabular-nums; font-size: 12.5px; color: #64748b; margin-right: 4px; }
+        .ni-island[data-live="1"] .ni-live { max-height: 280px; opacity: 1; }
+
+        /* live caption: the sentence North is saying right now */
+        .ni-caption {
+            margin: 16px 6px 0; min-height: 3em;
+            font-size: 15.5px; line-height: 1.5; color: #e2e8f0; letter-spacing: -0.005em;
+            transition: opacity .2s ease, transform .2s ease;
+        }
+        .ni-caption.swap { opacity: 0; transform: translateY(4px); }
+        .ni-caption:empty::before { content: "North\2019s replies appear here."; color: #475569; font-size: 14px; }
+
+        .ni-controls {
+            display: flex; align-items: center; gap: 10px;
+            margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255, 255, 255, .07);
+        }
+        .ni-seg {
+            display: inline-flex; padding: 3px; border-radius: 999px;
+            background: rgba(255, 255, 255, .05); border: 1px solid rgba(255, 255, 255, .08);
+        }
+        .ni-seg button {
+            border: 0; background: none; color: #94a3b8; cursor: pointer;
+            font-family: inherit; font-size: 12.5px; font-weight: 600; line-height: 1;
+            padding: 9px 13px; border-radius: 999px; white-space: nowrap;
+            transition: color .2s ease, background-color .2s ease;
+        }
+        .ni-seg button:hover { color: #e2e8f0; }
+        .ni-seg button[aria-pressed="true"] { background: #f8fafc; color: #0b1220; }
+        .ni-seg button:focus-visible { outline: 2px solid #ffffff; outline-offset: 2px; }
+        .ni-spacer { flex: 1; }
 
         .agent-round {
-            width: 40px; height: 40px; border-radius: 50%; flex: 0 0 auto;
-            border: 1px solid rgba(255, 255, 255, .16); background: #101a2c; color: #cbd5e1;
+            width: 38px; height: 38px; border-radius: 50%; flex: 0 0 auto;
+            border: 1px solid rgba(255, 255, 255, .14); background: rgba(255, 255, 255, .04); color: #cbd5e1;
             display: flex; align-items: center; justify-content: center; cursor: pointer;
             transition: background-color .2s ease, color .2s ease, border-color .2s ease;
         }
-        .agent-round:hover:not(:disabled) { background: #17243c; color: #ffffff; }
+        .agent-round:hover:not(:disabled) { background: rgba(255, 255, 255, .1); color: #ffffff; }
         .agent-round:disabled { opacity: .4; cursor: default; }
-        .agent-round.danger { color: #f87171; border-color: rgba(248, 113, 113, .4); }
+        .agent-round.danger { color: #f87171; border-color: rgba(248, 113, 113, .35); }
         .agent-round.danger:hover:not(:disabled) { background: rgba(248, 113, 113, .14); color: #fca5a5; }
         .agent-round svg { width: 17px; height: 17px; stroke-width: 2; }
 
-        /* the agent script still writes here; the dialog is the only view of it */
-        .agent-transcript { display: none; }
-        .pc-label, .pc-sub { display: none; }
+        @media (prefers-reduced-motion: reduce) {
+            .ni-island[data-talk="latch"] .ni-press,
+            .ni-island .agent-mode::before { animation: none !important; }
+        }
 
         @media (max-width: 520px) {
-            .ni-title { font-size: 15.5px; }
-            .pulse-wrap { width: 78px; height: 78px; }
-            .ni-blob { filter: blur(6px); }
-            .ni-head { gap: 13px; }
+            .ni-island { padding: 14px; border-radius: 26px; }
+            .ni-title { font-size: 16px; }
+            .pulse-wrap { width: 76px; height: 76px; }
+            .ni-head { gap: 14px; }
+            .ni-caption { font-size: 15px; }
+            .ni-seg button { padding: 8px 10px; font-size: 12px; }
+            .ni-controls { gap: 8px; }
         }
 
 
@@ -2404,50 +2433,47 @@
 </section>
 
 <!-- ============================= 10. NORTH (embedded AI assistant) =============================
-     A DynamicIsland-style widget: a glowing orb plus the invitation, expanding to
-     the live controls once connected. Voice only by design, so there is no text
-     bar and no on-card transcript; the transcript lives behind the dialog. -->
+     A DynamicIsland-style widget: the orb plus the invitation, expanding to a live
+     caption and the controls once connected. Voice only by design, so there is no
+     text bar; the full transcript lives behind the dialog. -->
 <section id="ai-agent" class="max-w-[1180px] mx-auto px-6 py-[76px]">
     <div id="north" class="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center scroll-mt-[88px]">
         <div class="gs-item">
             <h2 class="text-[clamp(26px,3vw,36px)] leading-[1.12] tracking-[-0.03em] font-extrabold mb-4"><span data-hl="underline" data-hl-color="#fb923c" data-hl-stroke="3" data-hl-pad="5">Press the circle. Ask anything.</span></h2>
-            <p class="text-[17px] leading-[1.55] text-slate-600 max-w-[30em]">North is an AI agent we built to answer questions about this program, live on this page. Speak in Hindi or English. In the workshop, every team <span data-hl="highlight" data-hl-color="#bfdbfe" data-hl-pad="3">builds an agent like it</span>, each for a real problem of its own.</p>
+            <p class="text-[17px] leading-[1.55] text-slate-600 max-w-[30em]">North is an AI agent we built to answer questions about this program, live on this page. Tap the circle to start, then hold it while you speak, in Hindi or English. In the workshop, every team <span data-hl="highlight" data-hl-color="#bfdbfe" data-hl-pad="3">builds an agent like it</span>, each for a real problem of its own.</p>
             <p class="text-[13px] text-slate-400 mt-4 max-w-[34em]">North uses your microphone only while a conversation is running. Your voice is processed by ElevenLabs to reply and is not stored by us. <a href="privacy-policy.html" class="font-semibold text-slate-600 underline underline-offset-4 hover:text-slate-900">Privacy policy</a></p>
         </div>
 
         <div class="ni-stage">
-        <div class="ni-island gs-item" id="ai-agent-card" data-live="0">
+        <div class="ni-island gs-item" id="ai-agent-card" data-live="0" data-state="idle" data-talk="" data-mode="ptt">
             <button type="button" class="ni-head" id="pulseBtn" aria-label="Start a voice conversation with North">
-                <span class="pulse-wrap" id="pulseWrap">
-                    <span class="ni-bloom" aria-hidden="true"></span>
-                    <span class="ni-core" aria-hidden="true">
-                        <span class="ni-blob blob-a"></span>
-                        <span class="ni-blob blob-b"></span>
-                        <span class="ni-blob blob-c"></span>
+                <span class="pulse-wrap" id="pulseWrap" aria-hidden="true">
+                    <span class="ni-halo"></span>
+                    <span class="ni-sphere">
+                        <span class="ni-swirl"></span>
+                        <span class="ni-lens"></span>
+                        <span class="ni-sheen"></span>
                     </span>
-                    <span class="ni-ring ring-a" aria-hidden="true"></span>
-                    <span class="ni-ring ring-b" aria-hidden="true"></span>
-                    <span class="ni-ring ring-c" aria-hidden="true"></span>
-                    <span class="ni-gloss" aria-hidden="true"></span>
+                    <span class="ni-press"></span>
                 </span>
                 <span class="ni-copy">
                     <span class="ni-title">Talk to North</span>
-                    <span class="agent-mode" id="agentMode"></span>
+                    <span class="agent-mode" id="agentMode">Tap to start. Hindi or English.</span>
                 </span>
             </button>
 
             <div class="ni-live">
-                <div class="ni-live-inner">
-                    <span class="agent-timer" id="agentTimer" hidden>00:00</span>
-                    <button id="agentMute" class="agent-round" disabled aria-label="Mute microphone" title="Mute"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg></button>
-                    <button id="agentDialogBtn" class="agent-round" disabled aria-label="View the transcript" title="Transcript"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg></button>
+                <p class="ni-caption" id="agentCaption"></p>
+                <div class="ni-controls">
+                    <div class="ni-seg" role="group" aria-label="How you talk to North">
+                        <button type="button" data-talk-mode="ptt" aria-pressed="true" title="Speak only while you hold the circle. Best in noisy rooms.">Hold to talk</button>
+                        <button type="button" data-talk-mode="hf" aria-pressed="false" title="North listens all the time. Best in a quiet room.">Hands-free</button>
+                    </div>
+                    <span class="ni-spacer"></span>
+                    <button id="agentDialogBtn" type="button" class="agent-round" disabled aria-label="View the transcript" title="Transcript"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg></button>
                     <button id="agentEnd" type="button" class="agent-round danger" aria-label="End the conversation" title="End"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
                 </div>
             </div>
-
-            <span class="pc-label" id="pcLabel"></span>
-            <span class="pc-sub" id="pcSub"></span>
-            <div class="agent-transcript" id="agentTranscript" aria-live="polite"></div>
         </div>
         </div>
     </div>
@@ -4205,13 +4231,12 @@ window.addEventListener('DOMContentLoaded', function () {
 </script>
 
 <!-- ============================================================
-     VOICE-REACTIVE BORDER GLOW — the private-support card's conic
-     gradient border and its bloom react to the assistant the way
-     the strands used to: a slow revolve when idle, a fast spin
-     while connecting, and a pulse with the live audio level while
-     listening and speaking. The agent script drives it through
-     window.DAMGlow = { setState, setLevel }. Pure CSS variables,
-     no WebGL involved.
+     NORTH ORB MOTION — animates the orb from the agent's state.
+     The colour swirl revolves (slowly when idle, fast while
+     connecting or thinking), the sphere's edge wobbles, and the
+     live audio level swells both. The agent script drives it
+     through window.DAMGlow = { setState, setLevel }. Pure CSS
+     variables on #ai-agent-card, no WebGL involved.
      ============================================================ -->
 <script>
 (function () {
@@ -4219,52 +4244,31 @@ window.addEventListener('DOMContentLoaded', function () {
     var card = document.getElementById('ai-agent-card');
     if (!card) return;
 
-    // degrees/sec of gradient revolve, baseline bloom, and audio-level gain
+    // degrees/sec of swirl, baseline level, audio gain, edge wobble
     var STATES = {
-        idle:       { speed: 14,  base: 0.00, gain: 0   },
-        connecting: { speed: 170, base: 0.24, gain: 0   },
-        listening:  { speed: 28,  base: 0.20, gain: 2.4 },
-        speaking:   { speed: 75,  base: 0.32, gain: 3.0 }
+        idle:       { speed: 12,  base: 0.00, gain: 0,   wobble: 0.012 },
+        connecting: { speed: 160, base: 0.08, gain: 0,   wobble: 0.016 },
+        ready:      { speed: 18,  base: 0.03, gain: 0,   wobble: 0.016 },
+        listening:  { speed: 36,  base: 0.08, gain: 2.6, wobble: 0.020 },
+        thinking:   { speed: 130, base: 0.12, gain: 0,   wobble: 0.028 },
+        speaking:   { speed: 60,  base: 0.14, gain: 3.0, wobble: 0.020 }
     };
     var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var state = 'idle', level = 0;
-    var angle = 120, amp = 0, rafId = null, lastT = 0, inView = true;
-    // the three rim arcs: independent angles, and a phase clock for breathing
-    var ra = 0, rb = 130, rc = 245, clock = 0;
-
-    // Two summed sines at a non-integer ratio, so the wave never repeats on a
-    // simple beat and the arc brightens and dims unevenly instead of pulsing
-    // like a metronome. Each arc gets its own frequency and phase, chosen so
-    // the three never peak together.
-    function breathe(f, ph) {
-        var v = 0.5 + 0.34 * Math.sin(clock * f + ph) + 0.16 * Math.sin(clock * f * 2.37 + ph * 1.7);
-        return v < 0 ? 0 : (v > 1 ? 1 : v);
-    }
+    var spin = 0, speed = STATES.idle.speed, amp = 0, clock = 0;
+    var rafId = null, lastT = 0, lastApply = 0, inView = true;
+    // eight radii, each on its own frequency and phase, so the edge flows
+    // rather than pulsing as one even circle
+    var F = [0.9, 1.3, 0.7, 1.1, 1.2, 0.8, 1.4, 1.0];
+    var P = [0.0, 1.7, 3.1, 4.6, 0.9, 2.4, 3.9, 5.3];
 
     function apply() {
-        card.style.setProperty('--glow-angle', (angle % 360).toFixed(2) + 'deg');
+        card.style.setProperty('--spin', (spin % 360).toFixed(1));
         card.style.setProperty('--voice-amp', amp.toFixed(3));
-        card.style.setProperty('--ra', (ra % 360).toFixed(1));
-        card.style.setProperty('--rb', (rb % 360).toFixed(1));
-        card.style.setProperty('--rc', (rc % 360).toFixed(1));
-        card.style.setProperty('--rg', (angle % 360).toFixed(1));
-        // floor keeps the rim visible when idle; amp lifts the ceiling on voice
-        var lift = 0.68 + amp * 0.32;
-        card.style.setProperty('--oa', (0.26 + breathe(0.83, 0.0) * lift).toFixed(3));
-        card.style.setProperty('--ob', (0.26 + breathe(1.29, 2.2) * lift).toFixed(3));
-        card.style.setProperty('--oc', (0.26 + breathe(0.57, 4.4) * lift).toFixed(3));
-
-        // Interior plasma: each blob rides its own Lissajous path, x and y on
-        // unrelated frequencies so the three never orbit in formation. Voice
-        // amplitude swells them, which is what makes the orb look like it is
-        // reacting rather than looping.
-        card.style.setProperty('--bs', (1 + amp * 0.30).toFixed(3));
-        card.style.setProperty('--b1x', (48 + 15 * Math.sin(clock * 0.53)).toFixed(2));
-        card.style.setProperty('--b1y', (44 + 13 * Math.cos(clock * 0.71)).toFixed(2));
-        card.style.setProperty('--b2x', (54 + 14 * Math.sin(clock * 0.41 + 2.1)).toFixed(2));
-        card.style.setProperty('--b2y', (57 + 15 * Math.cos(clock * 0.62 + 1.3)).toFixed(2));
-        card.style.setProperty('--b3x', (46 + 16 * Math.sin(clock * 0.67 + 4.2)).toFixed(2));
-        card.style.setProperty('--b3y', (54 + 12 * Math.cos(clock * 0.48 + 3.4)).toFixed(2));
+        var w = Math.min(STATES[state].wobble + amp * 0.18, 0.12) * 100;
+        for (var i = 0; i < 8; i++) {
+            card.style.setProperty('--m' + (i + 1), (50 + w * Math.sin(clock * F[i] + P[i])).toFixed(2) + '%');
+        }
     }
 
     window.DAMGlow = {
@@ -4280,24 +4284,18 @@ window.addEventListener('DOMContentLoaded', function () {
         var dt = lastT ? Math.min((now - lastT) / 1000, 0.1) : 0.016;
         lastT = now;
         var st = STATES[state];
-        angle += st.speed * dt;
-        // arcs drift at unrelated rates, one of them backwards, so the bright
-        // spots keep sliding past each other rather than holding formation
-        clock += dt * (1 + level * 1.6);
-        ra += (16 + level * 95) * dt;
-        rb -= (10 + level * 62) * dt;
-        rc += (6.5 + level * 44) * dt;
+        speed += (st.speed - speed) * 0.06;
+        spin += speed * dt * (1 + level * 2);
+        clock += dt * (1.4 + level * 6);
         var target = st.base + level * st.gain;
-        if (state === 'connecting') target += 0.08 * (1 + Math.sin(now / 180));
-        amp += (Math.min(target, 1) - amp) * 0.12;
-        // Idle, the orb only drifts slowly, so ~25fps is indistinguishable and
-        // halves the style work (17 properties, 7 blurred layers) on phones.
-        // Live calls get every frame, since they track the voice.
+        if (state === 'thinking' || state === 'connecting') target += 0.05 * (1 + Math.sin(now / 240));
+        amp += (Math.min(target, 1) - amp) * 0.14;
+        // Idle, the orb only drifts, so ~25fps is indistinguishable and halves
+        // the style work on phones. Live calls get every frame.
         if (state === 'idle' && now - lastApply < 40) return;
         lastApply = now;
         apply();
     }
-    var lastApply = 0;
     function start() {
         if (reduced || rafId != null || !inView || document.hidden) return;
         lastT = 0;
@@ -4323,13 +4321,20 @@ window.addEventListener('DOMContentLoaded', function () {
 
 
 <!-- ============================================================
-     DAM AI ASSISTANT — embedded agent (CTA button + glow-border card).
+     DAM AI ASSISTANT — North, the embedded voice agent.
      Custom ElevenLabs conversational client over a raw WebSocket:
-     mic → 16kHz PCM16 up, PCM16 down → queued playback. The button
-     and the card's glow border react to the live audio level.
-     Handles interruptions,
-     ping/pong, mic-permission denial (text-mode fallback),
-     connection timeout, transcript copy, and page-unload cleanup.
+     mic (AudioWorklet) → 16kHz PCM16 up, PCM16 down → gapless
+     playback scheduled on the audio clock.
+     Two ways to talk:
+       Hold to talk (default): the mic only reaches ElevenLabs while
+         the orb (or Space) is held; between presses true silence is
+         streamed, so room noise can never start a turn or cut North
+         off. A quick tap latches the mic open until the next tap.
+         Pressing while North speaks stops it at once.
+       Hands-free: the mic streams continuously and ElevenLabs'
+         own turn-taking and interruptions apply.
+     Also: live sentence captions, thinking state, ping/pong, mic
+     denial, connection timeout, transcript copy, unload cleanup.
      ============================================================ -->
 <script>
 (function () {
@@ -4338,76 +4343,140 @@ window.addEventListener('DOMContentLoaded', function () {
     var AGENT_ID = 'agent_4101m4zsrexve62smpz73jvr4vmc';
     var WS_URL = 'wss://api.elevenlabs.io/v1/convai/conversation?agent_id=' + AGENT_ID;
     var CONNECT_TIMEOUT_MS = 12000;
+    var TAP_MS = 280;            // a press shorter than this latches the mic open
+    var THINK_TIMEOUT_MS = 7000; // stop showing "Thinking…" if no reply comes
+    var MODE_KEY = 'dam-north-mode';
 
     // ---------- state ----------
-    var ws = null, audioCtx = null, micStream = null, micSource = null, micProc = null;
-    var inputAn = null, outputAn = null, outputWired = false;
-    var connected = false, connecting = false, muted = false, micAvailable = false;
-    var lastInterrupt = 0, audioQ = [], playing = false, curSrc = null, audioGen = 0;
-    var timerIv = null, timerSec = 0, connectTimer = null, rafId = null, ampCur = 0;
-    var fillCur = 0, fillTarget = 0;
+    var ws = null, audioCtx = null, micStream = null, micSource = null, micNode = null;
+    var inputAn = null, outputAn = null, workletLoaded = false;
+    var connected = false, connecting = false, micAvailable = false;
+    var mode = 'ptt';            // 'ptt' hold to talk | 'hf' hands-free
+    var talk = '';               // '' | 'hold' | 'latch' while the user has the floor
+    var pressT = 0, endOnUp = false, spaceDown = false, spaceUpT = 0;
+    var activityIv = null, thinkTimer = null, idleTimer = null, connectTimer = null;
+    var lastInterrupt = 0, cutEid = -1, lastAudioEid = -1;
+    var sources = [], heldQ = [], nextT = 0, audioGen = 0;
+    var turnEid = null, turnStart = 0, turnRecv = 0;
+    var capList = [], capStarts = [], capTotal = 0, capIdx = -1, capTimer = null;
+    var rafId = null, ampCur = 0, uiState = 'idle';
     var outRate = 16000, inRate = 16000;
     var transcriptLog = [];
-    var pendingText = null;
+    var silenceB64 = { n: 0, b64: '' };
+
+    try { if (localStorage.getItem(MODE_KEY) === 'hf') mode = 'hf'; } catch (_) {}
 
     // ---------- elements ----------
     function $(id) { return document.getElementById(id); }
-    var pulseWrap = $('pulseWrap'), pulseBtn = $('pulseBtn'), pcLabel = $('pcLabel'), pcSub = $('pcSub');
-    var askEl = $('agentAsk');
-    var timerEl = $('agentTimer');
-    var modeEl = $('agentMode'), transcript = $('agentTranscript');
-    var muteBtn = $('agentMute'), dialogBtn = $('agentDialogBtn');
-    var island = $('ai-agent-card'), endBtn = $('agentEnd');
+    var pulseWrap = $('pulseWrap'), pulseBtn = $('pulseBtn'), island = $('ai-agent-card');
+    var modeEl = $('agentMode'), captionEl = $('agentCaption');
+    var dialogBtn = $('agentDialogBtn'), endBtn = $('agentEnd');
+    var segBtns = island ? Array.prototype.slice.call(island.querySelectorAll('[data-talk-mode]')) : [];
     var dialog = $('agentDialog'), dialogBody = $('agentDialogBody');
     var dialogClose = $('agentDialogClose'), dialogClose2 = $('agentDialogClose2'), dialogCopy = $('agentDialogCopy');
-    if (!pulseBtn || !transcript) return;
+    if (!pulseBtn || !island || !modeEl) return;
+
+    // the Space hint only makes sense with a keyboard and mouse
+    var FINE = window.matchMedia && window.matchMedia('(pointer: fine)').matches;
 
     var ICO = {
-        mic: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>',
-        micOff: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"><line x1="2" x2="22" y1="2" y2="22"/><path d="M18.89 13.23A7.12 7.12 0 0 0 19 12v-2"/><path d="M5 10v2a7 7 0 0 0 12 5"/><path d="M15 9.34V5a3 3 0 0 0-5.68-1.33"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12"/><line x1="12" x2="12" y1="19" y2="22"/></svg>',
         check: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>',
         copy: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>'
     };
 
-    // ---------- UI helpers ----------
-    function setMode(cls, txt) { modeEl.className = 'agent-mode' + (cls ? ' ' + cls : ''); modeEl.textContent = txt; }
-    // The circle is the whole status UI: its rings show the state, the white
-    // fill morphs in while the agent speaks and out while it listens.
-    function setCircle(state, label, sub) {
-        pulseWrap.className = 'pulse-wrap' + (state ? ' ' + state : '');
-        // drives the island's expansion: any live state opens the controls
-        if (island) island.setAttribute('data-live', state ? '1' : '0');
-        fillTarget = state === 'speaking' ? 1 : 0;
-        if (window.DAMGlow) window.DAMGlow.setState(state || 'idle');
-        // The rotating question makes way while a conversation is live.
-        if (askEl) askEl.classList.toggle('ask-hidden', !!state);
-        if (label != null) pcLabel.textContent = label;
-        if (sub != null) pcSub.textContent = sub;
-        pulseBtn.setAttribute('aria-label', connected || connecting ? 'End the voice conversation' : 'Start a voice conversation');
+    // ---------- UI state ----------
+    // idle | connecting | ready | listening | thinking | speaking
+    function restState() { return mode === 'hf' ? 'listening' : 'ready'; }
+    function setState(s) {
+        uiState = s;
+        island.setAttribute('data-state', s);
+        island.setAttribute('data-live', s === 'idle' ? '0' : '1');
+        if (window.DAMGlow) window.DAMGlow.setState(s);
+        pulseBtn.setAttribute('aria-label',
+            s === 'idle' ? 'Start a voice conversation with North' :
+            s === 'connecting' ? 'Cancel connecting' :
+            mode === 'hf' ? 'North is listening' : 'Hold to talk to North');
+        renderMode();
     }
-    function tickTimer() {
-        timerSec++;
-        var m = String(Math.floor(timerSec / 60)).padStart(2, '0');
-        var s = String(timerSec % 60).padStart(2, '0');
-        timerEl.textContent = m + ':' + s;
+    // The status line. Text only, built from fixed strings.
+    function renderMode(msg) {
+        var t, key = false;
+        if (msg) t = msg;
+        else switch (uiState) {
+            case 'idle':       t = 'Tap to start. Hindi or English.'; break;
+            case 'connecting': t = 'Connecting…'; break;
+            case 'listening':  t = mode === 'hf' ? 'Listening… just speak' : (talk === 'latch' ? 'Listening… tap to send' : 'Listening… release to send'); break;
+            case 'thinking':   t = 'Thinking…'; break;
+            case 'speaking':   t = mode === 'hf' ? 'North is speaking' : 'North is speaking · hold to interrupt'; break;
+            default:           t = 'Hold to talk'; key = FINE;
+        }
+        modeEl.textContent = key ? t + ' · or hold' : t;
+        if (key) {
+            var k = document.createElement('kbd');
+            k.textContent = 'Space';
+            modeEl.appendChild(k);
+        }
     }
 
-    // Transcript entries use textContent only — agent/user text is untrusted.
     function addMsg(role, text) {
-        if (role !== 'system') transcriptLog.push({ role: role, text: text });
-        transcript.querySelectorAll('.at-msg:not(.old)').forEach(function (el) { el.classList.add('old'); });
-        var el = document.createElement('div');
-        el.className = 'at-msg ' + role;
-        if (role !== 'system') {
-            var who = document.createElement('span');
-            who.className = 'who';
-            who.textContent = role === 'agent' ? 'Assistant' : 'You';
-            el.appendChild(who);
-        }
-        el.appendChild(document.createTextNode(text));
-        transcript.appendChild(el);
-        while (transcript.children.length > 6) transcript.removeChild(transcript.firstChild);
-        dialogBtn.disabled = transcriptLog.length === 0;
+        transcriptLog.push({ role: role, text: text });
+        if (dialogBtn) dialogBtn.disabled = false;
+    }
+
+    // ---------- live caption ----------
+    // North's reply is split into sentences, and the one on screen follows
+    // the audio: position = share of the reply's audio played so far.
+    function splitSentences(text) {
+        var parts = text.replace(/\s+/g, ' ').trim().match(/[^.!?।]+(?:[.!?।]+["'”’)\]]*|$)\s*/g) || [];
+        var out = [];
+        parts.forEach(function (p) {
+            p = p.trim();
+            if (!p) return;
+            // long sentences break at a comma so a caption never runs past three lines
+            while (p.length > 130) {
+                var cut = p.lastIndexOf(', ', 110);
+                if (cut < 40) cut = p.lastIndexOf(' ', 110);
+                if (cut < 40) break;
+                out.push(p.slice(0, cut + 1));
+                p = p.slice(cut + 1).trim();
+            }
+            if (out.length && out[out.length - 1].length < 28) out[out.length - 1] += ' ' + p;
+            else out.push(p);
+        });
+        return out;
+    }
+    function setCaption(text) {
+        capList = splitSentences(text);
+        capStarts = []; capTotal = 0;
+        capList.forEach(function (s) { capStarts.push(capTotal); capTotal += s.length + 1; });
+        capIdx = -1;
+    }
+    function showCaption(i) {
+        capIdx = i;
+        if (!captionEl) return;
+        if (capTimer) clearTimeout(capTimer);
+        captionEl.classList.add('swap');
+        capTimer = setTimeout(function () {
+            capTimer = null;
+            captionEl.textContent = capList[i] || '';
+            captionEl.classList.remove('swap');
+        }, 150);
+    }
+    function clearCaption() {
+        capList = []; capStarts = []; capTotal = 0; capIdx = -1;
+        if (capTimer) { clearTimeout(capTimer); capTimer = null; }
+        if (captionEl) { captionEl.textContent = ''; captionEl.classList.remove('swap'); }
+    }
+    function paceCaption() {
+        if (!capList.length || !turnStart || !audioCtx) return;
+        var played = audioCtx.currentTime - turnStart;
+        if (played < 0) return;
+        // audio arrives faster than real time, so turnRecv soon equals the
+        // whole reply; the per-second cap stops an early overshoot
+        var pos = turnRecv > 0 ? Math.min(played / turnRecv * capTotal, played * 17) : 0;
+        var i = 0;
+        while (i + 1 < capStarts.length && capStarts[i + 1] <= pos) i++;
+        if (i !== capIdx) showCaption(i);
     }
 
     // ---------- audio helpers (PCM16 <-> base64, resampling) ----------
@@ -4441,42 +4510,64 @@ window.addEventListener('DOMContentLoaded', function () {
         return o;
     }
 
-    // ---------- playback queue (interruption-safe via generation counter) ----------
-    function enqueue(b64) { audioQ.push(b64); if (!playing) drain(); }
-    function drain() {
-        if (!audioQ.length) { playing = false; curSrc = null; if (connected) { setMode('listening', muted ? 'Muted' : 'Listening…'); setCircle('listening'); } return; }
-        if (!audioCtx) { audioQ.length = 0; playing = false; return; }
-        playing = true;
-        var gen = audioGen;
-        var pcm, f32;
-        try {
-            pcm = b642ab(audioQ.shift());
-            f32 = i16f32(new Int16Array(pcm));
-        } catch (e) { drain(); return; }
+    // ---------- playback: gapless, on the audio clock ----------
+    // Each chunk is scheduled to start exactly where the previous one ends,
+    // so speech never has the small gaps that onended-chaining produced.
+    function schedule(b64, eid) {
+        if (!audioCtx) return;
+        var f32;
+        try { f32 = i16f32(new Int16Array(b642ab(b64))); } catch (e) { return; }
+        if (!f32.length) return;
+        if (idleTimer) { clearTimeout(idleTimer); idleTimer = null; }
         var buf = audioCtx.createBuffer(1, f32.length, outRate);
         buf.getChannelData(0).set(f32);
         var src = audioCtx.createBufferSource();
         src.buffer = buf;
-        curSrc = src;
-        if (outputAn) {
-            src.connect(outputAn);
-            if (!outputWired) { outputAn.connect(audioCtx.destination); outputWired = true; }
-        } else {
-            src.connect(audioCtx.destination);
-        }
-        src.onended = function () { if (gen === audioGen && curSrc === src) { curSrc = null; drain(); } };
-        src.start();
+        src.connect(outputAn);
+        var t = Math.max(nextT, audioCtx.currentTime + 0.04);
+        if (eid !== turnEid || !turnStart) { turnEid = eid; turnStart = t; turnRecv = 0; }
+        else if (!sources.length) turnStart = t - turnRecv;   // resumed after a network stall
+        turnRecv += buf.duration;
+        nextT = t + buf.duration;
+        var gen = audioGen;
+        sources.push(src);
+        src.onended = function () {
+            var i = sources.indexOf(src);
+            if (i >= 0) sources.splice(i, 1);
+            try { src.disconnect(); } catch (_) {}
+            if (gen === audioGen && !sources.length) {
+                // brief grace so a stall between chunks doesn't flicker the UI
+                idleTimer = setTimeout(playbackIdle, 250);
+            }
+        };
+        src.start(t);
+        if (uiState !== 'speaking') setState('speaking');
+    }
+    function playbackIdle() {
+        idleTimer = null;
+        nextT = 0;
+        if (!connected || talk || sources.length) return;
+        setState(restState());
     }
     function flushAudio() {
-        audioGen++; audioQ.length = 0; playing = false;
-        if (curSrc) {
-            var s = curSrc; curSrc = null;
+        audioGen++;
+        sources.forEach(function (s) {
             try { s.stop(); } catch (_) {}
             try { s.disconnect(); } catch (_) {}
-        }
+        });
+        sources = []; heldQ = []; nextT = 0;
+        if (idleTimer) { clearTimeout(idleTimer); idleTimer = null; }
+    }
+    // Drop the rest of the reply that is playing, and anything still to come
+    // for it. A new reply arrives with a higher event id and plays normally.
+    function cutReply() {
+        cutEid = lastAudioEid;
+        flushAudio();
+        clearCaption();
+        turnEid = null; turnStart = 0;
     }
 
-    // ---------- orb visualiser: live audio level → scale + glow ----------
+    // ---------- orb level + caption loop ----------
     function rms(analyser, buf) {
         analyser.getByteTimeDomainData(buf);
         var sum = 0;
@@ -4486,36 +4577,24 @@ window.addEventListener('DOMContentLoaded', function () {
     var outBuf = null, inBuf = null;
     function visualLoop() {
         var target = 0;
-        if (playing && outputAn) {
+        if (sources.length && outputAn) {
             if (!outBuf) outBuf = new Uint8Array(outputAn.fftSize);
             target = Math.min(0.22, rms(outputAn, outBuf) * 0.9);
-        } else if (!muted && inputAn) {
+        } else if (inputAn && (talk || mode === 'hf')) {
+            // in hold-to-talk the orb only reacts to the mic while it is held
             if (!inBuf) inBuf = new Uint8Array(inputAn.fftSize);
-            target = Math.min(0.1, rms(inputAn, inBuf) * 0.45);
+            target = Math.min(0.12, rms(inputAn, inBuf) * 0.5);
         }
         ampCur += (target - ampCur) * 0.25;
-        pulseBtn.style.setProperty('--amp', ampCur.toFixed(3));
-        pulseBtn.style.setProperty('--glow', (ampCur * 150).toFixed(1) + 'px');
         if (window.DAMGlow) window.DAMGlow.setLevel(ampCur);
-        // Seamless fill morph: the white disc grows/shrinks a little every
-        // frame, and the label ink darkens in step so it stays readable.
-        fillCur += (fillTarget - fillCur) * 0.09;
-        pulseBtn.style.setProperty('--fill', fillCur.toFixed(3));
-        var t = fillCur;
-        pcLabel.style.color = 'rgb(' + Math.round(226 + (15 - 226) * t) + ',' + Math.round(232 + (23 - 232) * t) + ',' + Math.round(240 + (42 - 240) * t) + ')';
-        pcSub.style.color   = 'rgb(' + Math.round(148 + (51 - 148) * t) + ',' + Math.round(163 + (65 - 163) * t) + ',' + Math.round(184 + (85 - 184) * t) + ')';
+        paceCaption();
         rafId = requestAnimationFrame(visualLoop);
     }
     function startVisual() { if (rafId == null) rafId = requestAnimationFrame(visualLoop); }
     function stopVisual() {
         if (rafId != null) { cancelAnimationFrame(rafId); rafId = null; }
-        ampCur = 0; fillCur = 0; fillTarget = 0;
+        ampCur = 0;
         if (window.DAMGlow) window.DAMGlow.setLevel(0);
-        pulseBtn.style.setProperty('--amp', '0');
-        pulseBtn.style.setProperty('--glow', '0px');
-        pulseBtn.style.setProperty('--fill', '0');
-        pcLabel.style.color = '';
-        pcSub.style.color = '';
     }
 
     // ---------- microphone ----------
@@ -4524,81 +4603,182 @@ window.addEventListener('DOMContentLoaded', function () {
         var AC = window.AudioContext || window.webkitAudioContext;
         if (!AC) return null;
         // The browser's own rate, always. Firefox refuses to connect a 48 kHz
-        // mic to a 16 kHz context, which silently dropped it into a dead
-        // "text mode". downsample() already converts the mic to inRate, and
+        // mic to a 16 kHz context. downsample() converts the mic to inRate, and
         // playback buffers are created at outRate and resampled by the context.
         audioCtx = new AC();
         outputAn = audioCtx.createAnalyser();
         outputAn.fftSize = 256;
-        outputWired = false;
+        outputAn.connect(audioCtx.destination);
         return audioCtx;
+    }
+    function sendMic(f32) {
+        if (!connected || !ws || ws.readyState !== 1) return;
+        var d = downsample(f32, audioCtx.sampleRate, inRate), b64;
+        if (mode === 'ptt' && !talk) {
+            // Hold to talk, not held: send true silence. ElevenLabs keeps its
+            // timing and ends the user's turn promptly, but never hears the room.
+            if (silenceB64.n !== d.length) silenceB64 = { n: d.length, b64: ab2b64(new Int16Array(d.length).buffer) };
+            b64 = silenceB64.b64;
+        } else {
+            b64 = ab2b64(f32i16(d).buffer);
+        }
+        try { ws.send(JSON.stringify({ user_audio_chunk: b64 })); } catch (_) {}
+    }
+    // Capture runs in an AudioWorklet (off the main thread, low latency),
+    // batching 2048 samples per message; ScriptProcessor is the fallback.
+    var WORKLET_SRC =
+        'class DamMic extends AudioWorkletProcessor{' +
+        'constructor(){super();this.b=new Float32Array(2048);this.n=0;}' +
+        'process(inputs){var c=inputs[0]&&inputs[0][0];if(c){for(var i=0;i<c.length;i++){' +
+        'this.b[this.n++]=c[i];if(this.n===2048){this.port.postMessage(this.b.slice(0));this.n=0;}}}return true;}}' +
+        'registerProcessor("dam-mic",DamMic);';
+    function loadWorklet() {
+        if (workletLoaded) return Promise.resolve();
+        var url = URL.createObjectURL(new Blob([WORKLET_SRC], { type: 'application/javascript' }));
+        return audioCtx.audioWorklet.addModule(url).then(function () {
+            workletLoaded = true;
+            URL.revokeObjectURL(url);
+        }, function (e) { URL.revokeObjectURL(url); throw e; });
+    }
+    function scriptCapture() {
+        micNode = audioCtx.createScriptProcessor(4096, 1, 1);
+        micNode.onaudioprocess = function (e) { sendMic(e.inputBuffer.getChannelData(0)); };
+        micSource.connect(micNode);
+        micNode.connect(audioCtx.destination);
+    }
+    function attachCapture() {
+        if (!audioCtx.audioWorklet || !window.AudioWorkletNode) { scriptCapture(); return Promise.resolve(); }
+        return loadWorklet().then(function () {
+            if (!micSource) return;
+            micNode = new AudioWorkletNode(audioCtx, 'dam-mic', { numberOfInputs: 1, numberOfOutputs: 1, outputChannelCount: [1] });
+            micNode.port.onmessage = function (e) { sendMic(e.data); };
+            micSource.connect(micNode);
+            // the node outputs silence; connecting it keeps it pulled everywhere
+            micNode.connect(audioCtx.destination);
+        }).catch(function () { if (micSource) scriptCapture(); });
     }
     function micOn() {
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
             return Promise.reject(new Error('getUserMedia unavailable'));
         }
         return navigator.mediaDevices.getUserMedia({
-            audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true }
+            audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true }
         }).then(function (stream) {
             micStream = stream;
             micSource = audioCtx.createMediaStreamSource(stream);
             inputAn = audioCtx.createAnalyser();
             inputAn.fftSize = 256;
             micSource.connect(inputAn);
-            micProc = audioCtx.createScriptProcessor(4096, 1, 1);
-            micProc.onaudioprocess = function (e) {
-                if (!ws || ws.readyState !== 1 || muted) return;
-                var d = downsample(e.inputBuffer.getChannelData(0), audioCtx.sampleRate, inRate);
-                try { ws.send(JSON.stringify({ user_audio_chunk: ab2b64(f32i16(d).buffer) })); } catch (_) {}
-            };
-            micSource.connect(micProc);
-            micProc.connect(audioCtx.destination);
+            return attachCapture();
         });
     }
     function micOff() {
-        if (micProc) { try { micProc.disconnect(); } catch (_) {} micProc = null; }
+        if (micNode) {
+            if (micNode.port) micNode.port.onmessage = null;
+            micNode.onaudioprocess = null;
+            try { micNode.disconnect(); } catch (_) {}
+            micNode = null;
+        }
         if (micSource) { try { micSource.disconnect(); } catch (_) {} micSource = null; }
         if (micStream) { micStream.getTracks().forEach(function (t) { t.stop(); }); micStream = null; }
         inputAn = null; inBuf = null;
     }
 
+    // ---------- talking (hold to talk) ----------
+    function sendActivity() {
+        // tells ElevenLabs the user is mid-turn, so North never jumps in
+        // during a pause while the orb is still held
+        if (ws && ws.readyState === 1) { try { ws.send(JSON.stringify({ type: 'user_activity' })); } catch (_) {} }
+    }
+    function clearThink() { if (thinkTimer) { clearTimeout(thinkTimer); thinkTimer = null; } }
+    function armThink() {
+        clearThink();
+        thinkTimer = setTimeout(function () {
+            thinkTimer = null;
+            if (connected && !talk && !sources.length && uiState === 'thinking') setState(restState());
+        }, THINK_TIMEOUT_MS);
+    }
+    function setTalk(v) { talk = v; island.setAttribute('data-talk', v); }
+    function startTalk(how) {
+        if (!connected || mode !== 'ptt' || !micAvailable) return;
+        clearThink();
+        cutReply();             // pressing always takes the floor from North
+        setTalk(how);
+        sendActivity();
+        if (activityIv) clearInterval(activityIv);
+        activityIv = setInterval(sendActivity, 1000);
+        if (navigator.vibrate) { try { navigator.vibrate(10); } catch (_) {} }
+        setState('listening');
+    }
+    function stopTalk() {
+        if (!talk) return;
+        setTalk('');
+        if (activityIv) { clearInterval(activityIv); activityIv = null; }
+        if (!connected) return;
+        if (heldQ.length) {
+            // a reply that arrived while the orb was held plays now
+            var q = heldQ; heldQ = [];
+            q.forEach(function (c) { schedule(c[0], c[1]); });
+        } else {
+            setState('thinking');
+            armThink();
+        }
+    }
+    function resetTalk() {
+        setTalk(''); endOnUp = false; spaceDown = false;
+        if (activityIv) { clearInterval(activityIv); activityIv = null; }
+        clearThink();
+    }
+
     // ---------- connection ----------
-    function failConnect(msg) {
+    function teardown() {
         if (connectTimer) { clearTimeout(connectTimer); connectTimer = null; }
-        connecting = false; connected = false;
-        if (ws) { try { ws.close(); } catch (_) {} ws = null; }
-        micOff(); flushAudio(); stopVisual();
-        setCircle('', 'Tap to retry', 'voice chat');
-        setMode('', msg || 'Could not connect. Please try again.');
-        timerEl.hidden = true;
-        muteBtn.disabled = true;
-        pendingText = null;
+        if (ws) {
+            ws.onclose = null; ws.onerror = null; ws.onmessage = null;
+            if (ws.readyState === 0 || ws.readyState === 1) { try { ws.close(1000, 'User ended'); } catch (_) {} }
+            ws = null;
+        }
+        connected = false; connecting = false;
+        lastInterrupt = 0; cutEid = -1; lastAudioEid = -1; turnEid = null; turnStart = 0;
+        resetTalk(); flushAudio(); micOff(); stopVisual();
+    }
+    function failConnect(msg) {
+        teardown();
+        setState('idle');
+        renderMode(msg || 'Could not connect. Please try again.');
+    }
+    function disconnect() {
+        var wasConnected = connected;
+        teardown();
+        setState('idle');
+        if (wasConnected) renderMode('Conversation ended. Tap to start again.');
     }
 
     function connect() {
         if (connecting || connected) return;
         if (!window.WebSocket) { failConnect('Your browser does not support voice chat.'); return; }
-        connecting = true;
-        setCircle('connecting', 'Connecting…', 'tap to cancel');
-        setMode('', 'Requesting microphone…');
-
         var ctx = ensureCtx();
         if (!ctx) { failConnect('Audio is not supported in this browser.'); return; }
         if (ctx.state === 'suspended') ctx.resume().catch(function () {});
+        connecting = true;
+        clearCaption();
+        setState('connecting');
+        renderMode('Requesting microphone…');
 
         micOn().then(function () {
+            if (!connecting) { micOff(); return; }   // cancelled meanwhile
             micAvailable = true;
             openSocket();
         }).catch(function () {
             // Mic denied or unavailable. Release anything half-opened (the mic
             // light would otherwise stay on) and say why: North is voice only.
             micOff();
-            failConnect('North needs your microphone. Allow access and tap again.');
+            if (connecting) failConnect('North needs your microphone. Allow access and tap again.');
         });
     }
 
     function openSocket() {
-        setMode('', 'Connecting to the assistant…');
+        renderMode('Connecting to North…');
         try {
             ws = new WebSocket(WS_URL, ['convai']);
         } catch (e) {
@@ -4607,7 +4787,7 @@ window.addEventListener('DOMContentLoaded', function () {
         }
 
         connectTimer = setTimeout(function () {
-            if (!connected) failConnect('The assistant is taking too long to respond. Please try again.');
+            if (!connected) failConnect('North is taking too long to respond. Please try again.');
         }, CONNECT_TIMEOUT_MS);
 
         ws.onopen = function () {
@@ -4625,47 +4805,54 @@ window.addEventListener('DOMContentLoaded', function () {
                     var uf = /^pcm_(\d+)$/.exec(meta.user_input_audio_format || '');
                     if (of) outRate = parseInt(of[1], 10);
                     if (uf) inRate = parseInt(uf[1], 10);
-                    connecting = false; connected = true; muted = false;
-                    setCircle('listening', 'Tap to end', '');
-                    setMode('listening', micAvailable ? 'Listening…' : 'Microphone unavailable');
-                    muteBtn.disabled = !micAvailable;
-                    muteBtn.classList.remove('danger');
-                    muteBtn.innerHTML = ICO.mic;
-                    timerSec = 0; timerEl.textContent = '00:00'; timerEl.hidden = false;
-                    if (timerIv) clearInterval(timerIv);
-                    timerIv = setInterval(tickTimer, 1000);
+                    connecting = false; connected = true;
+                    setState(restState());
                     startVisual();
-                    if (pendingText) { var t = pendingText; pendingText = null; sendUserText(t); }
                     break;
                 }
                 case 'audio': {
-                    if (m.audio_event && m.audio_event.audio_base_64) {
-                        var eid = m.audio_event.event_id || m.event_id || Infinity;
-                        if (eid >= lastInterrupt) {
-                            enqueue(m.audio_event.audio_base_64);
-                            setMode('speaking', 'Speaking…');
-                            setCircle('speaking');
+                    var ae = m.audio_event;
+                    if (!ae || !ae.audio_base_64) break;
+                    var eid = ae.event_id != null ? ae.event_id : Infinity;
+                    if (eid < lastInterrupt || eid <= cutEid) break;   // a reply already cut off
+                    if (isFinite(eid)) lastAudioEid = eid;
+                    clearThink();
+                    if (talk) heldQ.push([ae.audio_base_64, eid]);   // plays once the orb is released
+                    else schedule(ae.audio_base_64, eid);
+                    break;
+                }
+                case 'agent_response': {
+                    var ar = m.agent_response_event && m.agent_response_event.agent_response;
+                    if (ar) { addMsg('agent', ar); setCaption(ar); }
+                    break;
+                }
+                case 'agent_response_correction': {
+                    // after an interruption the transcript keeps only what was said
+                    var c = m.agent_response_correction_event;
+                    if (c && c.corrected_agent_response) {
+                        for (var i = transcriptLog.length - 1; i >= 0; i--) {
+                            if (transcriptLog[i].role === 'agent') { transcriptLog[i].text = c.corrected_agent_response; break; }
                         }
                     }
                     break;
                 }
-                case 'agent_response': {
-                    if (m.agent_response_event && m.agent_response_event.agent_response) {
-                        addMsg('agent', m.agent_response_event.agent_response);
-                    }
-                    break;
-                }
                 case 'user_transcript': {
-                    if (m.user_transcription_event && m.user_transcription_event.user_transcript) {
-                        addMsg('user', m.user_transcription_event.user_transcript);
+                    var ut = m.user_transcription_event && m.user_transcription_event.user_transcript;
+                    if (ut) addMsg('user', ut);
+                    if (!talk && !sources.length) {
+                        clearCaption();
+                        setState('thinking');
+                        armThink();
                     }
                     break;
                 }
                 case 'interruption': {
-                    lastInterrupt = (m.interruption_event && m.interruption_event.event_id) || m.event_id || Infinity;
-                    flushAudio();
-                    setMode('listening', muted ? 'Muted' : 'Listening…');
-                    setCircle('listening');
+                    var ie = m.interruption_event;
+                    if (ie && ie.event_id != null) lastInterrupt = ie.event_id;
+                    else cutEid = lastAudioEid;
+                    flushAudio(); clearCaption();
+                    turnEid = null; turnStart = 0;
+                    if (!talk) setState(restState());
                     break;
                 }
                 case 'ping': {
@@ -4673,14 +4860,15 @@ window.addEventListener('DOMContentLoaded', function () {
                     break;
                 }
                 case 'error': {
-                    if (m.error_event && m.error_event.error_type === 'max_duration_exceeded') {
-                        addMsg('system', 'Maximum conversation length reached.');
-                        disconnect();
-                    }
+                    if (m.error_event && m.error_event.error_type === 'max_duration_exceeded') disconnect();
                     break;
                 }
                 case 'agent_tool_response': {
-                    if (m.agent_tool_response && m.agent_tool_response.tool_name === 'end_call') disconnect();
+                    if (m.agent_tool_response && m.agent_tool_response.tool_name === 'end_call') {
+                        // let North finish its goodbye before hanging up
+                        var wait = audioCtx ? Math.max(0, nextT - audioCtx.currentTime) * 1000 : 0;
+                        setTimeout(function () { if (connected) disconnect(); }, Math.min(wait + 300, 8000));
+                    }
                     break;
                 }
             }
@@ -4688,60 +4876,100 @@ window.addEventListener('DOMContentLoaded', function () {
 
         ws.onerror = function () {
             if (!connected) failConnect('Connection error. Check your internet and try again.');
-            else setMode('', 'Connection lost');
         };
 
         ws.onclose = function () {
-            if (connected) { connected = false; disconnect(); }
+            if (connected) disconnect();
             else if (connecting) failConnect('The connection was closed before it was ready.');
         };
     }
 
-    function disconnect() {
-        if (connectTimer) { clearTimeout(connectTimer); connectTimer = null; }
-        if (ws) {
-            ws.onclose = null; ws.onerror = null;
-            if (ws.readyState === 0 || ws.readyState === 1) { try { ws.close(1000, 'User ended'); } catch (_) {} }
-            ws = null;
-        }
-        var wasConnected = connected;
-        connected = false; connecting = false; muted = false; lastInterrupt = 0; pendingText = null;
-        flushAudio(); micOff(); stopVisual();
-        if (timerIv) { clearInterval(timerIv); timerIv = null; }
-        setCircle('', 'Tap to start', 'voice chat');
-        setMode('', wasConnected ? 'Conversation ended. Tap to start again.' : '');
-        timerEl.hidden = true;
-        muteBtn.disabled = true; muteBtn.classList.remove('danger'); muteBtn.innerHTML = ICO.mic;
-        dialogBtn.disabled = transcriptLog.length === 0;
-    }
-
-    // ---------- text input ----------
-    function sendUserText(t) {
-        if (!t || !ws || ws.readyState !== 1) return;
-        try { ws.send(JSON.stringify({ type: 'user_message', text: t })); } catch (_) { return; }
-        addMsg('user', t);
-    }
     // ---------- controls ----------
-    pulseBtn.addEventListener('click', function () {
-        if (connected || connecting) disconnect();
-        else connect();
+    // Not connected: a tap starts (or cancels). Connected, hold to talk:
+    // press and hold to speak, or tap once to open the mic and tap again to
+    // send. Hands-free: a press only stops North mid-sentence.
+    pulseBtn.addEventListener('pointerdown', function (e) {
+        if (!connected || (e.pointerType === 'mouse' && e.button !== 0)) return;
+        if (mode === 'hf') {
+            if (sources.length) { cutReply(); setState('listening'); }
+            return;
+        }
+        e.preventDefault();
+        try { pulseBtn.setPointerCapture(e.pointerId); } catch (_) {}
+        pressT = performance.now();
+        if (talk === 'latch') { endOnUp = true; return; }
+        endOnUp = false;
+        startTalk('hold');
+    });
+    pulseBtn.addEventListener('pointerup', function () {
+        if (!talk) return;
+        if (endOnUp) { endOnUp = false; stopTalk(); return; }
+        if (talk === 'hold') {
+            if (performance.now() - pressT < TAP_MS) { setTalk('latch'); renderMode(); }
+            else stopTalk();
+        }
+    });
+    pulseBtn.addEventListener('pointercancel', function () {
+        endOnUp = false;
+        if (talk === 'hold') stopTalk();
+    });
+    pulseBtn.addEventListener('contextmenu', function (e) { if (connected) e.preventDefault(); });
+    pulseBtn.addEventListener('click', function (e) {
+        if (!connected) { if (connecting) disconnect(); else connect(); return; }
+        // Enter on the focused orb toggles the mic; pointer presses and Space
+        // are handled by their own listeners
+        if (e.detail === 0 && mode === 'ptt' && performance.now() - spaceUpT > 100) {
+            if (talk) stopTalk(); else startTalk('latch');
+        }
     });
 
-    // explicit hang-up, so ending a call is never a hidden gesture
+    // Space = hold to talk, anywhere on the page while a call is live
+    function isSpace(e) { return e.code === 'Space' || e.key === ' '; }
+    function spaceTarget(el) {
+        if (!el || el === document.body || el === pulseBtn) return true;
+        return !(el.isContentEditable || /^(INPUT|TEXTAREA|SELECT|BUTTON|A)$/.test(el.tagName));
+    }
+    document.addEventListener('keydown', function (e) {
+        if (!isSpace(e) || !connected || mode !== 'ptt' || !spaceTarget(e.target)) return;
+        if (dialog && dialog.classList.contains('open')) return;
+        e.preventDefault();
+        if (e.repeat || spaceDown) return;
+        spaceDown = true;
+        if (talk === 'latch') stopTalk();
+        else startTalk('hold');
+    });
+    document.addEventListener('keyup', function (e) {
+        if (!spaceDown || !isSpace(e)) return;
+        e.preventDefault();
+        spaceDown = false; spaceUpT = performance.now();
+        if (talk === 'hold') stopTalk();
+    });
+    window.addEventListener('blur', function () {
+        if (spaceDown) { spaceDown = false; if (talk === 'hold') stopTalk(); }
+    });
+
+    // Hold to talk / Hands-free switch; the choice is remembered
+    function applyMode() {
+        island.setAttribute('data-mode', mode);
+        segBtns.forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-talk-mode') === mode ? 'true' : 'false'); });
+    }
+    segBtns.forEach(function (b) {
+        b.addEventListener('click', function () {
+            var m = b.getAttribute('data-talk-mode');
+            if (m === mode) return;
+            mode = m;
+            try { localStorage.setItem(MODE_KEY, m); } catch (_) {}
+            applyMode();
+            if (talk) resetTalk();
+            if (connected && !sources.length) setState(restState());
+            else if (connected) setState(uiState);
+        });
+    });
+    applyMode();
+
     if (endBtn) endBtn.addEventListener('click', function (e) {
         e.stopPropagation();
         if (connected || connecting) disconnect();
-    });
-
-    muteBtn.addEventListener('click', function () {
-        if (!connected || !micAvailable) return;
-        muted = !muted;
-        if (micStream) micStream.getAudioTracks().forEach(function (t) { t.enabled = !muted; });
-        muteBtn.classList.toggle('danger', muted);
-        muteBtn.innerHTML = muted ? ICO.micOff : ICO.mic;
-        muteBtn.setAttribute('aria-label', muted ? 'Unmute microphone' : 'Mute microphone');
-        muteBtn.title = muted ? 'Unmute' : 'Mute';
-        if (!playing) setMode('listening', muted ? 'Muted' : 'Listening…');
     });
 
     // ---------- transcript dialog ----------
@@ -4758,7 +4986,7 @@ window.addEventListener('DOMContentLoaded', function () {
                 line.className = 'd-line ' + entry.role;
                 var who = document.createElement('div');
                 who.className = 'd-who';
-                who.textContent = entry.role === 'agent' ? 'Assistant' : 'You';
+                who.textContent = entry.role === 'agent' ? 'North' : 'You';
                 var text = document.createElement('div');
                 text.className = 'd-text';
                 text.textContent = entry.text;
@@ -4770,17 +4998,19 @@ window.addEventListener('DOMContentLoaded', function () {
         dialog.classList.add('open');
     }
     function closeDialog() { dialog.classList.remove('open'); }
-    dialogBtn.addEventListener('click', openDialog);
-    dialogClose.addEventListener('click', closeDialog);
-    dialogClose2.addEventListener('click', closeDialog);
-    dialog.addEventListener('click', function (e) { if (e.target === dialog) closeDialog(); });
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && dialog.classList.contains('open')) closeDialog();
-    });
+    if (dialog && dialogBtn) {
+        dialogBtn.addEventListener('click', openDialog);
+        dialogClose.addEventListener('click', closeDialog);
+        dialogClose2.addEventListener('click', closeDialog);
+        dialog.addEventListener('click', function (e) { if (e.target === dialog) closeDialog(); });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && dialog.classList.contains('open')) closeDialog();
+        });
+    }
 
     function copyPlainTranscript() {
         var plain = transcriptLog.map(function (e) {
-            return (e.role === 'agent' ? 'Assistant' : 'You') + ':\n' + e.text;
+            return (e.role === 'agent' ? 'North' : 'You') + ':\n' + e.text;
         }).join('\n\n');
         function done() {
             dialogCopy.innerHTML = ICO.check + ' Copied!';
@@ -4801,7 +5031,7 @@ window.addEventListener('DOMContentLoaded', function () {
         try { if (document.execCommand('copy')) done(); } catch (_) {}
         ta.remove();
     }
-    dialogCopy.addEventListener('click', copyPlainTranscript);
+    if (dialogCopy) dialogCopy.addEventListener('click', copyPlainTranscript);
 
     // "Talk to North" buttons scroll to the embedded agent and pulse the orb.
     document.querySelectorAll('[data-open-assistant]').forEach(function (btn) {
@@ -4816,10 +5046,7 @@ window.addEventListener('DOMContentLoaded', function () {
 
     // ---------- cleanup ----------
     window.addEventListener('pagehide', function () {
-        if (connected || connecting) {
-            if (ws) { try { ws.close(1000, 'Page closed'); } catch (_) {} ws = null; }
-            micOff(); flushAudio(); stopVisual();
-        }
+        if (connected || connecting) teardown();
     });
 })();
 </script>
